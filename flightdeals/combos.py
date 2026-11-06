@@ -8,7 +8,7 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-from . import evaluate, providers, stopovers
+from . import evaluate, preferences, providers, stopovers
 from .airports import HUBS, ORIGINS
 from .main import ROOT, SEEN, _load, _save, dispatch, months_ahead, publish
 
@@ -25,7 +25,7 @@ def _group(legs, keep: int = 6):
 
 
 def run(dry: bool) -> int:
-    cfg = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
+    cfg = preferences.load_cfg()
     if not cfg["stopovers"]["enabled"]:
         return 0
     token = os.environ.get("TRAVELPAYOUTS_TOKEN")

@@ -26,23 +26,34 @@
   .grid { font-size:.78rem; color:var(--mut); margin-top:4px; }
   .price { font-size:1.6rem; font-weight:700; } .tot { font-weight:600; }
   .warn { color:#b26a00; font-size:.85rem; } a.btn { display:inline-block; margin-top:8px; padding:8px 14px; background:var(--acc); color:#fff; border-radius:8px; text-decoration:none; }
+  .refuse { margin-left:8px; padding:8px 12px; border-radius:8px; border:1px solid var(--mut); background:transparent; color:var(--fg); cursor:pointer; }
+  .rform { margin-top:10px; } .rform[hidden] { display:none; }
+  .rform textarea { width:100%; box-sizing:border-box; min-height:70px; padding:8px; border-radius:8px; border:1px solid var(--mut); background:var(--bg); color:var(--fg); font:inherit; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .chips button { border:1px solid var(--mut); background:transparent; color:var(--fg); border-radius:14px; padding:3px 10px; font-size:.78rem; cursor:pointer; }
+  .send { margin-top:6px; padding:8px 14px; border:0; border-radius:8px; background:var(--err); color:#fff; cursor:pointer; }
+  .status { margin-left:8px; font-size:.8rem; color:var(--mut); }
+  details.prefs { padding:0 16px 24px; color:var(--mut); font-size:.85rem; } details.prefs summary { cursor:pointer; }
   .empty { padding:32px; text-align:center; color:var(--mut); }
 </style>
 </head>
 <body>
-<header><h1>✈️ Flight Deals</h1><span class="mut" id="upd">chargement…</span></header>
+<header><h1>✈️ Flight Deals</h1><span class="mut" id="upd">chargement…</span><button class="refuse" id="tok" title="Nécessaire pour envoyer un refus depuis cette page">🔑 Connecter GitHub</button></header>
 <nav id="filters"></nav>
 <main id="list"></main>
+<details class="prefs"><summary>Mes réglages appris de mes refus</summary><div id="prefs">Aucun pour l'instant.</div></details>
 <script>
 const LABEL = {error_fare:"Erreur de prix", deal:"Très bonne affaire", business_deal:"Business", stopover_deal:"Montage d'escales"};
 const AIR = {widebody_probable:"Gros-porteur probable", unverified:"⚠️ Avion à vérifier", not_required:"Vol court"};
-let deals = [], filter = "all";
+let deals = [], filter = "all", refused = new Set(JSON.parse(localStorage.getItem("hidden") || "[]"));
+const REASONS = ["Trop cher", "Séjour trop court", "Séjour trop long", "Trop loin", "Trop d'escales", "Destination déjà vue", "Avion pas adapté", "Trop touristique", "Billets séparés trop risqués"];
+const REPO = location.hostname.endsWith("github.io") ? [location.hostname.split(".")[0], location.pathname.split("/")[1]] : ["gwendix44-dev", "flight-deals"];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const safeUrl = u => /^https?:\/\//.test(u || "") ? u : "";
 
 function render() {
   const el = document.getElementById("list");
-  const rows = deals.filter(d => filter === "all" || d.kind === filter);
+  const rows = deals.filter(d => (filter === "all" || d.kind === filter) && !refused.has(d.issue));
   if (!rows.length) { el.innerHTML = '<div class="empty">Aucune affaire pour le moment. Le scanner tourne en continu.</div>'; return; }
   el.innerHTML = rows.map(d => { const o = d.offer, url = safeUrl(o.link); return `
     <article class="${esc(d.kind)}">
@@ -55,9 +66,45 @@ function render() {
       ${d.saving_pct ? `<div class="mut">−${esc(d.saving_pct)} % vs billet classique (${Math.round(d.baseline_eur)} €)</div>` : ""}
       ${(d.itinerary || []).length ? `<div class="itin">${d.itinerary.map(x => `<div>${esc(x.replace(/https?:\/\/\S+/, "").trim())}</div>`).join("")}</div><div class="warn">Billets séparés : pas de protection en cas de retard</div>` : ""}
       <div class="${d.aircraft === "unverified" ? "warn" : "mut"}">${esc(AIR[d.aircraft] || d.aircraft)}</div>
-      ${url ? `<a class="btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Voir l'offre</a>` : ""}
+      ${url ? `<a class="btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Voir l'offre</a>` : ""}<button class="refuse" data-act="open" data-k="${esc(d.key)}">👎 Refuser</button>
+      <div class="rform" hidden data-form="${esc(d.key)}">
+        <div class="chips">${REASONS.map(r => `<button data-act="chip" data-t="${esc(r)}">${esc(r)}</button>`).join("")}</div>
+        <textarea placeholder="Explique pourquoi tu refuses (trop cher, séjour trop court, trop d'escales…)"></textarea>
+        <button class="send" data-act="send" data-k="${esc(d.key)}">Envoyer le refus</button><span class="status"></span>
+      </div>
     </article>`; }).join("");
 }
+
+async function sendRefusal(d, text, status) {
+  if (!d.issue) { status.textContent = "Cette offre n'a pas d'Issue liée."; return; }
+  const token = localStorage.getItem("ghtoken");
+  if (!token) {
+    try { await navigator.clipboard.writeText(text); } catch {}
+    window.open(`https://github.com/${REPO[0]}/${REPO[1]}/issues/${d.issue}`, "_blank", "noopener");
+    status.textContent = "Texte copié : colle-le en commentaire sur GitHub (ou connecte GitHub en haut).";
+    return;
+  }
+  const r = await fetch(`https://api.github.com/repos/${REPO[0]}/${REPO[1]}/issues/${d.issue}/comments`, {
+    method: "POST", headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
+    body: JSON.stringify({ body: text }) });
+  if (r.ok) { refused.add(d.issue); localStorage.setItem("hidden", JSON.stringify([...refused])); status.textContent = "Envoyé ✔ l'appli s'adapte."; setTimeout(render, 1200); }
+  else status.textContent = `Échec (${r.status}) : vérifie ton token (droit Issues en écriture).`;
+}
+document.getElementById("list").addEventListener("click", e => {
+  const b = e.target.closest("button[data-act]"); if (!b) return;
+  const art = b.closest("article"), form = art.querySelector(".rform"), ta = form.querySelector("textarea");
+  if (b.dataset.act === "open") form.hidden = !form.hidden;
+  if (b.dataset.act === "chip") ta.value = (ta.value ? ta.value + ", " : "") + b.dataset.t.toLowerCase();
+  if (b.dataset.act === "send") {
+    const d = deals.find(x => x.key === b.dataset.k), text = ta.value.trim(), st = form.querySelector(".status");
+    if (!text) { st.textContent = "Écris au moins une raison."; return; }
+    sendRefusal(d, text, st);
+  }
+});
+document.getElementById("tok").onclick = () => {
+  const t = prompt("Colle ton token GitHub (fine-grained, uniquement ce dépôt, droit « Issues : Read and write »). Il reste dans ce navigateur.");
+  if (t) { localStorage.setItem("ghtoken", t.trim()); alert("Token enregistré sur cet appareil."); }
+};
 
 function buildFilters() {
   const nav = document.getElementById("filters");
@@ -76,6 +123,12 @@ async function load() {
       new Notification("Flight Deals", { body: `${deals[0].offer.origin} → ${deals[0].dest_city} ${Math.round(deals[0].offer.price_eur)} €` });
     localStorage.setItem("seen", latest);
   } catch { document.getElementById("upd").textContent = "Impossible de charger les données"; }
+  try {
+    const p = await (await fetch("preferences.json?t=" + Date.now())).json();
+    (p.refused_issues || []).forEach(n => refused.add(n));
+    const rows = Object.entries(p).filter(([k, v]) => k !== "refused_issues" && v !== null && v !== false && v !== 0 && !(Array.isArray(v) && !v.length));
+    document.getElementById("prefs").innerHTML = rows.length ? rows.map(([k, v]) => `<div>${esc(k)} : ${esc(Array.isArray(v) ? v.join(", ") : v)}</div>`).join("") : "Aucun pour l'instant.";
+  } catch {}
   render();
 }
 buildFilters(); load(); setInterval(load, 5 * 60 * 1000);

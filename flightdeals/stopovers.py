@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, time, timedelta, timezone
 from typing import Optional
 
-from . import aircraft, scoring
+from . import aircraft, preferences, scoring
 from .airports import DESTINATIONS, HUBS, ORIGINS, SAME_CITY, airports_of, coords, secrecy
 from .core import Leg, Verdict, Offer, estimate_hours, haversine_km
 
@@ -119,6 +119,9 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
     _, olat, olon = ORIGINS[o]
     km = haversine_km(olat, olon, dlat, dlon)
     if not scoring.min_stay_for(km, cfg) <= stay <= cfg["stay_days"]["max"]:
+        return None
+    if preferences.violates(cfg, dest=d, km=km, hours=sum(l.dur_min for l in path.legs) / 60,
+                            depart=first.dep_utc.date(), stay=stay):
         return None
     flights = path.price + ret.price
     if eco.get("flight_cap_eur") and flights > eco["flight_cap_eur"]:

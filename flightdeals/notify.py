@@ -34,6 +34,8 @@ def body(v: Verdict) -> str:
         f"➜ COÛT TOTAL ESTIMÉ : ~{v.trip_total} €",
         *(["", "Itinéraire (billets séparés) :", *[f"  {x}" for x in v.itinerary]] if v.itinerary else []),
         "", "Pourquoi :", *[f"  • {r}" for r in v.reasons],
+        "", "👎 Pas pour toi ? Réponds en commentaire à cette Issue (ou bouton « Refuser » du dashboard) en expliquant "
+            "pourquoi : trop cher, séjour trop court, trop d'escales, destination déjà vue… L'appli s'adapte aussitôt.",
         *(["⚠️ Billets séparés : aucune protection si un vol est en retard ; bagages à récupérer et ré-enregistrer à chaque escale ; vérifier les visas de transit."] if v.kind == "stopover_deal" else []),
         f"Avion : {AIRCRAFT.get(v.aircraft, v.aircraft)}" + (f" — {v.aircraft_note}" if v.aircraft in ('widebody_probable', 'unverified') else ""),
         f"Source : {o.source}" + (f" — « {o.title} »" if o.title else ""),
@@ -61,7 +63,8 @@ def create_issues(vs: list[Verdict]) -> list[Verdict]:
             headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json",
                      "Content-Type": "application/json", "User-Agent": "flight-deals"})
         try:
-            urllib.request.urlopen(req, timeout=20).read()
+            resp = json.loads(urllib.request.urlopen(req, timeout=20).read())
+            v.issue = resp.get("number")
             sent.append(v)
         except urllib.error.HTTPError as e:
             detail = e.read().decode("utf-8", "replace")[:400]

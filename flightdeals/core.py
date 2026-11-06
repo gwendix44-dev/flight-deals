@@ -46,6 +46,7 @@ class Verdict:
     score: float = 0.0                              # note sur 11
     score_parts: dict = field(default_factory=dict)
     score_line: str = ""
+    issue: Optional[int] = None                    # numéro de l'Issue GitHub (pour les refus)
 
     def to_dict(self) -> dict:
         d = asdict(self)

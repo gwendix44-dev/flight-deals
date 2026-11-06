@@ -21,10 +21,11 @@ def clamp(x: float) -> float:
 
 def min_stay_for(km: float, cfg: dict) -> int:
     """Séjour minimum selon la distance : plus c'est loin, plus c'est long."""
+    extra = cfg["stay_days"].get("min_extra_days", 0)
     for upto, days in cfg["stay_days"]["min_by_distance_km"]:
         if km <= upto:
-            return days
-    return cfg["stay_days"]["min_by_distance_km"][-1][1]
+            return min(days + extra, cfg["stay_days"]["max"])
+    return min(cfg["stay_days"]["min_by_distance_km"][-1][1] + extra, cfg["stay_days"]["max"])
 
 
 def default_stay(km: float, cfg: dict) -> int:

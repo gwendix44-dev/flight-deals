@@ -9,7 +9,7 @@ import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-from . import evaluate, notify, providers
+from . import evaluate, notify, preferences, providers
 from .core import Offer
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -83,7 +83,7 @@ def publish(top: list, dry: bool) -> None:
 
 
 def run(demo: bool, dry: bool) -> int:
-    cfg = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
+    cfg = preferences.load_cfg()      # config.json + préférences apprises de tes refus
     today = date.today()
     budgets = evaluate.load_budgets()
     history = _load(HISTORY, {})

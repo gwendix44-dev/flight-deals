@@ -4,7 +4,7 @@ import unittest
 from datetime import date, timedelta
 from pathlib import Path
 
-from flightdeals import aircraft, evaluate, providers, scoring
+from flightdeals import aircraft, evaluate, preferences, providers, scoring
 from flightdeals.core import Offer, haversine_km
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -122,6 +122,70 @@ class Grid(unittest.TestCase):
                   secrecy=1, separate_tickets=False, cfg=CFG)
         self.assertEqual(scoring.score_deal(total=1500, **kw).parts["budget"], 0)
         self.assertEqual(scoring.score_deal(total=800, **kw).parts["budget"], 2)
+
+
+DEAL = {"offer": {"dest": "BKK", "transfers": 1, "depart": "2026-12-20"}, "dest_city": "Bangkok", "country": "TH",
+        "trip_total": 1300, "stay_days": 12, "distance_km": 9448, "flight_hours": 14.4}
+
+
+class Feedback(unittest.TestCase):
+    def learn(self, text, prefs=None, deal=DEAL):
+        return preferences.learn(prefs or preferences.load_prefs(Path("/nonexistent")), text, deal, CFG)
+
+    def test_too_expensive_lowers_budget_below_refused_deal(self):
+        p, msgs = self.learn("Trop cher pour ce que c'est")
+        self.assertEqual(p["total_cap_eur"], 1150)
+        self.assertTrue(msgs)
+
+    def test_explicit_budget(self):
+        p, _ = self.learn("trop cher, max 1100 €")
+        self.assertEqual(p["total_cap_eur"], 1100)
+
+    def test_too_short_increases_minimum_stay(self):
+        p, _ = self.learn("séjour trop court")
+        self.assertEqual(p["min_stay_extra"], 2)
+        cfg = preferences.apply_prefs(CFG, p)
+        self.assertEqual(scoring.min_stay_for(9448, cfg), 12)       # 10 j de base + 2
+
+    def test_explicit_days(self):
+        p, _ = self.learn("trop court, je veux au moins 14 jours")
+        self.assertEqual(scoring.min_stay_for(9448, preferences.apply_prefs(CFG, p)), 14)
+
+    def test_flight_too_long_vs_stay_too_long(self):
+        p, _ = self.learn("le vol est trop long")
+        self.assertEqual(p["max_flight_hours"], 12.9)
+        self.assertIsNone(p["max_stay_days"])
+        p, _ = self.learn("séjour trop long")
+        self.assertEqual(p["max_stay_days"], 10)
+
+    def test_escales_destination_plane_and_separate_tickets(self):
+        self.assertEqual(self.learn("trop d'escales")[0]["max_transfers"], 0)
+        self.assertEqual(self.learn("destination déjà vue")[0]["excluded_destinations"], ["BKK"])
+        self.assertEqual(self.learn("je ne veux plus de ce pays")[0]["excluded_countries"], ["TH"])
+        self.assertTrue(self.learn("avion pas adapté, monocouloir")[0]["strict_aircraft"])
+        self.assertTrue(self.learn("trop risqué ces billets séparés")[0]["stopovers_disabled"])
+        self.assertEqual(self.learn("mauvaise période")[0]["excluded_months"], [12])
+
+    def test_unknown_reason_changes_nothing(self):
+        p, msgs = self.learn("bof je sais pas trop")
+        self.assertEqual(msgs[0].startswith("Exigence"), True)       # « bof » = pas assez exceptionnel
+        p, msgs = self.learn("hmm non merci")
+        self.assertEqual(msgs, [])
+
+    def test_learned_preferences_filter_offers(self):
+        p, _ = self.learn("destination déjà vue")
+        cfg = preferences.apply_prefs(LOOSE, p)
+        self.assertIsNone(evaluate.evaluate(mk("BKK", 300, days=(60, 72), transfers=1), cfg, {}, BUD, TODAY))
+        self.assertIsNotNone(evaluate.evaluate(mk("SGN", 300, days=(60, 75), transfers=1), cfg, {}, BUD, TODAY))
+        p, _ = self.learn("trop cher, max 900 €")
+        cfg = preferences.apply_prefs(LOOSE, p)
+        self.assertIsNone(evaluate.evaluate(mk("BKK", 500, days=(60, 72), transfers=1), cfg, {}, BUD, TODAY))
+
+    def test_stricter_threshold_and_never_loosens_config(self):
+        p, _ = self.learn("pas assez exceptionnel")
+        self.assertEqual(preferences.apply_prefs(CFG, p)["scoring"]["min_score"], 9.8)
+        p = preferences.load_prefs(Path("/nonexistent")); p["total_cap_eur"] = 5000
+        self.assertEqual(preferences.apply_prefs(CFG, p)["economy"]["total_trip_cap_eur"], 1500)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,44 @@
+name: feedback
+# Se déclenche dès que tu commentes une Issue d'offre : lit ta raison de refus, adapte les préférences, répond.
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: feedback
+  cancel-in-progress: false
+
+jobs:
+  learn:
+    # Dépôt public : n'agir QUE pour le propriétaire, jamais sur les pull requests ni sur les robots.
+    if: >-
+      github.event.issue.pull_request == null &&
+      github.event.comment.user.login == github.repository_owner &&
+      github.event.comment.user.type == 'User'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Apprendre du refus
+        env:
+          # Le texte du commentaire passe par une variable d'environnement, jamais interpolé dans le shell.
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_USER: ${{ github.event.comment.user.login }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -m flightdeals.feedback
+      - name: Sauver les préférences
+        run: |
+          git config user.name "flight-deals-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add docs/preferences.json data/feedback.json
+          git diff --cached --quiet && exit 0
+          git commit -m "feedback: update preferences"
+          for i in 1 2 3; do git pull --rebase -q && git push && break || sleep 3; done

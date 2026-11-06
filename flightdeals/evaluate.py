@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Optional
 
-from . import aircraft, scoring
+from . import aircraft, preferences, scoring
 from .airports import DESTINATIONS, ORIGINS, secrecy
 from .core import Offer, Verdict, estimate_hours, haversine_km
 
@@ -61,6 +61,9 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
             return None
     else:
         stay = scoring.default_stay(km, cfg)
+
+    if preferences.violates(cfg, dest=o.dest, km=km, hours=hours, depart=o.depart, stay=stay):
+        return None
 
     # Contrainte avion (au-delà de 5 h)
     status, note = aircraft.check_route(

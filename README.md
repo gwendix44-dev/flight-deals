@@ -16,6 +16,20 @@ qualité du vol (1,5) · durée adaptée à la distance (1) · coût par jour (1
 Budget total (vols + sur place) : 1 500 € max. Séjour : 3 semaines max, minimum 5 j (≤3 500 km), 7 j (≤7 000 km),
 10 j (≤10 000 km), 14 j au-delà. Les journaux du scan listent les 5 meilleures offres refusées pour régler le seuil.
 
+## Refuser une offre : l'appli apprend
+Deux façons de dire pourquoi tu refuses (« trop cher », « séjour trop court », « trop d'escales »,
+« destination déjà vue », « trop loin », « vol trop long », « avion pas adapté », « trop touristique »,
+« billets séparés trop risqués », « mauvaise période », « pas assez exceptionnel ») :
+1. **Dashboard** : bouton « 👎 Refuser » sur la carte, zone de texte + raisons rapides. Pour envoyer depuis la page,
+   clique sur « 🔑 Connecter GitHub » et colle un token *fine-grained* limité à ce dépôt, permission **Issues : Read and write**
+   (créé sur github.com/settings/personal-access-tokens/new ; il reste dans ton navigateur). Sans token, le texte est copié
+   et l'Issue s'ouvre pour que tu le colles en commentaire.
+2. **Appli GitHub / site** : commente directement l'Issue de l'offre.
+Le workflow `feedback` lit le commentaire aussitôt (uniquement s'il vient du propriétaire du dépôt), met à jour
+`docs/preferences.json`, répond sur l'Issue et la ferme. Les préférences s'appliquent au scan suivant (15 min max).
+Commandes : `/prefs` liste les réglages appris, `/reset` les efface. Le lecteur de raisons fonctionne par mots-clés
+(gratuit, prévisible) : si ta phrase n'est pas comprise, la réponse te le dit.
+
 ## Montages d'escales (billets séparés)
 `python -m flightdeals.combos` (workflow `scan-combos`, toutes les 3 h) assemble des billets aller simple
 origine -> hub -> destination (2 escales max) et les compare au meilleur billet classique (gain minimum 20 %).

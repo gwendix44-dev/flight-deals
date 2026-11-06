@@ -79,3 +79,43 @@ def create_issues(vs: list[Verdict]) -> list[Verdict]:
         except Exception as e:
             print(f"[issues] échec : {e}")
     return sent
+
+
+def dashboard_url() -> str:
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if "/" not in repo:
+        return ""
+    owner, name = repo.split("/", 1)
+    return f"https://{owner.lower()}.github.io/{name}/?fresh=1"      # ?fresh=1 : le dashboard lit les données sans attendre Pages
+
+
+def send_push(vs: list[Verdict]) -> list[Verdict]:
+    """Notification push sur le téléphone (ntfy.sh, gratuit). Retourne les offres réellement notifiées.
+    Le topic (NTFY_TOPIC) est un secret : n'importe qui connaissant son nom peut lire les notifications."""
+    topic = os.environ.get("NTFY_TOPIC")
+    if not topic:
+        print("[ntfy] NTFY_TOPIC absent : pas de notification push (les Issues GitHub restent actives)")
+        return []
+    sent = []
+    for v in vs:
+        o = v.offer
+        biz = v.kind == "business_deal"
+        msg = (f"{o.price_eur:.0f} € A/R en business" if biz else f"Vol {o.price_eur:.0f} € · séjour complet ~{v.trip_total} €"
+               ) + f" · {v.distance_km} km"
+        if v.reasons:
+            msg += "\n" + v.reasons[-1]
+        payload = {"topic": topic, "title": title(v), "message": msg, "priority": 5 if v.kind == "error_fare" else 4,
+                   "tags": ["airplane", "rotating_light"] if v.kind == "error_fare" else ["airplane"]}
+        click = dashboard_url()
+        if click:
+            payload["click"] = click
+        if o.link.startswith("http"):
+            payload["actions"] = [{"action": "view", "label": "Voir l'offre", "url": o.link}]
+        req = urllib.request.Request("https://ntfy.sh/", data=json.dumps(payload).encode(), method="POST",
+                                     headers={"Content-Type": "application/json", "User-Agent": "flight-deals"})
+        try:
+            urllib.request.urlopen(req, timeout=20).read()
+            sent.append(v)
+        except Exception as e:
+            print(f"[ntfy] échec : {e}")
+    return sent

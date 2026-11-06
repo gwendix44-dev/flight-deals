@@ -418,5 +418,62 @@ class Pepite(unittest.TestCase):
         self.assertLessEqual(CFG["max_alerts_per_run"]["scan"], 2)
 
 
+class Phone(unittest.TestCase):
+    def verdict(self, kind_biz=False):
+        if kind_biz:
+            return evaluate.evaluate_business(Offer("CDG", "TYO", 760, cabin="business", link="https://x/y"), CFG, BUD, TODAY)
+        return evaluate.evaluate(mk("ALA", 200, days=(60, 69), flagged_error=True, link="https://x/z"), CFG, {}, BUD, TODAY)
+
+    def capture(self, fn, env):
+        import os, urllib.request
+        from flightdeals import notify
+        sent, old, old_env = [], urllib.request.urlopen, dict(os.environ)
+        class R:
+            def read(self): return b"{}"
+        urllib.request.urlopen = lambda req, timeout=0: (sent.append(json.loads(req.data)), R())[1]
+        os.environ.update(env)
+        try:
+            return fn(notify), sent
+        finally:
+            urllib.request.urlopen = old
+            os.environ.clear(); os.environ.update(old_env)
+
+    def test_push_payload(self):
+        v = self.verdict()
+        out, sent = self.capture(lambda n: n.send_push([v]), {"NTFY_TOPIC": "secret-topic", "GITHUB_REPOSITORY": "Moi/flight-deals"})
+        self.assertEqual(out, [v])
+        p = sent[0]
+        self.assertEqual(p["topic"], "secret-topic")
+        self.assertEqual(p["click"], "https://moi.github.io/flight-deals/?fresh=1")
+        self.assertEqual(p["actions"][0]["url"], "https://x/z")
+        self.assertEqual(p["priority"], 5)                                   # erreur de prix : priorité maximale
+        self.assertIn("séjour complet", p["message"])
+
+    def test_business_push_shows_flight_price_not_stay(self):
+        v = self.verdict(kind_biz=True)
+        _, sent = self.capture(lambda n: n.send_push([v]), {"NTFY_TOPIC": "t"})
+        self.assertIn("760 € A/R en business", sent[0]["message"])
+        self.assertNotIn("séjour complet", sent[0]["message"])
+
+    def test_no_topic_no_push(self):
+        import os
+        os.environ.pop("NTFY_TOPIC", None)
+        out, sent = self.capture(lambda n: n.send_push([self.verdict()]), {})
+        self.assertEqual((out, sent), ([], []))
+
+    def test_cleanup_only_closes_alert_issues(self):
+        from flightdeals import cleanup
+        pages = [[{"number": 1, "labels": [{"name": "bonne-affaire"}]},
+                  {"number": 2, "labels": [{"name": "bug"}]},                       # pas une alerte de l'appli
+                  {"number": 3, "labels": [{"name": "business"}], "pull_request": {}}],   # une PR : jamais touchée
+                 [{"number": 4, "labels": [{"name": "erreur-de-prix"}]}], []]
+        orig = cleanup._api
+        cleanup._api = lambda method, path, payload=None: pages.pop(0)
+        try:
+            self.assertEqual(cleanup.open_alert_issues(), [1, 4])
+        finally:
+            cleanup._api = orig
+
+
 if __name__ == "__main__":
     unittest.main()

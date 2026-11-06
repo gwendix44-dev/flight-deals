@@ -48,7 +48,7 @@
 </style>
 </head>
 <body>
-<header><h1>✈️ Flight Deals</h1><span class="mut" id="upd">chargement…</span><span class="mut" id="cnt"></span><button class="refuse" id="tok" title="Nécessaire pour envoyer un refus depuis cette page">🔑 Connecter GitHub</button></header>
+<header><h1>✈️ Flight Deals</h1><span class="mut" id="upd">chargement…</span><span class="mut" id="cnt"></span><button class="refuse" id="ntf" title="Notifications instantanées quand l'appli est ouverte">🔔 Notifications</button><button class="refuse" id="tok" title="Nécessaire pour envoyer un refus depuis cette page">🔑 Connecter GitHub</button></header>
 <nav id="sections"></nav>
 <nav id="filters"></nav>
 <main id="list"></main>
@@ -139,9 +139,21 @@ function buildFilters() {
   nav.onclick = e => { const k = e.target.dataset.k; if (k) { filter = k; buildFilters(); render(); } };
 }
 
+let useApi = new URLSearchParams(location.search).has("fresh");    // ouvert depuis une notification
+async function fetchJSON(name) {
+  if (useApi) {
+    try {                                                           // GitHub API : à jour dès le commit du robot, sans le délai de Pages
+      const r = await fetch(`https://api.github.com/repos/${REPO[0]}/${REPO[1]}/contents/docs/${name}?ref=main`,
+        { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" });
+      if (r.ok) return await r.json();
+    } catch {}
+  }
+  return await (await fetch(name + "?t=" + Date.now(), { cache: "no-store" })).json();
+}
+
 async function load() {
   try {
-    const r = await fetch("deals.json?t=" + Date.now()); const j = await r.json();
+    const j = await fetchJSON("deals.json");
     deals = j.deals || [];
     document.getElementById("cnt").textContent = `Pépites sur 12 mois : ${j.pepites_12m || 0} (objectif 3 à 5)`;
     document.getElementById("upd").textContent = j.updated ? "Dernier scan : " + new Date(j.updated).toLocaleString("fr-FR") : "Aucun scan";
@@ -151,14 +163,39 @@ async function load() {
     localStorage.setItem("seen", latest);
   } catch { document.getElementById("upd").textContent = "Impossible de charger les données"; }
   try {
-    const p = await (await fetch("preferences.json?t=" + Date.now())).json();
+    const p = await fetchJSON("preferences.json");
     (p.refused_issues || []).forEach(n => refused.add(n));
     const rows = Object.entries(p).filter(([k, v]) => k !== "refused_issues" && v !== null && v !== false && v !== 0 && !(Array.isArray(v) && !v.length));
     document.getElementById("prefs").innerHTML = rows.length ? rows.map(([k, v]) => `<div>${esc(k)} : ${esc(Array.isArray(v) ? v.join(", ") : v)}</div>`).join("") : "Aucun pour l'instant.";
   } catch {}
   buildFilters(); render();
 }
-buildFilters(); load(); setInterval(load, 5 * 60 * 1000);
+buildFilters(); load(); setInterval(load, 2 * 60 * 1000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });   // retour sur l'appli = données fraîches
+window.addEventListener("focus", load);
+
+// Notifications instantanées tant que l'appli est ouverte (la notification du téléphone vient de l'appli ntfy).
+let es = null;
+function listenNtfy() {
+  const topic = localStorage.getItem("ntfytopic");
+  if (es) { es.close(); es = null; }
+  if (!topic) return;
+  es = new EventSource(`https://ntfy.sh/${encodeURIComponent(topic)}/sse`);
+  es.onmessage = ev => {
+    let m = {}; try { m = JSON.parse(ev.data); } catch {}
+    if (m.event && m.event !== "message") return;
+    useApi = true; load(); setTimeout(() => { useApi = false; load(); }, 90 * 1000);       // puis relecture une fois Pages déployé
+    if ("Notification" in window && Notification.permission === "granted")
+      new Notification(m.title || "Nouvelle pépite", { body: m.message || "" });
+  };
+}
+document.getElementById("ntf").onclick = () => {
+  const t = prompt("Nom de ton topic ntfy (le même que dans l'appli ntfy). Laisse vide pour désactiver.", localStorage.getItem("ntfytopic") || "");
+  if (t === null) return;
+  t.trim() ? localStorage.setItem("ntfytopic", t.trim()) : localStorage.removeItem("ntfytopic");
+  listenNtfy();
+};
+listenNtfy();
 if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 </script>

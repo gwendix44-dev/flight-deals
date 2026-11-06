@@ -100,7 +100,9 @@ def dispatch(candidates, seen: dict, cfg: dict, dry: bool, limit: int, verifier=
     n_year = alerts_last_year()
     for i, v in enumerate(top):
         v.reasons.append(f"Pépite n°{n_year + i + 1} sur les 12 derniers mois (objectif : 3 à 5 par an)")
-    sent = notify.create_issues(top)
+    sent_issues = notify.create_issues(top)
+    pushed = notify.send_push(top)
+    sent = list({id(v): v for v in [*sent_issues, *pushed]}.values())      # alerté par au moins un canal
     log = _load(ALERTS, [])
     now_iso = datetime.now(timezone.utc).isoformat(timespec="seconds")
     for v in sent:
@@ -110,7 +112,7 @@ def dispatch(candidates, seen: dict, cfg: dict, dry: bool, limit: int, verifier=
     for v in sent:
         k = dedupe_key(v.offer)
         seen[k] = min(v.offer.price_eur, seen.get(k, 1e9))
-    print(f"{len(sent)} alerte(s) envoyée(s)")
+    print(f"{len(sent)} alerte(s) envoyée(s) (Issues : {len(sent_issues)}, push : {len(pushed)})")
     return top      # le dashboard affiche les retenues, même si l'envoi a échoué
 
 

@@ -55,7 +55,18 @@ def dispatch(candidates, seen: dict, cfg: dict, dry: bool, limit: int) -> list:
         if prev is None or v.offer.price_eur <= prev * drop:
             fresh.append(v)
     fresh.sort(key=lambda v: (-v.score, v.trip_total))    # meilleure note d'abord
-    top = fresh[:limit]
+    # diversité : une seule alerte par destination et au plus N par région du monde, sinon l'Asie rafle tout
+    from .airports import region_of
+    top, per_region, dests = [], {}, set()
+    for v in fresh:
+        reg = region_of(v.country)
+        if v.offer.dest in dests or per_region.get(reg, 0) >= cfg.get("max_alerts_per_region", 2):
+            continue
+        top.append(v)
+        dests.add(v.offer.dest)
+        per_region[reg] = per_region.get(reg, 0) + 1
+        if len(top) >= limit:
+            break
     print(f"{len(candidates)} affaires, {len(fresh)} nouvelles, {len(top)} retenues pour alerte")
     if dry:
         for v in top:

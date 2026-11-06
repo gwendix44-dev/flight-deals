@@ -91,5 +91,6 @@
     "value_full_per_day": 50,
     "value_zero_per_day": 100,
     "error_bench_disc": 0.75
-  }
+  },
+  "max_alerts_per_region": 2
 }

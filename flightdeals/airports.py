@@ -222,3 +222,20 @@ def secrecy(code: str) -> float:
     if code in OFFBEAT:
         return 1.5
     return 1.0
+
+
+REGIONS = {
+    "asie": {"JP", "TH", "VN", "ID", "MY", "SG", "PH", "KH", "IN", "NP", "LK", "KR", "TW", "HK", "CN", "KZ", "KG",
+             "UZ", "MN", "LA", "MM", "BD", "MV"},
+    "moyen-orient": {"AE", "QA", "JO", "IL", "OM"},
+    "afrique": {"SN", "GH", "ET", "KE", "TZ", "ZA", "MU", "MG", "RE", "CV", "RW", "NA", "ZM", "CI", "TG", "BJ", "CM",
+                "UG", "SC"},
+    "amerique-nord": {"US", "CA"},
+    "amerique-latine": {"MX", "CO", "PE", "CL", "AR", "BR", "EC", "CU", "DO", "CR", "PA", "BO", "MQ", "GP", "UY", "PY",
+                        "GT", "BZ", "SV", "JM", "BB"},
+    "oceanie": {"AU", "NZ", "FJ", "PF", "NC"},
+}
+
+
+def region_of(country: str) -> str:
+    return next((r for r, cs in REGIONS.items() if country in cs), "autre")

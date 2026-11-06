@@ -188,5 +188,20 @@ class Feedback(unittest.TestCase):
         self.assertEqual(preferences.apply_prefs(CFG, p)["economy"]["total_trip_cap_eur"], 1500)
 
 
+class Diversity(unittest.TestCase):
+    def test_no_single_region_takes_everything(self):
+        from flightdeals import main
+        cfg = copy.deepcopy(LOOSE)
+        vs = []
+        for dest, org in (("BKK", "CDG"), ("HKT", "CDG"), ("SGN", "CDG"), ("DPS", "MAD"), ("BOG", "CDG"), ("LIM", "CDG")):
+            v = evaluate.evaluate(mk(dest, 200, origin=org, days=(60, 75), transfers=1), cfg, {}, BUD, TODAY)
+            if v:
+                vs.append(v)
+        top = main.dispatch(vs, {}, cfg, True, 5)
+        asia = [v for v in top if v.country in {"TH", "VN", "ID"}]
+        self.assertLessEqual(len(asia), 2)
+        self.assertEqual(len({v.offer.dest for v in top}), len(top))     # pas deux fois la même destination
+
+
 if __name__ == "__main__":
     unittest.main()

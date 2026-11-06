@@ -87,7 +87,6 @@ def run(demo: bool, dry: bool) -> int:
         notify.create_issues(new)
 
     if not dry:
-        _save(DEALS, store)
         _save(HISTORY, history)
         _save(SEEN, dict(list(seen.items())[-5000:]))
     return 0

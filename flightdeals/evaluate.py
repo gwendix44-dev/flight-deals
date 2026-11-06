@@ -38,7 +38,7 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
     today = today or date.today()
     if o.origin not in ORIGINS or o.dest not in DESTINATIONS:
         return None
-    if o.price_eur <= 0:
+    if o.price_eur <= 0 or o.transfers > cfg.get("max_transfers", 2):
         return None
 
     # Fenêtre de départ : 6 mois max

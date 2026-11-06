@@ -70,6 +70,10 @@ class T(unittest.TestCase):
         b = providers.parse_deal_title("Business class: Madrid to Bogota from €699 roundtrip")
         self.assertEqual(b.cabin, "business")
 
+    def test_max_two_transfers(self):
+        self.assertIsNotNone(self.ev(mk("BKK", 300, transfers=2)))
+        self.assertIsNone(self.ev(mk("BKK", 300, transfers=3)))
+
     def test_north_africa_excluded(self):
         for d in ("RAK", "CMN", "TUN", "CAI", "HRG"):
             self.assertIsNone(self.ev(mk(d, 60, days=(30, 37))), d)

@@ -56,5 +56,6 @@
     "TN",
     "LY",
     "EG"
-  ]
+  ],
+  "max_transfers": 2
 }

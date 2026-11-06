@@ -1,13 +1,16 @@
+import copy
 import json
 import unittest
 from datetime import date, timedelta
 from pathlib import Path
 
-from flightdeals import aircraft, evaluate, providers
+from flightdeals import aircraft, evaluate, providers, scoring
 from flightdeals.core import Offer, haversine_km
 
 ROOT = Path(__file__).resolve().parent.parent
 CFG = json.loads((ROOT / "config.json").read_text())
+LOOSE = copy.deepcopy(CFG)
+LOOSE["scoring"]["min_score"] = 0          # teste les règles dures indépendamment de la note
 BUD = evaluate.load_budgets()
 TODAY = date(2026, 11, 6)
 
@@ -17,40 +20,51 @@ def mk(dest, price, origin="CDG", days=(60, 75), **kw):
                  return_date=TODAY + timedelta(days=days[1]), **kw)
 
 
-class T(unittest.TestCase):
-    def ev(self, o, hist=None):
-        return evaluate.evaluate(o, CFG, hist or {}, BUD, TODAY)
+class Rules(unittest.TestCase):
+    def ev(self, o, hist=None, cfg=LOOSE):
+        return evaluate.evaluate(o, cfg, hist or {}, BUD, TODAY)
 
     def test_haversine_paris_tokyo(self):
         self.assertAlmostEqual(haversine_km(49.013, 2.55, 35.55, 139.78), 9710, delta=60)
 
-    def test_flight_cap_long(self):
-        self.assertIsNotNone(self.ev(mk("BKK", 400, transfers=1)))
-        self.assertIsNone(self.ev(mk("BKK", 650, transfers=1)))
+    def test_total_budget_1500(self):
+        self.assertIsNotNone(self.ev(mk("BKK", 300, days=(60, 74), transfers=1)))    # ~1100 € tout compris
+        self.assertIsNone(self.ev(mk("TYO", 700, days=(60, 75), transfers=1)))       # Japon : > 1500 € au total
 
-    def test_total_cap_short_haul(self):
-        # CDG-NYC ~5850 km: total cap 1000 €. 10 j à 105 €/j dépasse
-        self.assertIsNone(self.ev(mk("NYC", 250, days=(30, 40))))
-        # Accra: pas cher, séjour court
-        self.assertIsNotNone(self.ev(mk("ACC", 80, days=(30, 37))))
+    def test_min_stay_grows_with_distance(self):
+        for km, d in ((3000, 5), (5000, 7), (8000, 10), (12000, 14)):
+            self.assertEqual(scoring.min_stay_for(km, CFG), d)
+
+    def test_stay_window(self):
+        self.assertIsNone(self.ev(mk("BKK", 300, days=(60, 66), transfers=1)))       # 6 j : trop court pour 9 400 km
+        self.assertIsNone(self.ev(mk("BKK", 300, days=(60, 85), transfers=1)))       # 25 j : > 3 semaines
+        self.assertIsNotNone(self.ev(mk("BKK", 300, days=(60, 72), transfers=1)))    # 12 j : ok
+        self.assertIsNotNone(self.ev(mk("TLV", 200, days=(60, 65))))                 # 5 j suffisent à 3 300 km
+        self.assertIsNone(self.ev(mk("TLV", 200, days=(60, 64))))                    # mais pas 4
 
     def test_six_months_window(self):
-        self.assertIsNone(self.ev(mk("BKK", 300, days=(250, 270), transfers=1)))
+        self.assertIsNone(self.ev(mk("BKK", 300, days=(250, 264), transfers=1)))
 
     def test_business(self):
-        v = self.ev(mk("BOG", 760, origin="MAD", cabin="business"))
+        v = self.ev(mk("BOG", 760, origin="MAD", days=(45, 60), cabin="business"))
         self.assertEqual(v.kind, "business_deal")
-        self.assertIsNone(self.ev(mk("BOG", 900, origin="MAD", cabin="business")))
-        self.assertIsNone(self.ev(mk("DKR", 300, origin="MAD", cabin="business")))  # trop court
+        self.assertIsNone(self.ev(mk("BOG", 900, origin="MAD", days=(45, 60), cabin="business")))
+        self.assertIsNone(self.ev(mk("DKR", 300, origin="MAD", days=(45, 52), cabin="business")))   # trop court
 
     def test_error_fare_by_history(self):
         hist = {"CDG-BKK-economy": [600, 650, 580, 620, 610, 640]}
-        v = self.ev(mk("BKK", 250, transfers=1), hist)
+        v = self.ev(mk("BKK", 250, days=(60, 72), transfers=1), hist)
         self.assertEqual(v.kind, "error_fare")
-        self.assertGreaterEqual(v.discount_pct, 50)
+
+    def test_max_two_transfers(self):
+        self.assertIsNotNone(self.ev(mk("BKK", 300, days=(60, 72), transfers=2)))
+        self.assertIsNone(self.ev(mk("BKK", 300, days=(60, 72), transfers=3)))
+
+    def test_north_africa_excluded(self):
+        for d in ("RAK", "CMN", "TUN", "CAI", "HRG"):
+            self.assertIsNone(self.ev(mk(d, 60, days=(30, 37))), d)
 
     def test_narrowbody_only_route_rejected(self):
-        # Route fictive servie uniquement en A320 : doit être rejetée au-delà de 5 h
         orig = aircraft._load_routes
         aircraft._load_routes = lambda p: {("CDG", "DXB"): {"320"}}
         try:
@@ -63,6 +77,10 @@ class T(unittest.TestCase):
         st, _ = aircraft.check_route("CDG", ["RAK"], 0, 3.5, 5, "x")
         self.assertEqual(st, "not_required")
 
+    def test_unknown_dates_use_distance_based_stay(self):
+        o = Offer("CDG", "ACC", 90, depart=TODAY + timedelta(days=30))
+        self.assertEqual(self.ev(o).stay_days, scoring.default_stay(5000, CFG))
+
     def test_rss_parse(self):
         o = providers.parse_deal_title("ERROR FARE: Paris to Tokyo, Japan for only €329 roundtrip")
         self.assertEqual((o.origin, o.dest, o.price_eur, o.flagged_error), ("CDG", "TYO", 329.0, True))
@@ -70,27 +88,40 @@ class T(unittest.TestCase):
         b = providers.parse_deal_title("Business class: Madrid to Bogota from €699 roundtrip")
         self.assertEqual(b.cabin, "business")
 
-    def test_max_two_transfers(self):
-        self.assertIsNotNone(self.ev(mk("BKK", 300, transfers=2)))
-        self.assertIsNone(self.ev(mk("BKK", 300, transfers=3)))
-
-    def test_north_africa_excluded(self):
-        for d in ("RAK", "CMN", "TUN", "CAI", "HRG"):
-            self.assertIsNone(self.ev(mk(d, 60, days=(30, 37))), d)
-
-    def test_tokyo_rejected_when_total_too_high(self):
-        # vol bon marché mais séjour au Japon (70 €/j) -> au-dessus de 1400 € au total
-        self.assertIsNone(self.ev(mk("TYO", 380)))
-
     def test_rss_tolerates_broken_xml(self):
         raw = '<rss><channel><item><title><![CDATA[Paris to Bali for €399 roundtrip]]></title><link>https://x/1</link>' \
               '<description>a & b <br></description></item></channel>'
-        items = providers._rss_items(raw)
-        self.assertEqual(items, [("Paris to Bali for €399 roundtrip", "https://x/1")])
+        self.assertEqual(providers._rss_items(raw), [("Paris to Bali for €399 roundtrip", "https://x/1")])
 
-    def test_unknown_stay_uses_default(self):
-        o = Offer("CDG", "ACC", 90, depart=TODAY + timedelta(days=30))
-        self.assertEqual(self.ev(o).stay_days, 14)
+
+class Grid(unittest.TestCase):
+    def test_max_is_11(self):
+        s = scoring.score_deal(price=50, km=9000, cabin="economy", total=500, stay=12, stops=0,
+                               aircraft_status="widebody_probable", secrecy=1.5, separate_tickets=False,
+                               cfg=CFG, flagged_error=True)
+        self.assertEqual(s.total, 11.0)
+
+    def test_mundane_deal_rejected_by_strict_grid(self):
+        o = mk("BKK", 400, days=(60, 72), transfers=1)
+        self.assertIsNone(evaluate.evaluate(o, CFG, {}, BUD, TODAY))
+
+    def test_exceptional_offbeat_error_fare_accepted(self):
+        o = mk("ALA", 200, days=(60, 69), flagged_error=True)       # Almaty direct, erreur de prix signalée
+        v = evaluate.evaluate(o, CFG, {}, BUD, TODAY)
+        self.assertIsNotNone(v)
+        self.assertGreaterEqual(v.score, 9.5)
+        self.assertEqual(v.kind, "error_fare")
+
+    def test_secret_destination_scores_higher_than_mainstream(self):
+        kw = dict(price=250, km=7000, cabin="economy", total=700, stay=10, stops=1, aircraft_status="unverified",
+                  separate_tickets=False, cfg=CFG)
+        self.assertGreater(scoring.score_deal(secrecy=1.5, **kw).total, scoring.score_deal(secrecy=0.0, **kw).total)
+
+    def test_budget_points_fall_to_zero_at_cap(self):
+        kw = dict(price=300, km=7000, cabin="economy", stay=10, stops=0, aircraft_status="unverified",
+                  secrecy=1, separate_tickets=False, cfg=CFG)
+        self.assertEqual(scoring.score_deal(total=1500, **kw).parts["budget"], 0)
+        self.assertEqual(scoring.score_deal(total=800, **kw).parts["budget"], 2)
 
 
 if __name__ == "__main__":

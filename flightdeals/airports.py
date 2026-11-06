@@ -109,6 +109,40 @@ DESTINATIONS = {
     "SYD": ("Sydney", "AU", -33.95, 151.18, []),
     "MEL": ("Melbourne", "AU", -37.67, 144.84, []),
     "AKL": ("Auckland", "NZ", -37.01, 174.79, []),
+    # --- Destinations hors des sentiers battus ---
+    "ALA": ("Almaty", "KZ", 43.35, 77.04, []),
+    "FRU": ("Bichkek", "KG", 43.06, 74.48, []),
+    "SKD": ("Samarcande", "UZ", 39.70, 66.98, []),
+    "MCT": ("Mascate", "OM", 23.59, 58.28, []),
+    "ULN": ("Oulan-Bator", "MN", 47.84, 106.77, []),
+    "LPQ": ("Luang Prabang", "LA", 19.90, 102.16, []),
+    "VTE": ("Vientiane", "LA", 17.99, 102.56, []),
+    "RGN": ("Yangon", "MM", 16.91, 96.13, []),
+    "DAC": ("Dacca", "BD", 23.84, 90.40, []),
+    "BKI": ("Kota Kinabalu", "MY", 5.94, 116.05, []),
+    "DAD": ("Da Nang", "VN", 16.04, 108.20, []),
+    "KGL": ("Kigali", "RW", -1.97, 30.14, []),
+    "WDH": ("Windhoek", "NA", -22.48, 17.47, []),
+    "LUN": ("Lusaka", "ZM", -15.33, 28.45, []),
+    "ABJ": ("Abidjan", "CI", 5.26, -3.93, []),
+    "LFW": ("Lomé", "TG", 6.17, 1.25, []),
+    "COO": ("Cotonou", "BJ", 6.36, 2.38, []),
+    "DLA": ("Douala", "CM", 4.01, 9.72, []),
+    "EBB": ("Entebbe", "UG", 0.04, 32.44, []),
+    "DAR": ("Dar es Salaam", "TZ", -6.88, 39.20, []),
+    "SEZ": ("Seychelles", "SC", -4.67, 55.52, []),
+    "MVD": ("Montevideo", "UY", -34.84, -56.03, []),
+    "ASU": ("Asunción", "PY", -25.24, -57.52, []),
+    "VVI": ("Santa Cruz", "BO", -17.64, -63.14, []),
+    "CTG": ("Carthagène", "CO", 10.44, -75.51, []),
+    "GUA": ("Guatemala", "GT", 14.58, -90.53, []),
+    "BZE": ("Belize", "BZ", 17.54, -88.31, []),
+    "SAL": ("San Salvador", "SV", 13.44, -89.06, []),
+    "KIN": ("Kingston", "JM", 17.94, -76.79, []),
+    "BGI": ("Barbade", "BB", 13.07, -59.49, []),
+    "NAN": ("Fidji (Nadi)", "FJ", -17.76, 177.44, []),
+    "PPT": ("Tahiti", "PF", -17.56, -149.61, []),
+    "NOU": ("Nouméa", "NC", -22.01, 166.21, []),
 }
 
 # Mots-clés pour reconnaître une destination dans le titre d'un bon plan.
@@ -167,3 +201,24 @@ def airports_of(code: str) -> list:
     if code in DESTINATIONS:
         return DESTINATIONS[code][4] or [code]
     return [code]
+
+
+# Rareté d'une destination (0 = tout le monde y va, 1.5 = hors des sentiers battus).
+MAINSTREAM = {"TYO", "OSA", "BKK", "HKT", "DPS", "NYC", "LAX", "MIA", "DXB", "SIN", "SYD", "MEL", "CUN", "PUJ",
+              "DEL", "BOM", "HKG", "KUL", "BJS", "SHA", "SFO", "YTO", "YMQ"}
+KNOWN = {"SEL", "TPE", "SGN", "HAN", "MNL", "CPT", "MRU", "AKL", "BOG", "LIM", "MEX", "BUE", "RIO", "SAO",
+         "JNB", "NBO", "ZNZ", "DOH", "AUH", "GOI", "CMB", "KTM", "HAV", "BOS", "YVR", "CNX", "REP", "PNH",
+         "SJO", "MLE", "TLV", "AMM"}
+OFFBEAT = {"ALA", "FRU", "SKD", "MCT", "ULN", "LPQ", "VTE", "RGN", "DAC", "BKI", "DAD", "KGL", "WDH", "LUN", "ABJ",
+           "LFW", "COO", "DLA", "EBB", "DAR", "SEZ", "MVD", "ASU", "VVI", "CTG", "GUA", "BZE", "SAL", "KIN", "BGI",
+           "NAN", "PPT", "NOU", "TAS", "ADD", "DKR", "ACC", "LPB", "UIO", "CUZ", "MDE", "TNR", "SID", "JRO"}
+
+
+def secrecy(code: str) -> float:
+    if code in MAINSTREAM:
+        return 0.0
+    if code in KNOWN:
+        return 0.5
+    if code in OFFBEAT:
+        return 1.5
+    return 1.0

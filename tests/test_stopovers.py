@@ -7,7 +7,10 @@ from flightdeals import evaluate, stopovers
 from flightdeals.core import Leg
 
 ROOT = Path(__file__).resolve().parent.parent
+import copy
 CFG = json.loads((ROOT / "config.json").read_text())
+LOOSE = copy.deepcopy(CFG)
+LOOSE["scoring"]["min_score"] = 0
 BUD = evaluate.load_budgets()
 ROUTES = str(ROOT / "data" / "routes.dat")
 TODAY = date(2026, 11, 6)
@@ -68,26 +71,30 @@ class Build(unittest.TestCase):
 
     def test_combo_ok_and_filters(self):
         path = stopovers.Path([self.l1, self.l2], [("LIS", "short", 0)])
-        v = stopovers.evaluate_combo(path, self.ret(), 700, CFG, BUD, ROUTES, TODAY)
+        ev = lambda ret, base: stopovers.evaluate_combo(path, ret, base, LOOSE, BUD, ROUTES, TODAY)
+        v = ev(self.ret(), 700)
         self.assertIsNotNone(v)
         self.assertEqual(v.kind, "stopover_deal")
         self.assertGreaterEqual(v.saving_pct, 20)
         self.assertEqual(v.offer.price_eur, 450)
-        # gain insuffisant (< 20 %)
-        self.assertIsNone(stopovers.evaluate_combo(path, self.ret(), 520, CFG, BUD, ROUTES, TODAY))
-        # pas de prix de référence
-        self.assertIsNone(stopovers.evaluate_combo(path, self.ret(), None, CFG, BUD, ROUTES, TODAY))
-        # séjour trop court
-        self.assertIsNone(stopovers.evaluate_combo(path, self.ret(days=1), 700, CFG, BUD, ROUTES, TODAY))
-        # plafond de vol dépassé (> 600 €)
-        self.assertIsNone(stopovers.evaluate_combo(path, self.ret(price=500), 2000, CFG, BUD, ROUTES, TODAY))
+        self.assertGreater(v.score, 0)
+        self.assertIsNone(ev(self.ret(), 520))                  # gain < 20 %
+        self.assertIsNone(ev(self.ret(), None))                 # pas de prix de référence
+        self.assertIsNone(ev(self.ret(days=2), 700))            # séjour trop court pour 9 400 km
+        self.assertIsNone(ev(self.ret(days=30), 700))           # plus de 3 semaines
+        self.assertIsNone(ev(self.ret(price=1200), 2500))       # > 1500 € tout compris
+
+    def test_strict_grid_applies_to_combos(self):
+        path = stopovers.Path([self.l1, self.l2], [("LIS", "short", 0)])
+        # Bangkok est une destination grand public et 2 billets séparés : sous 9,5/11
+        self.assertIsNone(stopovers.evaluate_combo(path, self.ret(), 700, CFG, BUD, ROUTES, TODAY))
 
     def test_stopover_cost_counted(self):
         path = stopovers.Path([self.l1, self.l2b, self.l3], [("LIS", "short", 0), ("IST", "stopover", 2)])
-        v = stopovers.evaluate_combo(path, self.ret(days=25), 700, CFG, BUD, ROUTES, TODAY)
+        v = stopovers.evaluate_combo(path, self.ret(days=20), 700, LOOSE, BUD, ROUTES, TODAY)
         self.assertIsNotNone(v)
         self.assertTrue(any("mini-étape" in x for x in v.itinerary))
-        self.assertGreater(v.stay_cost, 600)   # séjour + hébergement de la mini-étape
+        self.assertGreater(v.stay_cost, 600)
 
 
 if __name__ == "__main__":

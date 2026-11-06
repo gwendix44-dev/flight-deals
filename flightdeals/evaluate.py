@@ -7,8 +7,8 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Optional
 
-from . import aircraft
-from .airports import DESTINATIONS, ORIGINS
+from . import aircraft, scoring
+from .airports import DESTINATIONS, ORIGINS, secrecy
 from .core import Offer, Verdict, estimate_hours, haversine_km
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -18,8 +18,7 @@ def load_budgets() -> dict:
     return json.loads((ROOT / "data" / "budgets.json").read_text(encoding="utf-8"))
 
 
-def _tier(table: dict, km: float, up_key="up_to_km"):
-    return table["short"] if km <= table[up_key] else table["long"]
+NEAR_MISSES: list = []      # (note, description) des meilleures offres refusées, pour régler le seuil
 
 
 def route_key(o: Offer) -> str:
@@ -46,21 +45,22 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
         if o.depart < today or o.depart > today + timedelta(days=30 * cfg["months_ahead"]):
             return None
 
-    # Durée du séjour
-    sd = cfg["stay_days"]
-    if o.depart and o.return_date:
-        stay = (o.return_date - o.depart).days
-        if not sd["min"] <= stay <= sd["max"]:
-            return None
-    else:
-        stay = sd["default_when_unknown"]
-
     city, cc, dlat, dlon, dest_airports = DESTINATIONS[o.dest]
     if cc in cfg.get("excluded_countries", []):
         return None
     _, olat, olon = ORIGINS[o.origin]
     km = haversine_km(olat, olon, dlat, dlon)
     hours = estimate_hours(km, o.transfers, o.duration_min)
+
+    # Durée du séjour : plus la destination est loin, plus le séjour minimum est long (max 3 semaines)
+    sd = cfg["stay_days"]
+    lo = scoring.min_stay_for(km, cfg)
+    if o.depart and o.return_date:
+        stay = (o.return_date - o.depart).days
+        if not lo <= stay <= sd["max"]:
+            return None
+    else:
+        stay = scoring.default_stay(km, cfg)
 
     # Contrainte avion (au-delà de 5 h)
     status, note = aircraft.check_route(
@@ -72,45 +72,50 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
     if status == "unverified" and cfg["aircraft"]["strict"]:
         return None
 
-    # Budget de séjour (backpacker éco)
+    # Budget du séjour entier (backpacker éco) : vols + hébergement + nourriture + transports + activités
     daily = budgets.get(cc)
     if daily is None:
         return None
     eco = cfg["economy"]
     stay_cost = (daily * stay + eco["extras_flat_eur"]) * (1 + eco["buffer_pct"] / 100)
     total = o.price_eur + stay_cost
-
-    disc = median_discount(history, o, cfg["anomaly"]["min_history"])
-    reasons: list[str] = []
+    if total > eco["total_trip_cap_eur"]:
+        return None
+    if eco.get("flight_cap_eur") and o.price_eur > eco["flight_cap_eur"]:
+        return None
 
     if o.cabin == "business":
         b = cfg["business"]
-        if not b["enabled"] or km < b["min_km"] or o.price_eur > b["flight_cap_eur"]:
+        if not b["enabled"] or km < b["min_km"] or o.price_eur > b["flight_cap_eur"] or status == "not_required":
             return None
-        if status == "not_required":
-            return None  # court-courrier : pas pertinent
-        reasons.append(f"Business A/R à {o.price_eur:.0f} € (plafond {b['flight_cap_eur']} €)")
-        kind = "business_deal"
-    else:
-        flight_cap = _tier(eco["flight_cap_eur"], km)
-        total_cap = _tier(eco["total_trip_cap_eur"], km)
-        if o.price_eur > flight_cap or total > total_cap:
-            return None
-        reasons.append(f"Vol {o.price_eur:.0f} € ≤ plafond {flight_cap} € ; séjour complet ≈ {total:.0f} € ≤ {total_cap} €")
-        kind = "deal"
 
-    if o.flagged_error or (disc is not None and disc >= cfg["anomaly"]["error_fare_discount"]):
-        kind = "error_fare" if o.cabin != "business" else kind
-        reasons.append("Erreur de prix probable" + (f" (−{disc * 100:.0f} % vs médiane de la ligne)" if disc is not None else " (signalée par la source)"))
-    elif disc is not None and disc >= cfg["anomaly"]["unusual_discount"]:
-        reasons.append(f"Prix inhabituel : −{disc * 100:.0f} % vs médiane de la ligne")
+    prices = history.get(route_key(o), [])
+    min_hist = cfg["anomaly"]["min_history"]
+    hist_median = statistics.median(prices) if len(prices) >= min_hist else None
+    hist_disc = (1 - o.price_eur / hist_median) if hist_median else None
+
+    sc = scoring.score_deal(
+        price=o.price_eur, km=km, cabin=o.cabin, total=total, stay=stay, stops=o.transfers,
+        aircraft_status=status, secrecy=secrecy(o.dest), separate_tickets=False, cfg=cfg,
+        hist_median=hist_median, hist_disc=hist_disc, flagged_error=o.flagged_error)
+    if sc.total < cfg["scoring"]["min_score"]:
+        NEAR_MISSES.append((sc.total, f"{o.origin}→{city} {o.price_eur:.0f}€ (séjour ~{total:.0f}€) : {sc.line()}"))
+        return None
+
+    kind = "business_deal" if o.cabin == "business" else ("error_fare" if sc.error_fare else "deal")
+    reasons = [f"Note {sc.total}/11 (seuil {cfg['scoring']['min_score']})",
+               f"Vol {o.price_eur:.0f} € ; séjour complet ≈ {total:.0f} € (budget max {eco['total_trip_cap_eur']} €)",
+               f"−{sc.discount * 100:.0f} % vs prix habituel de la ligne" + (" (historique)" if hist_median else " (estimation selon la distance)")]
+    if sc.error_fare:
+        reasons.append("Erreur de prix probable")
 
     return Verdict(
         kind=kind, offer=o, dest_city=city, country=cc, distance_km=round(km),
         flight_hours=round(hours, 1), stay_days=stay, daily_budget=daily,
         stay_cost=round(stay_cost), trip_total=round(total),
-        discount_pct=round(disc * 100) if disc is not None else None,
+        discount_pct=round(sc.discount * 100),
         aircraft=status, aircraft_note=note, reasons=reasons,
+        score=sc.total, score_parts=sc.parts, score_line=sc.line(),
     )
 
 

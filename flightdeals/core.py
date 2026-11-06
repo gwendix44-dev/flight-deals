@@ -43,6 +43,9 @@ class Verdict:
     itinerary: list = field(default_factory=list)   # lignes détaillées (montages d'escales)
     baseline_eur: Optional[float] = None
     saving_pct: Optional[int] = None
+    score: float = 0.0                              # note sur 11
+    score_parts: dict = field(default_factory=dict)
+    score_line: str = ""
 
     def to_dict(self) -> dict:
         d = asdict(self)

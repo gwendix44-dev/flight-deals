@@ -18,14 +18,14 @@ AIRCRAFT = {
 
 def title(v: Verdict) -> str:
     o = v.offer
-    return f"{LABEL[v.kind]} {o.origin}→{v.dest_city} {o.price_eur:.0f} €"
+    return f"{LABEL[v.kind]} {v.score}/11 · {o.origin}→{v.dest_city} · séjour ~{v.trip_total} €"
 
 
 def body(v: Verdict) -> str:
     o = v.offer
     dates = f"{o.depart} → {o.return_date}" if o.depart else "dates à voir sur le lien"
     lines = [
-        title(v), "",
+        title(v), f"NOTE : {v.score}/11  ({v.score_line})", "",
         f"Trajet : {o.origin} ⇄ {v.dest_city} ({v.country}) · {v.distance_km} km · ~{v.flight_hours} h · "
         f"{'direct' if o.transfers == 0 else str(o.transfers) + ' escale(s)'}",
         f"Cabine : {'Business' if o.cabin == 'business' else 'Économique'}   Dates : {dates}",

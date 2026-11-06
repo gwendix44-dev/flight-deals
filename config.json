@@ -13,21 +13,30 @@
   ],
   "months_ahead": 6,
   "stay_days": {
-    "min": 4,
-    "max": 45,
-    "default_when_unknown": 14
+    "max": 21,
+    "min_by_distance_km": [
+      [
+        3500,
+        5
+      ],
+      [
+        7000,
+        7
+      ],
+      [
+        10000,
+        10
+      ],
+      [
+        1000000,
+        14
+      ]
+    ],
+    "ideal_window_days": 8
   },
   "economy": {
-    "flight_cap_eur": {
-      "up_to_km": 7000,
-      "short": 300,
-      "long": 600
-    },
-    "total_trip_cap_eur": {
-      "up_to_km": 6000,
-      "short": 1000,
-      "long": 1400
-    },
+    "total_trip_cap_eur": 1500,
+    "flight_cap_eur": null,
     "extras_flat_eur": 40,
     "buffer_pct": 10
   },
@@ -67,5 +76,20 @@
   "max_alerts_per_run": {
     "scan": 5,
     "combos": 3
+  },
+  "scoring": {
+    "min_score": 9.5,
+    "max_score": 11,
+    "benchmark": {
+      "base": 150,
+      "per_km": 0.08,
+      "business_multiplier": 3.2
+    },
+    "price_disc_zero": 0.2,
+    "price_disc_full": 0.6,
+    "budget_full_eur": 900,
+    "value_full_per_day": 50,
+    "value_zero_per_day": 100,
+    "error_bench_disc": 0.75
   }
 }

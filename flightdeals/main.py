@@ -54,8 +54,7 @@ def dispatch(candidates, seen: dict, cfg: dict, dry: bool, limit: int) -> list:
         prev = seen.get(dedupe_key(v.offer))
         if prev is None or v.offer.price_eur <= prev * drop:
             fresh.append(v)
-    # erreurs de prix d'abord, puis le meilleur rapport prix/distance
-    fresh.sort(key=lambda v: (v.kind != "error_fare", v.offer.price_eur / max(v.distance_km, 1)))
+    fresh.sort(key=lambda v: (-v.score, v.trip_total))    # meilleure note d'abord
     top = fresh[:limit]
     print(f"{len(candidates)} affaires, {len(fresh)} nouvelles, {len(top)} retenues pour alerte")
     if dry:
@@ -102,7 +101,21 @@ def run(demo: bool, dry: bool) -> int:
         offers += providers.rss(cfg["rss_feeds"])
     print(f"{len(offers)} offres collectées")
 
+    from .airports import DESTINATIONS
+    unknown: dict = {}
+    for o in offers:
+        if o.dest not in DESTINATIONS and o.source == "travelpayouts":
+            unknown[o.dest] = min(unknown.get(o.dest, 1e9), o.price_eur)
+    if unknown:
+        best = sorted(unknown.items(), key=lambda kv: kv[1])[:15]
+        print("destinations absentes de la base (prix mini) : " + ", ".join(f"{c} {p:.0f}€" for c, p in best))
+
     verdicts = [v for o in offers if (v := evaluate.evaluate(o, cfg, history, budgets, today))]
+    if evaluate.NEAR_MISSES:
+        top = sorted(evaluate.NEAR_MISSES, reverse=True)[:5]
+        print(f"{len(evaluate.NEAR_MISSES)} offres sous le seuil ; les 5 meilleures :")
+        for sc_, d in top:
+            print(f"  {sc_}/11  {d}")
     if not demo:
         evaluate.update_history(history, offers)  # après l'évaluation : on compare à l'historique passé
 

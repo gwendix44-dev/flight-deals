@@ -13,8 +13,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, time, timedelta, timezone
 from typing import Optional
 
-from . import aircraft
-from .airports import DESTINATIONS, HUBS, ORIGINS, SAME_CITY, airports_of, coords
+from . import aircraft, scoring
+from .airports import DESTINATIONS, HUBS, ORIGINS, SAME_CITY, airports_of, coords, secrecy
 from .core import Leg, Verdict, Offer, estimate_hours, haversine_km
 
 MIN_LAYOVER = timedelta(hours=4)
@@ -93,10 +93,6 @@ def build_paths(legs_from: dict, max_price: float) -> list:
     return paths
 
 
-def _tier(t: dict, km: float):
-    return t["short"] if km <= t["up_to_km"] else t["long"]
-
-
 _RANK = {"not_required": 0, "widebody_probable": 1, "unverified": 2}
 
 
@@ -117,16 +113,15 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
     if first.dep_utc.date() < today or (first.dep_utc.date() - today).days > 30 * cfg["months_ahead"]:
         return None
     stay = (ret.dep_utc.date() - last.arr_utc.date()).days
-    if not cfg["stay_days"]["min"] <= stay <= cfg["stay_days"]["max"]:
-        return None
     if ret.transfers > cfg.get("max_transfers", 2):
         return None
 
     _, olat, olon = ORIGINS[o]
     km = haversine_km(olat, olon, dlat, dlon)
+    if not scoring.min_stay_for(km, cfg) <= stay <= cfg["stay_days"]["max"]:
+        return None
     flights = path.price + ret.price
-    flight_cap = _tier(eco["flight_cap_eur"], km)
-    if flights > flight_cap:
+    if eco.get("flight_cap_eur") and flights > eco["flight_cap_eur"]:
         return None
     saving = 1 - flights / baseline
     if saving < sc["min_saving"]:
@@ -155,7 +150,12 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
         if kind == "stopover":
             stop_cost += budgets.get(HUBS[hub][1], 50) * nights * (1 + eco["buffer_pct"] / 100)
     total = flights + stay_cost + stop_cost
-    if total > _tier(eco["total_trip_cap_eur"], km):
+    if total > eco["total_trip_cap_eur"]:
+        return None
+    stops = len(path.layovers) + sum(l.transfers for l in path.legs)
+    sc = scoring.score_deal(price=flights, km=km, cabin="economy", total=total, stay=stay, stops=stops,
+                            aircraft_status=worst, secrecy=secrecy(d), separate_tickets=True, cfg=cfg)
+    if sc.total < cfg["scoring"]["min_score"]:
         return None
 
     itin = []
@@ -167,9 +167,9 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
         itin.insert(2 * i + 1, f"   ↳ {txt}")
     itin.append(f"✈ Retour {ret.orig}→{ret.dest} le {ret.dep:%d/%m %H:%M} · {ret.price:.0f} € {ret.airline} {ret.link}".rstrip())
 
-    stops = len(path.layovers) + sum(l.transfers for l in path.legs)
-    reasons = [f"−{saving * 100:.0f} % vs le meilleur billet classique trouvé ({baseline:.0f} €)",
-               f"Vols {flights:.0f} € ≤ plafond {flight_cap} € ; séjour complet ≈ {total:.0f} €"]
+    reasons = [f"Note {sc.total}/11 (seuil {cfg['scoring']['min_score']})",
+               f"−{saving * 100:.0f} % vs le meilleur billet classique trouvé ({baseline:.0f} €)",
+               f"Vols {flights:.0f} € ; séjour complet ≈ {total:.0f} € (budget max {eco['total_trip_cap_eur']} €)"]
     offer = Offer(origin=o, dest=d, price_eur=round(flights), depart=first.dep_utc.date(),
                   return_date=ret.dep_utc.date(), transfers=stops, source="combo-escales",
                   link=first.link, title=" > ".join([o] + [h for h, _, _ in path.layovers] + [d]))
@@ -177,4 +177,5 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
                    flight_hours=round(sum(l.dur_min for l in path.legs) / 60, 1), stay_days=stay,
                    daily_budget=daily, stay_cost=round(stay_cost + stop_cost), trip_total=round(total),
                    discount_pct=None, aircraft=worst, aircraft_note=" | ".join(notes), reasons=reasons,
-                   itinerary=itin, baseline_eur=baseline, saving_pct=round(saving * 100))
+                   itinerary=itin, baseline_eur=baseline, saving_pct=round(saving * 100),
+                   score=sc.total, score_parts=sc.parts, score_line=sc.line())

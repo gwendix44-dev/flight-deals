@@ -1,0 +1,37 @@
+{
+  "email_to": "gwendix44@gmail.com",
+  "origins": ["NTE", "CDG", "ORY", "LHR", "MAD", "FCO", "LIS", "DUB", "AMS", "FRA"],
+  "months_ahead": 6,
+  "stay_days": {"min": 4, "max": 45, "default_when_unknown": 14},
+
+  "economy": {
+    "flight_cap_eur": {"up_to_km": 7000, "short": 300, "long": 600},
+    "total_trip_cap_eur": {"up_to_km": 6000, "short": 1000, "long": 1400},
+    "extras_flat_eur": 40,
+    "buffer_pct": 10
+  },
+
+  "business": {
+    "enabled": true,
+    "flight_cap_eur": 800,
+    "min_km": 3600
+  },
+
+  "aircraft": {
+    "long_haul_hours": 5,
+    "strict": false
+  },
+
+  "anomaly": {
+    "error_fare_discount": 0.5,
+    "unusual_discount": 0.3,
+    "min_history": 5
+  },
+
+  "realert_if_price_drops_pct": 10,
+
+  "rss_feeds": [
+    "https://www.secretflying.com/feed/",
+    "https://www.fly4free.com/feed/"
+  ]
+}

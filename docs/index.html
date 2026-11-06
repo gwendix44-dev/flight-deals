@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1d33">
+<link rel="manifest" href="manifest.json">
+<title>Flight Deals</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f5f7fa; --card:#fff; --fg:#10202f; --mut:#5b6b7b; --acc:#0b6bcb; --err:#c62828; --bus:#6a1b9a; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0b1d33; --card:#132a45; --fg:#e8eef5; --mut:#9fb2c6; --acc:#5aa9ff; --err:#ff6b6b; --bus:#c58bff; } }
+  body { margin:0; font:16px/1.4 system-ui, sans-serif; background:var(--bg); color:var(--fg); }
+  header { padding:16px; display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; }
+  h1 { margin:0; font-size:1.3rem; }
+  .mut { color:var(--mut); font-size:.85rem; }
+  nav { padding:0 16px 8px; display:flex; gap:8px; flex-wrap:wrap; }
+  nav button { border:1px solid var(--mut); background:transparent; color:var(--fg); border-radius:20px; padding:6px 14px; cursor:pointer; }
+  nav button[aria-pressed="true"] { background:var(--acc); border-color:var(--acc); color:#fff; }
+  main { padding:8px 16px 32px; display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); }
+  article { background:var(--card); border-radius:12px; padding:14px; border-left:5px solid var(--acc); }
+  article.error_fare { border-color:var(--err); } article.business_deal { border-color:var(--bus); }
+  .tag { font-size:.75rem; font-weight:700; text-transform:uppercase; }
+  .error_fare .tag { color:var(--err); } .business_deal .tag { color:var(--bus); }
+  .price { font-size:1.6rem; font-weight:700; } .tot { font-weight:600; }
+  .warn { color:#b26a00; font-size:.85rem; } a.btn { display:inline-block; margin-top:8px; padding:8px 14px; background:var(--acc); color:#fff; border-radius:8px; text-decoration:none; }
+  .empty { padding:32px; text-align:center; color:var(--mut); }
+</style>
+</head>
+<body>
+<header><h1>✈️ Flight Deals</h1><span class="mut" id="upd">chargement…</span></header>
+<nav id="filters"></nav>
+<main id="list"></main>
+<script>
+const LABEL = {error_fare:"Erreur de prix", deal:"Très bonne affaire", business_deal:"Business"};
+const AIR = {widebody_probable:"Gros-porteur probable", unverified:"⚠️ Avion à vérifier", not_required:"Vol court"};
+let deals = [], filter = "all";
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const safeUrl = u => /^https?:\/\//.test(u || "") ? u : "";
+
+function render() {
+  const el = document.getElementById("list");
+  const rows = deals.filter(d => filter === "all" || d.kind === filter);
+  if (!rows.length) { el.innerHTML = '<div class="empty">Aucune affaire pour le moment. Le scanner tourne en continu.</div>'; return; }
+  el.innerHTML = rows.map(d => { const o = d.offer, url = safeUrl(o.link); return `
+    <article class="${esc(d.kind)}">
+      <div class="tag">${esc(LABEL[d.kind])}</div>
+      <div><strong>${esc(o.origin)} → ${esc(d.dest_city)}</strong> <span class="mut">(${esc(d.country)})</span></div>
+      <div class="price">${Math.round(o.price_eur)} €</div>
+      <div class="tot">Séjour complet ≈ ${esc(d.trip_total)} € <span class="mut">(${esc(d.stay_days)} j, ${esc(d.daily_budget)} €/j)</span></div>
+      <div class="mut">${esc(o.depart || "dates sur le lien")} → ${esc(o.return_date || "")} · ${esc(d.distance_km)} km · ~${esc(d.flight_hours)} h · ${o.transfers ? esc(o.transfers) + " escale(s)" : "direct"}</div>
+      ${d.discount_pct ? `<div class="mut">−${esc(d.discount_pct)} % vs médiane</div>` : ""}
+      <div class="${d.aircraft === "unverified" ? "warn" : "mut"}">${esc(AIR[d.aircraft] || d.aircraft)}</div>
+      ${url ? `<a class="btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Voir l'offre</a>` : ""}
+    </article>`; }).join("");
+}
+
+function buildFilters() {
+  const nav = document.getElementById("filters");
+  nav.innerHTML = [["all","Tout"],["error_fare","Erreurs de prix"],["deal","Bonnes affaires"],["business_deal","Business"]]
+    .map(([k,l]) => `<button data-k="${k}" aria-pressed="${k===filter}">${l}</button>`).join("");
+  nav.onclick = e => { const k = e.target.dataset.k; if (k) { filter = k; buildFilters(); render(); } };
+}
+
+async function load() {
+  try {
+    const r = await fetch("deals.json?t=" + Date.now()); const j = await r.json();
+    deals = j.deals || [];
+    document.getElementById("upd").textContent = j.updated ? "Dernier scan : " + new Date(j.updated).toLocaleString("fr-FR") : "Aucun scan";
+    const seen = +localStorage.getItem("seen") || 0, latest = deals.length ? Date.parse(deals[0].found_at) : 0;
+    if (latest > seen && seen && "Notification" in window && Notification.permission === "granted")
+      new Notification("Flight Deals", { body: `${deals[0].offer.origin} → ${deals[0].dest_city} ${Math.round(deals[0].offer.price_eur)} €` });
+    localStorage.setItem("seen", latest);
+  } catch { document.getElementById("upd").textContent = "Impossible de charger les données"; }
+  render();
+}
+buildFilters(); load(); setInterval(load, 5 * 60 * 1000);
+if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>

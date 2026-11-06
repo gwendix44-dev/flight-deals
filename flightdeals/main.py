@@ -45,7 +45,7 @@ def dedupe_key(o: Offer) -> str:
     return hashlib.sha1(raw.encode()).hexdigest()[:16]
 
 
-def dispatch(candidates, seen: dict, cfg: dict, dry: bool, limit: int) -> list:
+def dispatch(candidates, seen: dict, cfg: dict, dry: bool, limit: int, verifier=None) -> list:
     """Garde les `limit` meilleures affaires nouvelles, envoie les alertes, et ne marque comme
     « déjà vues » que celles réellement alertées (un échec d'envoi ne doit pas les perdre)."""
     drop = 1 - cfg["realert_if_price_drops_pct"] / 100
@@ -55,18 +55,29 @@ def dispatch(candidates, seen: dict, cfg: dict, dry: bool, limit: int) -> list:
         if prev is None or v.offer.price_eur <= prev * drop:
             fresh.append(v)
     fresh.sort(key=lambda v: (-v.score, v.trip_total))    # meilleure note d'abord
-    # diversité : une seule alerte par destination et au plus N par région du monde, sinon l'Asie rafle tout
+    if verifier:
+        fresh = verifier(fresh)        # revérification : seules les offres confirmées continuent
+    # Toute la planète : on prend à tour de rôle la meilleure offre de chaque région du monde (Asie, Amérique du Nord,
+    # Amérique latine, Afrique, Océanie, Moyen-Orient), au plus N par région et une seule par destination.
     from .airports import region_of
-    top, per_region, dests = [], {}, set()
-    for v in fresh:
-        reg = region_of(v.country)
-        if v.offer.dest in dests or per_region.get(reg, 0) >= cfg.get("max_alerts_per_region", 2):
-            continue
-        top.append(v)
-        dests.add(v.offer.dest)
-        per_region[reg] = per_region.get(reg, 0) + 1
-        if len(top) >= limit:
+    by_region: dict = {}
+    for v in fresh:                                           # `fresh` est déjà trié par note décroissante
+        by_region.setdefault(region_of(v.country), []).append(v)
+    top, dests, taken = [], set(), {r: 0 for r in by_region}
+    while len(top) < limit:
+        heads = []
+        for r, lst in by_region.items():
+            while lst and lst[0].offer.dest in dests:
+                lst.pop(0)
+            if lst and taken[r] < cfg.get("max_alerts_per_region", 2):
+                heads.append(lst[0])
+        if not heads:
             break
+        best = max(heads, key=lambda v: v.score)
+        by_region[region_of(best.country)].pop(0)
+        taken[region_of(best.country)] += 1
+        dests.add(best.offer.dest)
+        top.append(best)
     print(f"{len(candidates)} affaires, {len(fresh)} nouvelles, {len(top)} retenues pour alerte")
     if dry:
         for v in top:
@@ -130,7 +141,10 @@ def run(demo: bool, dry: bool) -> int:
     if not demo:
         evaluate.update_history(history, offers)  # après l'évaluation : on compare à l'historique passé
 
-    sent = dispatch(verdicts, seen, cfg, dry or demo, cfg["max_alerts_per_run"]["scan"])
+    from . import verify
+    token = os.environ.get("TRAVELPAYOUTS_TOKEN")
+    verifier = None if demo else (lambda lst: verify.verify_all(lst, cfg, token, today))
+    sent = dispatch(verdicts, seen, cfg, dry or demo, cfg["max_alerts_per_run"]["scan"], verifier)
     if demo:
         return 0
     publish(sent, dry)

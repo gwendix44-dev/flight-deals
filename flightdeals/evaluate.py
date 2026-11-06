@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Optional
 
-from . import aircraft, preferences, scoring
+from . import aircraft, costs as costcalc, preferences, scoring
 from .airports import DESTINATIONS, ORIGINS, secrecy
 from .core import Offer, Verdict, estimate_hours, haversine_km
 
@@ -15,7 +15,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def load_budgets() -> dict:
-    return json.loads((ROOT / "data" / "budgets.json").read_text(encoding="utf-8"))
+    """Barème de coûts par pays (data/costs.json)."""
+    return costcalc.load_costs()
 
 
 NEAR_MISSES: list = []      # (note, description) des meilleures offres refusées, pour régler le seuil
@@ -37,13 +38,16 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
     today = today or date.today()
     if o.origin not in ORIGINS or o.dest not in DESTINATIONS:
         return None
-    if o.price_eur <= 0 or o.transfers > cfg.get("max_transfers", 2):
+    ver = cfg["verification"]
+    if o.price_eur < ver["min_plausible_price_eur"] and not o.flagged_error:
+        return None          # prix A/R irréaliste (taxes comprises) : donnée douteuse
+    if o.transfers > cfg.get("max_transfers", 2):
         return None
 
     # Fenêtre de départ : 6 mois max
     if o.depart:
-        if o.depart < today or o.depart > today + timedelta(days=30 * cfg["months_ahead"]):
-            return None
+        if o.depart < today + timedelta(days=ver["min_notice_days"]) or o.depart > today + timedelta(days=30 * cfg["months_ahead"]):
+            return None      # trop proche pour réserver sereinement (visa, congés) ou au-delà de 6 mois
 
     city, cc, dlat, dlon, dest_airports = DESTINATIONS[o.dest]
     if cc in cfg.get("excluded_countries", []):
@@ -76,11 +80,12 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
         return None
 
     # Budget du séjour entier (backpacker éco) : vols + hébergement + nourriture + transports + activités
-    daily = budgets.get(cc)
-    if daily is None:
+    bd = costcalc.stay_breakdown(budgets, cc, stay, o.depart, cfg)
+    if bd is None:
         return None
+    stay_cost, cost_lines = bd
+    daily = costcalc.daily(budgets, cc)
     eco = cfg["economy"]
-    stay_cost = (daily * stay + eco["extras_flat_eur"]) * (1 + eco["buffer_pct"] / 100)
     total = o.price_eur + stay_cost
     if total > eco["total_trip_cap_eur"]:
         return None
@@ -118,7 +123,7 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
         stay_cost=round(stay_cost), trip_total=round(total),
         discount_pct=round(sc.discount * 100),
         aircraft=status, aircraft_note=note, reasons=reasons,
-        score=sc.total, score_parts=sc.parts, score_line=sc.line(),
+        score=sc.total, score_parts=sc.parts, score_line=sc.line(), cost_lines=cost_lines,
     )
 
 

@@ -5,7 +5,7 @@
   Destination hors sentiers battus ................ 0 à 1,5
   Qualité du vol (escales, avion) ................. 0 à 1,5
   Durée de séjour adaptée à la distance ........... 0 à 1
-  Coût par jour de voyage ......................... 0 à 1
+  Économie globale vs séjour habituel ............. 0 à 1
   Bonus : erreur de prix avérée ................... 0 ou 1
 Un deal n'est retenu que si la note atteint `scoring.min_score` (9,5 par défaut).
 """
@@ -50,7 +50,7 @@ class Score:
     def line(self) -> str:
         p = self.parts
         txt = (f"prix {p['prix']}/3 · budget {p['budget']}/2 · destination {p['destination']}/1,5 · "
-               f"vol {p['vol']}/1,5 · durée {p['duree']}/1 · valeur/jour {p['valeur']}/1")
+               f"vol {p['vol']}/1,5 · durée {p['duree']}/1 · économie globale {p['valeur']}/1")
         return txt + (f" · bonus erreur de prix +{p['bonus']}" if p["bonus"] else "")
 
 
@@ -73,8 +73,11 @@ def score_deal(*, price: float, km: float, cabin: str, total: float, stay: int, 
     vol = max(0.0, min(1.5, vol))
     lo = min_stay_for(km, cfg)
     duree = 1.0 if lo <= stay <= lo + cfg["stay_days"]["ideal_window_days"] else 0.6
-    per_day = total / max(stay, 1)
-    valeur = clamp((sc["value_zero_per_day"] - per_day) / (sc["value_zero_per_day"] - sc["value_full_per_day"]))
+    # Économie globale : coût réel du séjour vs séjour « habituel » vers la même destination (vol habituel + même budget sur place).
+    # Neutre selon les régions : un séjour cher sur place (États-Unis) n'est ni avantagé ni pénalisé par rapport à l'Asie.
+    typical_total = ref + max(total - price, 0)
+    ratio = total / typical_total if typical_total else 1.0
+    valeur = clamp((sc["overall_ratio_zero"] - ratio) / (sc["overall_ratio_zero"] - sc["overall_ratio_full"]))
 
     error = bool(flagged_error or (hist_disc is not None and hist_disc >= cfg["anomaly"]["error_fare_discount"])
                  or disc >= sc["error_bench_disc"])

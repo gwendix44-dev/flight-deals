@@ -143,6 +143,52 @@ DESTINATIONS = {
     "NAN": ("Fidji (Nadi)", "FJ", -17.76, 177.44, []),
     "PPT": ("Tahiti", "PF", -17.56, -149.61, []),
     "NOU": ("Nouméa", "NC", -22.01, 166.21, []),
+    # --- Amérique du Nord ---
+    "CHI": ("Chicago", "US", 41.98, -87.91, ["ORD", "MDW"]),
+    "WAS": ("Washington", "US", 38.95, -77.46, ["IAD", "DCA"]),
+    "ORL": ("Orlando", "US", 28.43, -81.31, []),
+    "LAS": ("Las Vegas", "US", 36.08, -115.15, []),
+    "SEA": ("Seattle", "US", 47.45, -122.31, []),
+    "ATL": ("Atlanta", "US", 33.64, -84.43, []),
+    "DFW": ("Dallas", "US", 32.90, -97.04, []),
+    "HOU": ("Houston", "US", 29.99, -95.34, []),
+    "DEN": ("Denver", "US", 39.86, -104.67, []),
+    "PHX": ("Phoenix", "US", 33.43, -112.01, []),
+    "HNL": ("Hawaï (Honolulu)", "US", 21.32, -157.92, []),
+    "SJU": ("San Juan (Porto Rico)", "US", 18.44, -66.00, []),
+    "YYC": ("Calgary", "CA", 51.11, -114.02, []),
+    "YQB": ("Québec", "CA", 46.79, -71.39, []),
+    # --- Amérique latine & Caraïbes ---
+    "GDL": ("Guadalajara", "MX", 20.52, -103.31, []),
+    "OAX": ("Oaxaca", "MX", 17.00, -96.73, []),
+    "MID": ("Mérida", "MX", 20.94, -89.66, []),
+    "MDZ": ("Mendoza", "AR", -32.83, -68.80, []),
+    "IGU": ("Iguazú", "AR", -25.74, -54.47, []),
+    "SSA": ("Salvador de Bahia", "BR", -12.91, -38.33, []),
+    "FOR": ("Fortaleza", "BR", -3.78, -38.53, []),
+    "REC": ("Recife", "BR", -8.13, -34.92, []),
+    "GYE": ("Guayaquil", "EC", -2.16, -79.88, []),
+    "NAS": ("Nassau", "BS", 25.04, -77.47, []),
+    "AUA": ("Aruba", "AW", 12.50, -70.01, []),
+    "CUR": ("Curaçao", "CW", 12.19, -68.96, []),
+    # --- Océanie ---
+    "PER": ("Perth", "AU", -31.94, 115.97, []),
+    "BNE": ("Brisbane", "AU", -27.38, 153.12, []),
+    "CNS": ("Cairns", "AU", -16.89, 145.76, []),
+    "CHC": ("Christchurch", "NZ", -43.49, 172.53, []),
+    "ZQN": ("Queenstown", "NZ", -45.02, 168.74, []),
+    # --- Asie ---
+    "MAA": ("Chennai", "IN", 12.99, 80.17, []),
+    "CCU": ("Calcutta", "IN", 22.65, 88.45, []),
+    "COK": ("Kochi", "IN", 10.15, 76.40, []),
+    "JAI": ("Jaipur", "IN", 26.82, 75.81, []),
+    "CTS": ("Sapporo", "JP", 42.78, 141.69, []),
+    "FUK": ("Fukuoka", "JP", 33.59, 130.45, []),
+    "XIY": ("Xi'an", "CN", 34.44, 108.75, []),
+    "CTU": ("Chengdu", "CN", 30.58, 103.95, []),
+    "PEN": ("Penang", "MY", 5.30, 100.28, []),
+    "JOG": ("Yogyakarta", "ID", -7.79, 110.43, []),
+    "LOP": ("Lombok", "ID", -8.76, 116.28, []),
 }
 
 # Mots-clés pour reconnaître une destination dans le titre d'un bon plan.
@@ -205,11 +251,13 @@ def airports_of(code: str) -> list:
 
 # Rareté d'une destination (0 = tout le monde y va, 1.5 = hors des sentiers battus).
 MAINSTREAM = {"TYO", "OSA", "BKK", "HKT", "DPS", "NYC", "LAX", "MIA", "DXB", "SIN", "SYD", "MEL", "CUN", "PUJ",
+              "CHI", "LAS", "ORL", "WAS", "HNL",
               "DEL", "BOM", "HKG", "KUL", "BJS", "SHA", "SFO", "YTO", "YMQ"}
-KNOWN = {"SEL", "TPE", "SGN", "HAN", "MNL", "CPT", "MRU", "AKL", "BOG", "LIM", "MEX", "BUE", "RIO", "SAO",
+KNOWN = {"BNE", "PER", "CHC", "ZQN", "YYC", "YQB", "SEA", "ATL", "DFW", "HOU", "DEN", "PHX", "CNS", "IGU", "GDL", "SJU",
+         "NAS", "AUA", "GYE", "MAA", "CCU", "JAI", "CTS", "FUK", "PEN", "SEL", "TPE", "SGN", "HAN", "MNL", "CPT", "MRU", "AKL", "BOG", "LIM", "MEX", "BUE", "RIO", "SAO",
          "JNB", "NBO", "ZNZ", "DOH", "AUH", "GOI", "CMB", "KTM", "HAV", "BOS", "YVR", "CNX", "REP", "PNH",
          "SJO", "MLE", "TLV", "AMM"}
-OFFBEAT = {"ALA", "FRU", "SKD", "MCT", "ULN", "LPQ", "VTE", "RGN", "DAC", "BKI", "DAD", "KGL", "WDH", "LUN", "ABJ",
+OFFBEAT = {"OAX", "MID", "MDZ", "SSA", "FOR", "REC", "CUR", "COK", "CTU", "XIY", "JOG", "LOP", "ALA", "FRU", "SKD", "MCT", "ULN", "LPQ", "VTE", "RGN", "DAC", "BKI", "DAD", "KGL", "WDH", "LUN", "ABJ",
            "LFW", "COO", "DLA", "EBB", "DAR", "SEZ", "MVD", "ASU", "VVI", "CTG", "GUA", "BZE", "SAL", "KIN", "BGI",
            "NAN", "PPT", "NOU", "TAS", "ADD", "DKR", "ACC", "LPB", "UIO", "CUZ", "MDE", "TNR", "SID", "JRO"}
 
@@ -232,7 +280,7 @@ REGIONS = {
                 "UG", "SC"},
     "amerique-nord": {"US", "CA"},
     "amerique-latine": {"MX", "CO", "PE", "CL", "AR", "BR", "EC", "CU", "DO", "CR", "PA", "BO", "MQ", "GP", "UY", "PY",
-                        "GT", "BZ", "SV", "JM", "BB"},
+                        "GT", "BZ", "SV", "JM", "BB", "BS", "AW", "CW"},
     "oceanie": {"AU", "NZ", "FJ", "PF", "NC"},
 }
 

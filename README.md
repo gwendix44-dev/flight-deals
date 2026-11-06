@@ -16,6 +16,17 @@ qualité du vol (1,5) · durée adaptée à la distance (1) · coût par jour (1
 Budget total (vols + sur place) : 1 500 € max. Séjour : 3 semaines max, minimum 5 j (≤3 500 km), 7 j (≤7 000 km),
 10 j (≤10 000 km), 14 j au-delà. Les journaux du scan listent les 5 meilleures offres refusées pour régler le seuil.
 
+## Réalisme du séjour et vérification avant affichage
+- **Coût du séjour poste par poste** (`data/costs.json`, 86 pays, modifiable) : hébergement (dortoir/chambre simple), nourriture,
+  transports locaux, activités, déplacements entre villes, visa/autorisation d'entrée (passeport français, à revérifier),
+  assurance, transferts + SIM, marge de 10 %, supplément haute saison (20 déc → 5 janv). Le détail est dans chaque alerte.
+- **Aucune offre n'est affichée sans contrôle** : prix revérifié pour les dates exactes (écartée s'il a disparu ou monté de
+  plus de 10 %), montages revérifiés billet par billet, départ ≥ 10 jours, prix plausible (≥ 60 €), séjour dans la fourchette
+  de distance. Les offres des flux de bons plans sont signalées « à confirmer sur le lien ». Les prix restent ceux du cache
+  des moteurs de recherche (quelques heures de retard possible).
+- **Toute la planète** : 155 destinations hors Europe et Afrique du Nord ; chaque scan sélectionne à tour de rôle la meilleure
+  offre de chaque région (2 maximum par région, 1 par destination).
+
 ## Refuser une offre : l'appli apprend
 Deux façons de dire pourquoi tu refuses (« trop cher », « séjour trop court », « trop d'escales »,
 « destination déjà vue », « trop loin », « vol trop long », « avion pas adapté », « trop touristique »,

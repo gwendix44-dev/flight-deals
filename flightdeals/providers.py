@@ -66,6 +66,27 @@ def travelpayouts(origins: Iterable[str], months: list[str], token: str, sleep: 
     return out
 
 
+def exact_price(origin: str, dest: str, depart: date, ret: date | None, token: str, direct: bool | None = None):
+    """Prix le plus bas pour CES dates précises (aller-retour si `ret`, sinon aller simple).
+
+    Retourne le prix, ou None si aucun billet n'existe à ces dates. Lève une exception si l'API est injoignable
+    (l'appelant écarte alors l'offre plutôt que de l'afficher sans contrôle).
+    """
+    q = {"origin": origin, "destination": dest, "departure_at": depart.isoformat(), "one_way": "false" if ret else "true",
+         "unique": "false", "sorting": "price", "currency": "eur", "limit": 20, "token": token}
+    if ret:
+        q["return_at"] = ret.isoformat()
+    if direct is not None:
+        q["direct"] = str(direct).lower()
+    data = json.loads(_get("https://api.travelpayouts.com/aviasales/v3/prices_for_dates?" + urllib.parse.urlencode(q)))
+    prices = []
+    for it in data.get("data", []):
+        d1, d2 = _d(it.get("departure_at")), _d(it.get("return_at"))
+        if d1 == depart and (not ret or d2 == ret) and it.get("price"):
+            prices.append(float(it["price"]))
+    return min(prices) if prices else None
+
+
 def _dt(s):
     try:
         return datetime.fromisoformat(s.replace("Z", "+00:00")) if s else None

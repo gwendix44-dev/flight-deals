@@ -37,8 +37,14 @@
   "economy": {
     "total_trip_cap_eur": 1500,
     "flight_cap_eur": null,
-    "extras_flat_eur": 40,
-    "buffer_pct": 10
+    "buffer_pct": 10,
+    "insurance_per_day": 2.2,
+    "arrival_flat_eur": 45,
+    "peak_season": {
+      "start": "12-20",
+      "end": "01-05",
+      "lodging_multiplier": 1.25
+    }
   },
   "business": {
     "enabled": true,
@@ -88,9 +94,15 @@
     "price_disc_zero": 0.2,
     "price_disc_full": 0.6,
     "budget_full_eur": 900,
-    "value_full_per_day": 50,
-    "value_zero_per_day": 100,
-    "error_bench_disc": 0.75
+    "error_bench_disc": 0.75,
+    "overall_ratio_full": 0.55,
+    "overall_ratio_zero": 0.9
   },
-  "max_alerts_per_region": 2
+  "max_alerts_per_region": 2,
+  "verification": {
+    "min_notice_days": 10,
+    "price_tolerance": 0.1,
+    "max_checks": 25,
+    "min_plausible_price_eur": 60
+  }
 }

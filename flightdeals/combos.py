@@ -89,7 +89,9 @@ def run(dry: bool) -> int:
     print(f"{checked} montages vérifiés, {len(verdicts)} retenus")
 
     seen = _load(SEEN, {})
-    sent = dispatch(sorted(verdicts, key=lambda v: v.trip_total), seen, cfg, dry, cfg["max_alerts_per_run"]["combos"])
+    from . import verify
+    sent = dispatch(sorted(verdicts, key=lambda v: -v.score), seen, cfg, dry, cfg["max_alerts_per_run"]["combos"],
+                    lambda lst: verify.verify_all(lst, cfg, token, today))
     if not dry:
         publish(sent, dry)
         _save(SEEN, dict(list(seen.items())[-5000:]))

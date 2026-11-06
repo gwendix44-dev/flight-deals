@@ -30,8 +30,10 @@ def body(v: Verdict) -> str:
         f"{'direct' if o.transfers == 0 else str(o.transfers) + ' escale(s)'}",
         f"Cabine : {'Business' if o.cabin == 'business' else 'Économique'}   Dates : {dates}",
         f"Prix du vol A/R : {o.price_eur:.0f} €",
-        f"Séjour {v.stay_days} j en backpacker : ~{v.stay_cost} € ({v.daily_budget:.0f} €/j + marge + frais)",
-        f"➜ COÛT TOTAL ESTIMÉ : ~{v.trip_total} €",
+        f"Séjour {v.stay_days} j en backpacker : ~{v.stay_cost} € sur place",
+        *[f"     · {lab} : {amt} €" for lab, amt in v.cost_lines],
+        f"➜ COÛT TOTAL ESTIMÉ : ~{v.trip_total} € (vols + tout le séjour)",
+        f"✔ {v.verification}" if v.verification else "",
         *(["", "Itinéraire (billets séparés) :", *[f"  {x}" for x in v.itinerary]] if v.itinerary else []),
         "", "Pourquoi :", *[f"  • {r}" for r in v.reasons],
         "", "👎 Pas pour toi ? Réponds en commentaire à cette Issue (ou bouton « Refuser » du dashboard) en expliquant "

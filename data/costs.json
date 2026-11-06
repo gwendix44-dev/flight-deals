@@ -1,0 +1,777 @@
+{
+ "_note": "Estimations EUR par personne, voyage backpacker économique (dortoir ou chambre simple, cuisine locale, transports publics, activités modestes). visa = coût indicatif pour un passeport français, À REVÉRIFIER avant de réserver. intercity = déplacements entre villes pour un séjour d'environ 2 semaines.",
+ "JP": {
+  "lodging": 30,
+  "food": 22,
+  "transport": 12,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 100,
+  "visa_note": ""
+ },
+ "TH": {
+  "lodging": 11,
+  "food": 11,
+  "transport": 5,
+  "activities": 6,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "VN": {
+  "lodging": 8,
+  "food": 9,
+  "transport": 5,
+  "activities": 6,
+  "visa": 0,
+  "intercity": 40,
+  "visa_note": ""
+ },
+ "ID": {
+  "lodging": 10,
+  "food": 9,
+  "transport": 6,
+  "activities": 6,
+  "visa": 30,
+  "intercity": 50,
+  "visa_note": "visa à l'arrivée"
+ },
+ "MY": {
+  "lodging": 11,
+  "food": 10,
+  "transport": 6,
+  "activities": 6,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "SG": {
+  "lodging": 35,
+  "food": 20,
+  "transport": 6,
+  "activities": 14,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "PH": {
+  "lodging": 11,
+  "food": 9,
+  "transport": 8,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 60,
+  "visa_note": ""
+ },
+ "KH": {
+  "lodging": 8,
+  "food": 8,
+  "transport": 5,
+  "activities": 7,
+  "visa": 25,
+  "intercity": 30,
+  "visa_note": "e-visa"
+ },
+ "IN": {
+  "lodging": 7,
+  "food": 7,
+  "transport": 6,
+  "activities": 6,
+  "visa": 25,
+  "intercity": 50,
+  "visa_note": "e-visa"
+ },
+ "NP": {
+  "lodging": 7,
+  "food": 7,
+  "transport": 4,
+  "activities": 6,
+  "visa": 45,
+  "intercity": 20,
+  "visa_note": "visa à l'arrivée"
+ },
+ "LK": {
+  "lodging": 10,
+  "food": 9,
+  "transport": 6,
+  "activities": 7,
+  "visa": 45,
+  "intercity": 20,
+  "visa_note": "ETA"
+ },
+ "KR": {
+  "lodging": 22,
+  "food": 17,
+  "transport": 8,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 40,
+  "visa_note": ""
+ },
+ "TW": {
+  "lodging": 18,
+  "food": 14,
+  "transport": 7,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "HK": {
+  "lodging": 28,
+  "food": 17,
+  "transport": 6,
+  "activities": 12,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "CN": {
+  "lodging": 14,
+  "food": 12,
+  "transport": 9,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 80,
+  "visa_note": "vérifier l'exemption de visa"
+ },
+ "KZ": {
+  "lodging": 14,
+  "food": 12,
+  "transport": 6,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "KG": {
+  "lodging": 8,
+  "food": 9,
+  "transport": 5,
+  "activities": 6,
+  "visa": 0,
+  "intercity": 20,
+  "visa_note": ""
+ },
+ "UZ": {
+  "lodging": 9,
+  "food": 9,
+  "transport": 5,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "MN": {
+  "lodging": 10,
+  "food": 10,
+  "transport": 10,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 40,
+  "visa_note": ""
+ },
+ "LA": {
+  "lodging": 8,
+  "food": 8,
+  "transport": 6,
+  "activities": 6,
+  "visa": 40,
+  "intercity": 20,
+  "visa_note": "visa à l'arrivée"
+ },
+ "MM": {
+  "lodging": 14,
+  "food": 9,
+  "transport": 8,
+  "activities": 8,
+  "visa": 45,
+  "intercity": 30,
+  "visa_note": "e-visa"
+ },
+ "BD": {
+  "lodging": 9,
+  "food": 7,
+  "transport": 5,
+  "activities": 4,
+  "visa": 50,
+  "intercity": 20,
+  "visa_note": "visa"
+ },
+ "MV": {
+  "lodging": 45,
+  "food": 25,
+  "transport": 10,
+  "activities": 15,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "AE": {
+  "lodging": 35,
+  "food": 22,
+  "transport": 10,
+  "activities": 20,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "QA": {
+  "lodging": 40,
+  "food": 25,
+  "transport": 10,
+  "activities": 20,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "JO": {
+  "lodging": 20,
+  "food": 15,
+  "transport": 8,
+  "activities": 20,
+  "visa": 0,
+  "intercity": 20,
+  "visa_note": "Jordan Pass"
+ },
+ "IL": {
+  "lodging": 40,
+  "food": 25,
+  "transport": 10,
+  "activities": 15,
+  "visa": 6,
+  "intercity": 20,
+  "visa_note": "ETA-IL"
+ },
+ "OM": {
+  "lodging": 25,
+  "food": 18,
+  "transport": 10,
+  "activities": 12,
+  "visa": 0,
+  "intercity": 20,
+  "visa_note": ""
+ },
+ "SN": {
+  "lodging": 14,
+  "food": 10,
+  "transport": 6,
+  "activities": 6,
+  "visa": 0,
+  "intercity": 20,
+  "visa_note": ""
+ },
+ "GH": {
+  "lodging": 14,
+  "food": 10,
+  "transport": 6,
+  "activities": 6,
+  "visa": 100,
+  "intercity": 20,
+  "visa_note": "visa"
+ },
+ "ET": {
+  "lodging": 10,
+  "food": 8,
+  "transport": 8,
+  "activities": 8,
+  "visa": 50,
+  "intercity": 40,
+  "visa_note": "e-visa"
+ },
+ "KE": {
+  "lodging": 20,
+  "food": 14,
+  "transport": 12,
+  "activities": 25,
+  "visa": 28,
+  "intercity": 60,
+  "visa_note": "eTA"
+ },
+ "TZ": {
+  "lodging": 18,
+  "food": 13,
+  "transport": 10,
+  "activities": 22,
+  "visa": 45,
+  "intercity": 60,
+  "visa_note": "visa"
+ },
+ "ZA": {
+  "lodging": 18,
+  "food": 14,
+  "transport": 10,
+  "activities": 12,
+  "visa": 0,
+  "intercity": 60,
+  "visa_note": ""
+ },
+ "MU": {
+  "lodging": 22,
+  "food": 15,
+  "transport": 8,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "MG": {
+  "lodging": 10,
+  "food": 8,
+  "transport": 10,
+  "activities": 8,
+  "visa": 35,
+  "intercity": 60,
+  "visa_note": "visa"
+ },
+ "RE": {
+  "lodging": 30,
+  "food": 20,
+  "transport": 8,
+  "activities": 12,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "CV": {
+  "lodging": 22,
+  "food": 15,
+  "transport": 6,
+  "activities": 10,
+  "visa": 31,
+  "intercity": 30,
+  "visa_note": "taxe EASE"
+ },
+ "RW": {
+  "lodging": 15,
+  "food": 12,
+  "transport": 8,
+  "activities": 15,
+  "visa": 45,
+  "intercity": 30,
+  "visa_note": "visa"
+ },
+ "NA": {
+  "lodging": 18,
+  "food": 14,
+  "transport": 15,
+  "activities": 15,
+  "visa": 0,
+  "intercity": 60,
+  "visa_note": ""
+ },
+ "ZM": {
+  "lodging": 15,
+  "food": 12,
+  "transport": 10,
+  "activities": 18,
+  "visa": 45,
+  "intercity": 40,
+  "visa_note": "visa"
+ },
+ "CI": {
+  "lodging": 20,
+  "food": 12,
+  "transport": 6,
+  "activities": 6,
+  "visa": 70,
+  "intercity": 20,
+  "visa_note": "e-visa"
+ },
+ "TG": {
+  "lodging": 14,
+  "food": 10,
+  "transport": 6,
+  "activities": 4,
+  "visa": 50,
+  "intercity": 20,
+  "visa_note": "e-visa"
+ },
+ "BJ": {
+  "lodging": 14,
+  "food": 10,
+  "transport": 6,
+  "activities": 4,
+  "visa": 50,
+  "intercity": 20,
+  "visa_note": "e-visa"
+ },
+ "CM": {
+  "lodging": 15,
+  "food": 11,
+  "transport": 7,
+  "activities": 5,
+  "visa": 70,
+  "intercity": 30,
+  "visa_note": "e-visa"
+ },
+ "UG": {
+  "lodging": 15,
+  "food": 11,
+  "transport": 9,
+  "activities": 20,
+  "visa": 45,
+  "intercity": 40,
+  "visa_note": "e-visa"
+ },
+ "SC": {
+  "lodging": 60,
+  "food": 25,
+  "transport": 8,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "US": {
+  "lodging": 50,
+  "food": 30,
+  "transport": 18,
+  "activities": 12,
+  "visa": 20,
+  "intercity": 150,
+  "visa_note": "ESTA"
+ },
+ "CA": {
+  "lodging": 45,
+  "food": 28,
+  "transport": 14,
+  "activities": 12,
+  "visa": 5,
+  "intercity": 120,
+  "visa_note": "AVE"
+ },
+ "MX": {
+  "lodging": 14,
+  "food": 12,
+  "transport": 7,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 60,
+  "visa_note": ""
+ },
+ "CO": {
+  "lodging": 11,
+  "food": 10,
+  "transport": 6,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 40,
+  "visa_note": ""
+ },
+ "PE": {
+  "lodging": 10,
+  "food": 10,
+  "transport": 7,
+  "activities": 12,
+  "visa": 0,
+  "intercity": 60,
+  "visa_note": ""
+ },
+ "CL": {
+  "lodging": 18,
+  "food": 15,
+  "transport": 8,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 50,
+  "visa_note": ""
+ },
+ "AR": {
+  "lodging": 14,
+  "food": 14,
+  "transport": 8,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 100,
+  "visa_note": ""
+ },
+ "BR": {
+  "lodging": 14,
+  "food": 13,
+  "transport": 8,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 120,
+  "visa_note": ""
+ },
+ "EC": {
+  "lodging": 10,
+  "food": 9,
+  "transport": 5,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "CU": {
+  "lodging": 25,
+  "food": 15,
+  "transport": 5,
+  "activities": 5,
+  "visa": 25,
+  "intercity": 20,
+  "visa_note": "carte touriste"
+ },
+ "DO": {
+  "lodging": 25,
+  "food": 15,
+  "transport": 6,
+  "activities": 8,
+  "visa": 10,
+  "intercity": 20,
+  "visa_note": "carte touriste"
+ },
+ "CR": {
+  "lodging": 22,
+  "food": 17,
+  "transport": 8,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "PA": {
+  "lodging": 20,
+  "food": 15,
+  "transport": 6,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "BO": {
+  "lodging": 8,
+  "food": 8,
+  "transport": 6,
+  "activities": 6,
+  "visa": 0,
+  "intercity": 40,
+  "visa_note": ""
+ },
+ "UY": {
+  "lodging": 22,
+  "food": 20,
+  "transport": 8,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "PY": {
+  "lodging": 10,
+  "food": 10,
+  "transport": 5,
+  "activities": 5,
+  "visa": 0,
+  "intercity": 20,
+  "visa_note": ""
+ },
+ "GT": {
+  "lodging": 10,
+  "food": 10,
+  "transport": 6,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "BZ": {
+  "lodging": 22,
+  "food": 14,
+  "transport": 8,
+  "activities": 15,
+  "visa": 35,
+  "intercity": 20,
+  "visa_note": "taxe de sortie"
+ },
+ "SV": {
+  "lodging": 12,
+  "food": 10,
+  "transport": 6,
+  "activities": 6,
+  "visa": 0,
+  "intercity": 20,
+  "visa_note": ""
+ },
+ "JM": {
+  "lodging": 30,
+  "food": 18,
+  "transport": 10,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 20,
+  "visa_note": ""
+ },
+ "BB": {
+  "lodging": 50,
+  "food": 25,
+  "transport": 8,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "MQ": {
+  "lodging": 40,
+  "food": 25,
+  "transport": 10,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "GP": {
+  "lodging": 40,
+  "food": 25,
+  "transport": 10,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "BS": {
+  "lodging": 70,
+  "food": 30,
+  "transport": 10,
+  "activities": 15,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "AW": {
+  "lodging": 55,
+  "food": 28,
+  "transport": 6,
+  "activities": 12,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "CW": {
+  "lodging": 45,
+  "food": 25,
+  "transport": 8,
+  "activities": 12,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "AU": {
+  "lodging": 35,
+  "food": 25,
+  "transport": 15,
+  "activities": 15,
+  "visa": 0,
+  "intercity": 200,
+  "visa_note": "eVisitor (gratuit)"
+ },
+ "NZ": {
+  "lodging": 32,
+  "food": 22,
+  "transport": 16,
+  "activities": 18,
+  "visa": 65,
+  "intercity": 150,
+  "visa_note": "NZeTA + taxe touristique"
+ },
+ "FJ": {
+  "lodging": 18,
+  "food": 14,
+  "transport": 8,
+  "activities": 15,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "PF": {
+  "lodging": 60,
+  "food": 30,
+  "transport": 10,
+  "activities": 15,
+  "visa": 0,
+  "intercity": 40,
+  "visa_note": ""
+ },
+ "NC": {
+  "lodging": 45,
+  "food": 25,
+  "transport": 8,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 30,
+  "visa_note": ""
+ },
+ "PT": {
+  "lodging": 20,
+  "food": 15,
+  "transport": 5,
+  "activities": 6,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "ES": {
+  "lodging": 22,
+  "food": 18,
+  "transport": 6,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "IE": {
+  "lodging": 35,
+  "food": 22,
+  "transport": 8,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "GB": {
+  "lodging": 40,
+  "food": 22,
+  "transport": 10,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "IT": {
+  "lodging": 30,
+  "food": 22,
+  "transport": 8,
+  "activities": 10,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "GR": {
+  "lodging": 22,
+  "food": 16,
+  "transport": 6,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "TR": {
+  "lodging": 12,
+  "food": 12,
+  "transport": 5,
+  "activities": 8,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ },
+ "HU": {
+  "lodging": 14,
+  "food": 12,
+  "transport": 4,
+  "activities": 6,
+  "visa": 0,
+  "intercity": 0,
+  "visa_note": ""
+ }
+}

@@ -46,10 +46,14 @@ class Verdict:
     score: float = 0.0                              # note sur 11
     score_parts: dict = field(default_factory=dict)
     score_line: str = ""
+    cost_lines: list = field(default_factory=list)  # [(poste, montant €)] détail du séjour
+    verification: str = ""                          # résultat de la revérification avant affichage
+    legs: list = field(default_factory=list, repr=False)   # billets d'un montage (revérifiés un par un ; non sérialisé)
     issue: Optional[int] = None                    # numéro de l'Issue GitHub (pour les refus)
 
     def to_dict(self) -> dict:
         d = asdict(self)
+        d.pop("legs", None)
         o = d["offer"]
         o["depart"] = o["depart"].isoformat() if o["depart"] else None
         o["return_date"] = o["return_date"].isoformat() if o["return_date"] else None

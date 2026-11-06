@@ -4,7 +4,7 @@ import unittest
 from datetime import date, timedelta
 from pathlib import Path
 
-from flightdeals import aircraft, evaluate, preferences, providers, scoring
+from flightdeals import aircraft, costs, evaluate, preferences, providers, scoring, verify
 from flightdeals.core import Offer, haversine_km
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -46,9 +46,9 @@ class Rules(unittest.TestCase):
         self.assertIsNone(self.ev(mk("BKK", 300, days=(250, 264), transfers=1)))
 
     def test_business(self):
-        v = self.ev(mk("BOG", 760, origin="MAD", days=(45, 60), cabin="business"))
+        v = self.ev(mk("BOG", 760, origin="MAD", days=(45, 57), cabin="business"))
         self.assertEqual(v.kind, "business_deal")
-        self.assertIsNone(self.ev(mk("BOG", 900, origin="MAD", days=(45, 60), cabin="business")))
+        self.assertIsNone(self.ev(mk("BOG", 900, origin="MAD", days=(45, 57), cabin="business")))
         self.assertIsNone(self.ev(mk("DKR", 300, origin="MAD", days=(45, 52), cabin="business")))   # trop court
 
     def test_error_fare_by_history(self):
@@ -201,6 +201,98 @@ class Diversity(unittest.TestCase):
         asia = [v for v in top if v.country in {"TH", "VN", "ID"}]
         self.assertLessEqual(len(asia), 2)
         self.assertEqual(len({v.offer.dest for v in top}), len(top))     # pas deux fois la même destination
+
+
+class Realism(unittest.TestCase):
+    def test_cost_breakdown_covers_all_posts(self):
+        total, lines = costs.stay_breakdown(BUD, "TH", 14, date(2027, 2, 10), CFG)
+        labels = " ".join(l for l, _ in lines)
+        for word in ("Hébergement", "Nourriture", "Transports", "Activités", "Déplacements", "Assurance", "Transferts", "Marge"):
+            self.assertIn(word, labels)
+        self.assertAlmostEqual(total, sum(v for _, v in lines), delta=6)          # arrondis près
+
+    def test_expensive_countries_cost_more_than_asia(self):
+        us = costs.stay_breakdown(BUD, "US", 10, date(2027, 2, 10), CFG)[0]
+        th = costs.stay_breakdown(BUD, "TH", 10, date(2027, 2, 10), CFG)[0]
+        self.assertGreater(us, 2 * th)
+
+    def test_peak_season_raises_lodging(self):
+        normal = costs.stay_breakdown(BUD, "TH", 10, date(2027, 3, 10), CFG)[0]
+        peak = costs.stay_breakdown(BUD, "TH", 10, date(2026, 12, 24), CFG)[0]
+        self.assertGreater(peak, normal)
+
+    def test_visa_is_included(self):
+        lines = dict(costs.stay_breakdown(BUD, "IN", 14, date(2027, 2, 10), CFG)[1])
+        self.assertTrue(any("Visa" in k for k in lines))
+
+    def test_departure_too_soon_rejected(self):
+        self.assertIsNone(evaluate.evaluate(mk("BKK", 300, days=(5, 19), transfers=1), LOOSE, {}, BUD, TODAY))
+
+    def test_implausible_price_rejected(self):
+        self.assertIsNone(evaluate.evaluate(mk("BKK", 20, days=(60, 72), transfers=1), LOOSE, {}, BUD, TODAY))
+
+
+class Verification(unittest.TestCase):
+    def verdict(self, **kw):
+        return evaluate.evaluate(mk("BKK", 300, days=(60, 72), transfers=1, **kw), LOOSE, {}, BUD, TODAY)
+
+    def test_confirmed(self):
+        v = self.verdict()
+        ok, msg = verify.verify_one(v, CFG, "t", TODAY, price_fn=lambda *a: 310.0)     # +3 % : toléré
+        self.assertTrue(ok)
+        self.assertIn("Revérifié", msg)
+
+    def test_price_went_up_or_vanished_or_api_down(self):
+        v = self.verdict()
+        self.assertFalse(verify.verify_one(v, CFG, "t", TODAY, price_fn=lambda *a: 400.0)[0])
+        self.assertFalse(verify.verify_one(v, CFG, "t", TODAY, price_fn=lambda *a: None)[0])
+        def boom(*a): raise OSError("réseau")
+        ok, msg = verify.verify_one(v, CFG, "t", TODAY, price_fn=boom)
+        self.assertFalse(ok)
+        self.assertIn("impossible", msg)
+
+    def test_nothing_shown_without_token(self):
+        v = self.verdict()
+        self.assertEqual(verify.verify_all([v], CFG, None, TODAY), [])
+
+    def test_only_verified_offers_are_kept(self):
+        a, b = self.verdict(), evaluate.evaluate(mk("SGN", 300, days=(60, 75), transfers=1), LOOSE, {}, BUD, TODAY)
+        prices = {"BKK": 300.0, "SGN": None}
+        kept = verify.verify_all([a, b], CFG, "t", TODAY, price_fn=lambda o, d, *r: prices[d])
+        self.assertEqual([v.offer.dest for v in kept], ["BKK"])
+        self.assertTrue(kept[0].verification)
+
+    def test_rss_flagged_as_to_confirm(self):
+        o = providers.parse_deal_title("ERROR FARE: Paris to Bali for €299 roundtrip")
+        v = evaluate.evaluate(o, LOOSE, {}, BUD, TODAY)
+        ok, msg = verify.verify_one(v, CFG, "t", TODAY, price_fn=lambda *a: 1 / 0)
+        self.assertTrue(ok)
+        self.assertIn("NON revérifiables", msg)
+
+
+class WholePlanet(unittest.TestCase):
+    def test_round_robin_across_regions(self):
+        from flightdeals import main
+        cfg = copy.deepcopy(LOOSE)
+        vs = []
+        for dest, org, d in (("BKK", "CDG", (60, 72)), ("HKT", "CDG", (60, 72)), ("SGN", "CDG", (60, 75)),
+                             ("DPS", "MAD", (60, 75)), ("BOG", "CDG", (60, 72)), ("LIM", "CDG", (60, 75)),
+                             ("DKR", "CDG", (60, 68)), ("NYC", "AMS", (60, 68))):
+            v = evaluate.evaluate(mk(dest, 250, origin=org, days=d, transfers=1), cfg, {}, BUD, TODAY)
+            if v:
+                vs.append(v)
+        from flightdeals.airports import region_of
+        top = main.dispatch(vs, {}, cfg, True, 5)
+        regions = {region_of(v.country) for v in top}
+        self.assertGreaterEqual(len(regions), 3)                       # pas seulement l'Asie
+        self.assertLessEqual(sum(region_of(v.country) == "asie" for v in top), 2)
+
+    def test_many_destinations_on_every_continent(self):
+        from flightdeals.airports import DESTINATIONS, REGIONS, region_of
+        self.assertGreaterEqual(len(DESTINATIONS), 150)
+        for reg in REGIONS:
+            self.assertGreaterEqual(sum(region_of(v[1]) == reg for v in DESTINATIONS.values()), 4, reg)
+        self.assertTrue(all(v[1] in BUD or v[1] in CFG["excluded_countries"] for v in DESTINATIONS.values()))   # chaque pays autorisé a un barème
 
 
 if __name__ == "__main__":

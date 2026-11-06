@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, time, timedelta, timezone
 from typing import Optional
 
-from . import aircraft, preferences, scoring
+from . import aircraft, costs as costcalc, preferences, scoring
 from .airports import DESTINATIONS, HUBS, ORIGINS, SAME_CITY, airports_of, coords, secrecy
 from .core import Leg, Verdict, Offer, estimate_hours, haversine_km
 
@@ -110,7 +110,8 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
 
     # Fenêtre de 6 mois, séjour sur place
     today = today or datetime.now(timezone.utc).date()
-    if first.dep_utc.date() < today or (first.dep_utc.date() - today).days > 30 * cfg["months_ahead"]:
+    days_to_go = (first.dep_utc.date() - today).days
+    if days_to_go < cfg["verification"]["min_notice_days"] or days_to_go > 30 * cfg["months_ahead"]:
         return None
     stay = (ret.dep_utc.date() - last.arr_utc.date()).days
     if ret.transfers > cfg.get("max_transfers", 2):
@@ -144,14 +145,17 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
         if st in ("unverified", "widebody_probable"):
             notes.append(f"{leg.orig}→{leg.dest} : {note}")
 
-    daily = budgets.get(cc)
-    if daily is None:
+    bd = costcalc.stay_breakdown(budgets, cc, stay, last.arr_utc.date(), cfg)
+    if bd is None:
         return None
-    stay_cost = (daily * stay + eco["extras_flat_eur"]) * (1 + eco["buffer_pct"] / 100)
+    stay_cost, cost_lines = bd
+    daily = costcalc.daily(budgets, cc)
     stop_cost = 0.0
     for hub, kind, nights in path.layovers:
         if kind == "stopover":
-            stop_cost += budgets.get(HUBS[hub][1], 50) * nights * (1 + eco["buffer_pct"] / 100)
+            hub_cost = (costcalc.daily(budgets, HUBS[hub][1]) or 50) * nights * (1 + eco["buffer_pct"] / 100)
+            stop_cost += hub_cost
+            cost_lines.append((f"Mini-étape {nights} nuits à {HUBS[hub][0]}", round(hub_cost)))
     total = flights + stay_cost + stop_cost
     if total > eco["total_trip_cap_eur"]:
         return None
@@ -165,7 +169,7 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
     for leg in path.legs:
         itin.append(f"✈ {leg.orig}→{leg.dest} le {leg.dep:%d/%m %H:%M} · {leg.price:.0f} € {leg.airline} {leg.link}".rstrip())
     for i, (hub, kind, nights) in enumerate(path.layovers):
-        txt = (f"mini-étape de {nights} nuits à {HUBS[hub][0]} (hébergement ~{budgets.get(HUBS[hub][1], 50) * nights:.0f} € inclus)"
+        txt = (f"mini-étape de {nights} nuits à {HUBS[hub][0]} (hébergement et repas inclus dans le budget)"
                if kind == "stopover" else f"escale de jour à {HUBS[hub][0]} (4-10 h, sans nuit à l'aéroport)")
         itin.insert(2 * i + 1, f"   ↳ {txt}")
     itin.append(f"✈ Retour {ret.orig}→{ret.dest} le {ret.dep:%d/%m %H:%M} · {ret.price:.0f} € {ret.airline} {ret.link}".rstrip())
@@ -178,7 +182,7 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
                   link=first.link, title=" > ".join([o] + [h for h, _, _ in path.layovers] + [d]))
     return Verdict(kind="stopover_deal", offer=offer, dest_city=city, country=cc, distance_km=round(km),
                    flight_hours=round(sum(l.dur_min for l in path.legs) / 60, 1), stay_days=stay,
-                   daily_budget=daily, stay_cost=round(stay_cost + stop_cost), trip_total=round(total),
+                   daily_budget=daily, cost_lines=cost_lines, stay_cost=round(stay_cost + stop_cost), trip_total=round(total),
                    discount_pct=None, aircraft=worst, aircraft_note=" | ".join(notes), reasons=reasons,
                    itinerary=itin, baseline_eur=baseline, saving_pct=round(saving * 100),
-                   score=sc.total, score_parts=sc.parts, score_line=sc.line())
+                   score=sc.total, score_parts=sc.parts, score_line=sc.line(), legs=[*path.legs, ret])

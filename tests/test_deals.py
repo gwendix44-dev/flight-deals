@@ -82,6 +82,12 @@ class T(unittest.TestCase):
         # vol bon marché mais séjour au Japon (70 €/j) -> au-dessus de 1400 € au total
         self.assertIsNone(self.ev(mk("TYO", 380)))
 
+    def test_rss_tolerates_broken_xml(self):
+        raw = '<rss><channel><item><title><![CDATA[Paris to Bali for €399 roundtrip]]></title><link>https://x/1</link>' \
+              '<description>a & b <br></description></item></channel>'
+        items = providers._rss_items(raw)
+        self.assertEqual(items, [("Paris to Bali for €399 roundtrip", "https://x/1")])
+
     def test_unknown_stay_uses_default(self):
         o = Offer("CDG", "ACC", 90, depart=TODAY + timedelta(days=30))
         self.assertEqual(self.ev(o).stay_days, 14)

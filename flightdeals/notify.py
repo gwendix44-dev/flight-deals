@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import urllib.error
 import urllib.request
 
 from .core import Verdict
@@ -46,12 +47,13 @@ def body(v: Verdict) -> str:
 LABELS = {"error_fare": "erreur-de-prix", "deal": "bonne-affaire", "business_deal": "business", "stopover_deal": "montage-escales"}
 
 
-def create_issues(vs: list[Verdict]) -> int:
+def create_issues(vs: list[Verdict]) -> list[Verdict]:
+    """Crée une Issue par affaire. Retourne celles réellement créées."""
     token, repo = os.environ.get("GITHUB_TOKEN"), os.environ.get("GITHUB_REPOSITORY")
     if not (token and repo):
         print("[issues] GITHUB_TOKEN / GITHUB_REPOSITORY absents : aucune Issue créée")
-        return 0
-    n = 0
+        return []
+    sent = []
     for v in vs:
         data = json.dumps({"title": title(v), "body": body(v), "labels": [LABELS[v.kind]]}).encode()
         req = urllib.request.Request(
@@ -60,7 +62,12 @@ def create_issues(vs: list[Verdict]) -> int:
                      "Content-Type": "application/json", "User-Agent": "flight-deals"})
         try:
             urllib.request.urlopen(req, timeout=20).read()
-            n += 1
+            sent.append(v)
+        except urllib.error.HTTPError as e:
+            detail = e.read().decode("utf-8", "replace")[:400]
+            print(f"[issues] échec HTTP {e.code} : {detail}")
+            if e.code in (401, 403, 404, 410):   # accès/permission : inutile d'insister
+                break
         except Exception as e:
             print(f"[issues] échec : {e}")
-    return n
+    return sent

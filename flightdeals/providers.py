@@ -136,17 +136,32 @@ def parse_deal_title(title: str, link: str = "", source: str = "rss") -> Offer |
                  source=source, title=title, flagged_error=any(w in t for w in ERR_WORDS))
 
 
+def _rss_items(raw: str) -> list:
+    """(titre, lien) de chaque <item>. XML strict d'abord, sinon extraction tolérante (flux mal formés)."""
+    try:
+        root = ET.fromstring(raw)
+        return [((i.findtext("title") or "").strip(), (i.findtext("link") or "").strip()) for i in root.iter("item")]
+    except ET.ParseError:
+        import html
+        items = []
+        for blk in re.findall(r"<item\b.*?</item>", raw, re.S | re.I):
+            t = re.search(r"<title[^>]*>(.*?)</title>", blk, re.S | re.I)
+            l = re.search(r"<link[^>]*>(.*?)</link>", blk, re.S | re.I)
+            if t:
+                clean = lambda x: html.unescape(re.sub(r"<!\[CDATA\[|\]\]>", "", x)).strip()
+                items.append((clean(t.group(1)), clean(l.group(1)) if l else ""))
+        return items
+
+
 def rss(feeds: list[str]) -> list[Offer]:
     out: list[Offer] = []
     for url in feeds:
         try:
-            root = ET.fromstring(_get(url))
+            raw = _get(url).decode("utf-8", "replace")
         except Exception as e:
             print(f"[rss] {url}: {e}")
             continue
-        for item in root.iter("item"):
-            title = (item.findtext("title") or "").strip()
-            link = (item.findtext("link") or "").strip()
+        for title, link in _rss_items(raw):
             o = parse_deal_title(title, link, source=f"rss:{urllib.parse.urlparse(url).netloc}")
             if o:
                 out.append(o)

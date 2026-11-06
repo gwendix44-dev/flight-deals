@@ -8,9 +8,9 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-from . import evaluate, notify, providers, stopovers
+from . import evaluate, providers, stopovers
 from .airports import HUBS, ORIGINS
-from .main import DEALS, HISTORY, ROOT, SEEN, _load, _save, dedupe_key, months_ahead
+from .main import ROOT, SEEN, _load, _save, dispatch, months_ahead, publish
 
 
 def _group(legs, keep: int = 6):
@@ -89,26 +89,10 @@ def run(dry: bool) -> int:
     print(f"{checked} montages vérifiés, {len(verdicts)} retenus")
 
     seen = _load(SEEN, {})
-    drop = 1 - cfg["realert_if_price_drops_pct"] / 100
-    new = []
-    for v in sorted(verdicts, key=lambda v: v.trip_total):
-        k = dedupe_key(v.offer)
-        prev = seen.get(k)
-        if prev is None or v.offer.price_eur <= prev * drop:
-            new.append(v)
-        seen[k] = min(v.offer.price_eur, prev) if prev else v.offer.price_eur
-
-    if dry:
-        for v in new:
-            print("\n" + notify.body(v))
-        return 0
-    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    store = _load(DEALS, {"deals": []})
-    store["updated"] = now
-    store["deals"] = ([dict(v.to_dict(), found_at=now) for v in new] + store.get("deals", []))[:200]
-    notify.create_issues(new)
-    _save(DEALS, store)
-    _save(SEEN, dict(list(seen.items())[-5000:]))
+    sent = dispatch(sorted(verdicts, key=lambda v: v.trip_total), seen, cfg, dry, cfg["max_alerts_per_run"]["combos"])
+    if not dry:
+        publish(sent, dry)
+        _save(SEEN, dict(list(seen.items())[-5000:]))
     return 0
 
 

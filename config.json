@@ -63,5 +63,9 @@
     "min_saving": 0.2,
     "hubs": null,
     "max_candidates_to_verify": 25
+  },
+  "max_alerts_per_run": {
+    "scan": 5,
+    "combos": 3
   }
 }

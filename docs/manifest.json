@@ -1,0 +1,9 @@
+{
+  "name": "Flight Deals",
+  "short_name": "Deals",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0b1d33",
+  "theme_color": "#0b1d33",
+  "icons": [{"src": "icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+}

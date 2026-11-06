@@ -6,7 +6,7 @@ import hashlib
 import json
 import os
 import sys
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from . import evaluate, notify, providers
@@ -15,6 +15,7 @@ from .core import Offer
 ROOT = Path(__file__).resolve().parent.parent
 HISTORY = ROOT / "data" / "history.json"
 SEEN = ROOT / "data" / "seen.json"
+DEALS = ROOT / "docs" / "deals.json"
 
 
 def _load(p: Path, default):
@@ -78,6 +79,11 @@ def run(demo: bool, dry: bool) -> int:
     new.sort(key=lambda v: (v.kind != "error_fare", v.trip_total))
     print(f"{len(verdicts)} affaires, {len(new)} nouvelles")
 
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    store = _load(DEALS, {"deals": []})
+    store["updated"] = now
+    store["deals"] = ([dict(v.to_dict(), found_at=now) for v in new] + store.get("deals", []))[:200]
+
     if dry or demo:
         for v in new:
             print("\n" + notify.body(v))
@@ -87,6 +93,7 @@ def run(demo: bool, dry: bool) -> int:
         notify.create_issues(new)
 
     if not dry:
+        _save(DEALS, store)
         _save(HISTORY, history)
         _save(SEEN, dict(list(seen.items())[-5000:]))
     return 0

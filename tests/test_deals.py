@@ -188,7 +188,7 @@ class Feedback(unittest.TestCase):
 
     def test_stricter_threshold_and_never_loosens_config(self):
         p, _ = self.learn("pas assez exceptionnel")
-        self.assertEqual(preferences.apply_prefs(CFG, p)["scoring"]["min_score"], 9.8)
+        self.assertEqual(preferences.apply_prefs(CFG, p)["scoring"]["min_score"], round(CFG["scoring"]["min_score"] + 0.3, 1))
         p = preferences.load_prefs(Path("/nonexistent")); p["total_cap_eur"] = 5000
         self.assertEqual(preferences.apply_prefs(CFG, p)["economy"]["total_trip_cap_eur"][0][1], 1500)
 

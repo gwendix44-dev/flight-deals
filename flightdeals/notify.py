@@ -7,7 +7,7 @@ import urllib.request
 
 from .core import Verdict
 
-LABEL = {"error_fare": "🚨 ERREUR DE PRIX", "deal": "✈️ Très bonne affaire", "business_deal": "💺 Business pas cher"}
+LABEL = {"error_fare": "🚨 ERREUR DE PRIX", "deal": "✈️ Très bonne affaire", "business_deal": "💺 Business pas cher", "stopover_deal": "🔀 Montage d'escales"}
 AIRCRAFT = {
     "widebody_probable": "Gros-porteur probable sur la ligne (à vérifier sur le vol exact)",
     "unverified": "⚠️ Type d'avion NON vérifié : contrôler que c'est un double couloir avant d'acheter",
@@ -31,7 +31,9 @@ def body(v: Verdict) -> str:
         f"Prix du vol A/R : {o.price_eur:.0f} €",
         f"Séjour {v.stay_days} j en backpacker : ~{v.stay_cost} € ({v.daily_budget:.0f} €/j + marge + frais)",
         f"➜ COÛT TOTAL ESTIMÉ : ~{v.trip_total} €",
+        *(["", "Itinéraire (billets séparés) :", *[f"  {x}" for x in v.itinerary]] if v.itinerary else []),
         "", "Pourquoi :", *[f"  • {r}" for r in v.reasons],
+        *(["⚠️ Billets séparés : aucune protection si un vol est en retard ; bagages à récupérer et ré-enregistrer à chaque escale ; vérifier les visas de transit."] if v.kind == "stopover_deal" else []),
         f"Avion : {AIRCRAFT.get(v.aircraft, v.aircraft)}" + (f" — {v.aircraft_note}" if v.aircraft in ('widebody_probable', 'unverified') else ""),
         f"Source : {o.source}" + (f" — « {o.title} »" if o.title else ""),
         f"Réserver : {o.link or 'rechercher la route sur Google Flights / Skyscanner / Kiwi'}",
@@ -41,7 +43,7 @@ def body(v: Verdict) -> str:
     return "\n".join(lines)
 
 
-LABELS = {"error_fare": "erreur-de-prix", "deal": "bonne-affaire", "business_deal": "business"}
+LABELS = {"error_fare": "erreur-de-prix", "deal": "bonne-affaire", "business_deal": "business", "stopover_deal": "montage-escales"}
 
 
 def create_issues(vs: list[Verdict]) -> int:

@@ -11,8 +11,8 @@ import xml.etree.ElementTree as ET
 from datetime import date, datetime
 from typing import Iterable
 
-from .airports import DEST_KEYWORDS, ORIGIN_KEYWORDS, ORIGINS
-from .core import Offer
+from .airports import DEST_KEYWORDS, ORIGIN_KEYWORDS, ORIGINS, coords
+from .core import Leg, Offer, estimate_hours, haversine_km
 
 UA = "personal-flight-deals/1.0"
 
@@ -63,6 +63,43 @@ def travelpayouts(origins: Iterable[str], months: list[str], token: str, sleep: 
                     source="travelpayouts",
                 ))
             time.sleep(sleep)
+    return out
+
+
+def _dt(s):
+    try:
+        return datetime.fromisoformat(s.replace("Z", "+00:00")) if s else None
+    except ValueError:
+        return None
+
+
+def oneway_legs(origin: str, months: list, token: str, destination: str | None = None,
+                direct: bool = True, unique: bool = True, limit: int = 1000, sleep: float = 0.25) -> list:
+    """Billets aller simple (Travelpayouts). Sans destination : le moins cher vers chaque destination, par mois."""
+    out: list[Leg] = []
+    for month in months:
+        q = {"origin": origin, "departure_at": month, "one_way": "true", "unique": str(unique).lower(),
+             "direct": str(direct).lower(), "sorting": "price", "currency": "eur", "limit": limit, "token": token}
+        if destination:
+            q["destination"] = destination
+        try:
+            data = json.loads(_get("https://api.travelpayouts.com/aviasales/v3/prices_for_dates?" + urllib.parse.urlencode(q)))
+        except Exception as e:
+            print(f"[oneway] {origin}->{destination or '*'} {month}: {e}")
+            continue
+        for it in data.get("data", []):
+            dep = _dt(it.get("departure_at"))
+            dest = it.get("destination", "")
+            if not dep or not dest or not it.get("price"):
+                continue
+            dur = it.get("duration_to") or it.get("duration") or 0
+            if not dur and coords(origin) and coords(dest):
+                dur = int(estimate_hours(haversine_km(*coords(origin), *coords(dest)), int(it.get("transfers") or 0)) * 60)
+            link = it.get("link") or ""
+            out.append(Leg(orig=origin, dest=dest, dep=dep, dur_min=int(dur), price=float(it["price"]),
+                           airline=it.get("airline", ""), transfers=int(it.get("transfers") or 0),
+                           link="https://www.aviasales.com" + link if link.startswith("/") else link))
+        time.sleep(sleep)
     return out
 
 

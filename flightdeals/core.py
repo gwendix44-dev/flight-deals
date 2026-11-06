@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field, asdict
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
 
@@ -40,6 +40,9 @@ class Verdict:
     aircraft: str                     # widebody_confirmed | widebody_probable | unverified | not_required
     aircraft_note: str
     reasons: list = field(default_factory=list)
+    itinerary: list = field(default_factory=list)   # lignes détaillées (montages d'escales)
+    baseline_eur: Optional[float] = None
+    saving_pct: Optional[int] = None
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -47,6 +50,28 @@ class Verdict:
         o["depart"] = o["depart"].isoformat() if o["depart"] else None
         o["return_date"] = o["return_date"].isoformat() if o["return_date"] else None
         return d
+
+
+@dataclass
+class Leg:
+    """Un billet aller simple (un tronçon)."""
+    orig: str
+    dest: str
+    dep: datetime                     # heure locale de départ, avec fuseau
+    dur_min: int
+    price: float
+    airline: str = ""
+    link: str = ""
+    transfers: int = 0
+
+    @property
+    def dep_utc(self) -> datetime:
+        d = self.dep if self.dep.tzinfo else self.dep.replace(tzinfo=timezone.utc)
+        return d.astimezone(timezone.utc)
+
+    @property
+    def arr_utc(self) -> datetime:
+        return self.dep_utc + timedelta(minutes=self.dur_min)
 
 
 def haversine_km(lat1, lon1, lat2, lon2) -> float:

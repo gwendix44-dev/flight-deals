@@ -57,5 +57,11 @@
     "LY",
     "EG"
   ],
-  "max_transfers": 2
+  "max_transfers": 2,
+  "stopovers": {
+    "enabled": true,
+    "min_saving": 0.2,
+    "hubs": null,
+    "max_candidates_to_verify": 25
+  }
 }

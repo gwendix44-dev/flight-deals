@@ -129,3 +129,41 @@ DEST_KEYWORDS.update({
     "cancun": "CUN", "lima": "LIM", "bogota": "BOG", "santiago": "SCL",
     "havana": "HAV", "punta cana": "PUJ", "zanzibar": "ZNZ", "nairobi": "NBO",
 })
+
+
+# Hubs d'escale pour les montages à billets séparés.
+# code -> (ville, pays, lat, lon, décalage UTC (heure standard), [aéroports])
+HUBS = {
+    "LIS": ("Lisbonne", "PT", 38.774, -9.134, 0, ["LIS"]),
+    "OPO": ("Porto", "PT", 41.242, -8.678, 0, ["OPO"]),
+    "MAD": ("Madrid", "ES", 40.494, -3.567, 1, ["MAD"]),
+    "BCN": ("Barcelone", "ES", 41.297, 2.078, 1, ["BCN"]),
+    "DUB": ("Dublin", "IE", 53.421, -6.270, 0, ["DUB"]),
+    "LON": ("Londres", "GB", 51.470, -0.454, 0, ["LHR", "LGW", "STN", "LTN"]),
+    "ROM": ("Rome", "IT", 41.800, 12.250, 1, ["FCO", "CIA"]),
+    "ATH": ("Athènes", "GR", 37.936, 23.945, 2, ["ATH"]),
+    "BUD": ("Budapest", "HU", 47.440, 19.260, 1, ["BUD"]),
+    "IST": ("Istanbul", "TR", 41.275, 28.752, 3, ["IST", "SAW"]),
+    "DXB": ("Dubaï", "AE", 25.250, 55.360, 4, ["DXB"]),
+    "DOH": ("Doha", "QA", 25.270, 51.610, 3, ["DOH"]),
+}
+# Origine et hub identiques (même ville) : pas de montage Londres -> Londres
+SAME_CITY = {"LHR": "LON", "FCO": "ROM"}
+
+
+def coords(code: str):
+    if code in ORIGINS:
+        return ORIGINS[code][1], ORIGINS[code][2]
+    if code in HUBS:
+        return HUBS[code][2], HUBS[code][3]
+    if code in DESTINATIONS:
+        return DESTINATIONS[code][2], DESTINATIONS[code][3]
+    return None
+
+
+def airports_of(code: str) -> list:
+    if code in HUBS:
+        return HUBS[code][5]
+    if code in DESTINATIONS:
+        return DESTINATIONS[code][4] or [code]
+    return [code]

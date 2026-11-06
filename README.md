@@ -9,6 +9,12 @@ filtres (plafonds, gros-porteur > 5 h, 6 mois, coût total du séjour backpacker
 
 Réglages : `config.json` · budgets par pays : `data/budgets.json`
 
+## Montages d'escales (billets séparés)
+`python -m flightdeals.combos` (workflow `scan-combos`, toutes les 3 h) assemble des billets aller simple
+origine -> hub -> destination (2 escales max) et les compare au meilleur billet classique (gain minimum 20 %).
+Règles d'escale : 4 h à 10 h de jour (jamais de nuit à l'aéroport) ou 2 nuits minimum sur place (hébergement compté).
+Le retour est le billet aller simple le moins cher trouvé. Hubs : `HUBS` dans `flightdeals/airports.py`.
+
 ## Installation
 1. Dépôt GitHub **public** avec ce code.
 2. Settings > Secrets and variables > Actions : `TRAVELPAYOUTS_TOKEN` (token gratuit sur travelpayouts.com).

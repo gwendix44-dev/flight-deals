@@ -55,7 +55,7 @@ def _load_routes(path: str):
     return routes
 
 
-def check_route(origin: str, dest_airports: list[str], transfers: int, hours: float,
+def check_route(origin, dest_airports: list[str], transfers: int, hours: float,
                 long_haul_hours: float, routes_path: str):
     """-> (statut, note). Statut parmi not_required, widebody_probable, unverified, REJECT."""
     if hours <= long_haul_hours:
@@ -64,9 +64,10 @@ def check_route(origin: str, dest_airports: list[str], transfers: int, hours: fl
         return "unverified", "escale(s) : type d'avion de chaque tronçon à vérifier avant d'acheter"
     routes = _load_routes(routes_path)
     equip: set[str] = set()
-    for d in dest_airports:
-        equip |= routes.get((origin, d), set())
-        equip |= routes.get((d, origin), set())
+    for o in ([origin] if isinstance(origin, str) else origin):
+        for d in dest_airports:
+            equip |= routes.get((o, d), set())
+            equip |= routes.get((d, o), set())
     if not equip:
         return "unverified", "ligne absente de la base d'équipements : vérifier le type d'avion"
     wide = equip & WIDEBODY

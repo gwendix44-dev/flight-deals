@@ -35,7 +35,20 @@
     "ideal_window_days": 8
   },
   "economy": {
-    "total_trip_cap_eur": 1500,
+    "total_trip_cap_eur": [
+      [
+        8000,
+        1500
+      ],
+      [
+        12000,
+        1900
+      ],
+      [
+        1000000,
+        2500
+      ]
+    ],
     "flight_cap_eur": null,
     "buffer_pct": 10,
     "insurance_per_day": 2.2,
@@ -93,10 +106,10 @@
     },
     "price_disc_zero": 0.2,
     "price_disc_full": 0.6,
-    "budget_full_eur": 900,
     "error_bench_disc": 0.75,
     "overall_ratio_full": 0.55,
-    "overall_ratio_zero": 0.9
+    "overall_ratio_zero": 0.9,
+    "budget_full_share": 0.6
   },
   "max_alerts_per_region": 2,
   "verification": {

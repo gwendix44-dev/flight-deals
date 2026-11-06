@@ -13,7 +13,7 @@ Réglages : `config.json` · budgets par pays : `data/budgets.json`
 Un deal n'est alerté que s'il atteint **9,5/11** (`scoring.min_score` dans `config.json`).
 Prix vs prix habituel (3) · budget total du séjour (2) · destination hors sentiers battus (1,5) ·
 qualité du vol (1,5) · durée adaptée à la distance (1) · coût par jour (1) · bonus erreur de prix (+1).
-Budget total (vols + sur place) : 1 500 € max. Séjour : 3 semaines max, minimum 5 j (≤3 500 km), 7 j (≤7 000 km),
+Budget total (vols + sur place) : 1 500 € max jusqu'à 8 000 km, 1 900 € de 8 000 à 12 000 km, 2 500 € au-delà (réglable : `economy.total_trip_cap_eur`). Séjour : 3 semaines max, minimum 5 j (≤3 500 km), 7 j (≤7 000 km),
 10 j (≤10 000 km), 14 j au-delà. Les journaux du scan listent les 5 meilleures offres refusées pour régler le seuil.
 
 ## Réalisme du séjour et vérification avant affichage

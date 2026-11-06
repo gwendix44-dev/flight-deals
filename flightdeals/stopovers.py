@@ -157,7 +157,8 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
             stop_cost += hub_cost
             cost_lines.append((f"Mini-étape {nights} nuits à {HUBS[hub][0]}", round(hub_cost)))
     total = flights + stay_cost + stop_cost
-    if total > eco["total_trip_cap_eur"]:
+    cap = scoring.total_cap(km, cfg)
+    if total > cap:
         return None
     stops = len(path.layovers) + sum(l.transfers for l in path.legs)
     sc = scoring.score_deal(price=flights, km=km, cabin="economy", total=total, stay=stay, stops=stops,
@@ -176,7 +177,7 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
 
     reasons = [f"Note {sc.total}/11 (seuil {cfg['scoring']['min_score']})",
                f"−{saving * 100:.0f} % vs le meilleur billet classique trouvé ({baseline:.0f} €)",
-               f"Vols {flights:.0f} € ; séjour complet ≈ {total:.0f} € (budget max {eco['total_trip_cap_eur']} €)"]
+               f"Vols {flights:.0f} € ; séjour complet ≈ {total:.0f} € (budget max {cap:.0f} € pour {km:.0f} km)"]
     offer = Offer(origin=o, dest=d, price_eur=round(flights), depart=first.dep_utc.date(),
                   return_date=ret.dep_utc.date(), transfers=stops, source="combo-escales",
                   link=first.link, title=" > ".join([o] + [h for h, _, _ in path.layovers] + [d]))

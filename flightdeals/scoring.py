@@ -28,6 +28,15 @@ def min_stay_for(km: float, cfg: dict) -> int:
     return min(cfg["stay_days"]["min_by_distance_km"][-1][1] + extra, cfg["stay_days"]["max"])
 
 
+def total_cap(km: float, cfg: dict) -> float:
+    """Budget total (vols + séjour) autorisé selon la distance : plus c'est loin, plus le plafond est haut."""
+    tiers = cfg["economy"]["total_trip_cap_eur"]
+    for upto, cap in tiers:
+        if km <= upto:
+            return cap
+    return tiers[-1][1]
+
+
 def default_stay(km: float, cfg: dict) -> int:
     """Durée supposée quand la source ne donne pas les dates."""
     return min(min_stay_for(km, cfg) + 3, cfg["stay_days"]["max"])
@@ -63,8 +72,8 @@ def score_deal(*, price: float, km: float, cabin: str, total: float, stay: int, 
     disc = 1 - price / ref if ref else 0.0
 
     prix = 3 * clamp((disc - sc["price_disc_zero"]) / (sc["price_disc_full"] - sc["price_disc_zero"]))
-    cap = cfg["economy"]["total_trip_cap_eur"]
-    budget = 2 * clamp((cap - total) / (cap - sc["budget_full_eur"]))
+    cap = total_cap(km, cfg)
+    budget = 2 * clamp((cap - total) / (cap * (1 - sc["budget_full_share"])))
     dest = secrecy
     vol = {0: 0.8, 1: 0.5, 2: 0.2}.get(stops, 0.0)
     vol += 0.2 if aircraft_status == "unverified" else 0.7

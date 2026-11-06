@@ -27,6 +27,11 @@ class Rules(unittest.TestCase):
     def test_haversine_paris_tokyo(self):
         self.assertAlmostEqual(haversine_km(49.013, 2.55, 35.55, 139.78), 9710, delta=60)
 
+    def test_cap_grows_with_distance(self):
+        self.assertEqual([scoring.total_cap(k, CFG) for k in (5000, 9000, 16000)], [1500, 1900, 2500])
+        self.assertIsNotNone(self.ev(mk("SYD", 600, days=(60, 74), transfers=1)))     # Sydney : possible avec un très bon vol
+        self.assertIsNone(self.ev(mk("SYD", 1000, days=(60, 74), transfers=1)))       # mais pas à 1 000 € de vol
+
     def test_total_budget_1500(self):
         self.assertIsNotNone(self.ev(mk("BKK", 300, days=(60, 74), transfers=1)))    # ~1100 € tout compris
         self.assertIsNone(self.ev(mk("TYO", 700, days=(60, 75), transfers=1)))       # Japon : > 1500 € au total
@@ -134,7 +139,7 @@ class Feedback(unittest.TestCase):
 
     def test_too_expensive_lowers_budget_below_refused_deal(self):
         p, msgs = self.learn("Trop cher pour ce que c'est")
-        self.assertEqual(p["total_cap_eur"], 1150)
+        self.assertEqual(p["cap_by_tier"], {"1": 1150})        # palier 8 000-12 000 km : 1300 × 0,9 arrondi à 50
         self.assertTrue(msgs)
 
     def test_explicit_budget(self):
@@ -185,7 +190,7 @@ class Feedback(unittest.TestCase):
         p, _ = self.learn("pas assez exceptionnel")
         self.assertEqual(preferences.apply_prefs(CFG, p)["scoring"]["min_score"], 9.8)
         p = preferences.load_prefs(Path("/nonexistent")); p["total_cap_eur"] = 5000
-        self.assertEqual(preferences.apply_prefs(CFG, p)["economy"]["total_trip_cap_eur"], 1500)
+        self.assertEqual(preferences.apply_prefs(CFG, p)["economy"]["total_trip_cap_eur"][0][1], 1500)
 
 
 class Diversity(unittest.TestCase):

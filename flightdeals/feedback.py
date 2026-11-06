@@ -30,6 +30,7 @@ def _api(method: str, path: str, payload: dict | None = None):
 def describe(p: dict) -> str:
     rows = []
     if p["total_cap_eur"]: rows.append(f"budget total max {p['total_cap_eur']} €")
+    for i, cap in sorted(p["cap_by_tier"].items()): rows.append(f"budget total max {cap} € (palier de distance n°{int(i) + 1})")
     if p["min_stay_extra"]: rows.append(f"séjour minimum +{p['min_stay_extra']} j")
     if p["max_stay_days"]: rows.append(f"séjour max {p['max_stay_days']} j")
     if p["max_distance_km"]: rows.append(f"distance max {p['max_distance_km']} km")

@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PREFS_PATH = ROOT / "docs" / "preferences.json"
 
 DEFAULT = {
-    "total_cap_eur": None, "min_stay_extra": 0, "max_stay_days": None,
+    "total_cap_eur": None, "cap_by_tier": {}, "min_stay_extra": 0, "max_stay_days": None,
     "max_distance_km": None, "min_distance_km": None, "max_flight_hours": None,
     "max_transfers": None, "strict_aircraft": False, "stopovers_disabled": False,
     "excluded_destinations": [], "excluded_countries": [], "excluded_months": [],
@@ -40,8 +40,10 @@ def load_prefs(path: Path = PREFS_PATH) -> dict:
 def apply_prefs(cfg: dict, p: dict) -> dict:
     """config.json + préférences -> configuration effective du scan."""
     c = copy.deepcopy(cfg)
-    if p.get("total_cap_eur"):
-        c["economy"]["total_trip_cap_eur"] = min(c["economy"]["total_trip_cap_eur"], p["total_cap_eur"])
+    tiers = c["economy"]["total_trip_cap_eur"]
+    for i, (upto, cap) in enumerate(tiers):
+        cap = min(cap, p.get("total_cap_eur") or cap, (p.get("cap_by_tier") or {}).get(str(i), cap))
+        tiers[i] = [upto, cap]
     c["stay_days"]["min_extra_days"] = p.get("min_stay_extra", 0)
     if p.get("max_stay_days"):
         c["stay_days"]["max"] = min(c["stay_days"]["max"], p["max_stay_days"])
@@ -100,7 +102,8 @@ def learn(prefs: dict, text: str, deal: Optional[dict], cfg: dict) -> tuple:
     msgs: list[str] = []
     d = deal or {}
     km = d.get("distance_km")
-    cap_now = min(cfg["economy"]["total_trip_cap_eur"], p["total_cap_eur"] or 10**9)
+    tier = next((i for i, (u, _) in enumerate(cfg["economy"]["total_trip_cap_eur"]) if (km or 8000) <= u), 0)
+    cap_now = cfg["economy"]["total_trip_cap_eur"][tier][1]      # déjà intégré aux préférences existantes
 
     def has(*words):
         return any(re.search(w, t) for w in words)
@@ -111,15 +114,13 @@ def learn(prefs: dict, text: str, deal: Optional[dict], cfg: dict) -> tuple:
         if n and 300 <= n <= 5000:
             p["total_cap_eur"] = n
             msgs.append(f"Budget total maximum fixé à {n} €.")
-        elif d.get("trip_total"):
-            n = max(600, int(d["trip_total"] * 0.9 // 50 * 50))
-            if n < cap_now:
-                p["total_cap_eur"] = n
-                msgs.append(f"Budget total maximum abaissé à {n} € (l'offre refusée coûtait ~{d['trip_total']} €).")
         else:
-            n = max(600, int(cap_now * 0.9 // 50 * 50))
-            p["total_cap_eur"] = n
-            msgs.append(f"Budget total maximum abaissé à {n} €.")
+            base = d["trip_total"] if d.get("trip_total") else cap_now
+            n = max(600, int(base * 0.9 // 50 * 50))
+            if n < cap_now:
+                p["cap_by_tier"][str(tier)] = n
+                msgs.append(f"Budget total maximum abaissé à {n} € pour les destinations à cette distance"
+                            + (f" (l'offre refusée coûtait ~{d['trip_total']} €)." if d.get("trip_total") else "."))
 
     # --- durée du séjour / durée du vol
     flight_len = has(r"\bvol\b.*\blong", r"\blong\b.*\bvol\b", r"duree du vol", r"trop (d'heures|de temps) (de vol|dans l'avion)", r"trajet (trop )?long")

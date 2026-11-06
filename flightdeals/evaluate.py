@@ -87,7 +87,8 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
     daily = costcalc.daily(budgets, cc)
     eco = cfg["economy"]
     total = o.price_eur + stay_cost
-    if total > eco["total_trip_cap_eur"]:
+    cap = scoring.total_cap(km, cfg)
+    if total > cap:
         return None
     if eco.get("flight_cap_eur") and o.price_eur > eco["flight_cap_eur"]:
         return None
@@ -112,7 +113,7 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
 
     kind = "business_deal" if o.cabin == "business" else ("error_fare" if sc.error_fare else "deal")
     reasons = [f"Note {sc.total}/11 (seuil {cfg['scoring']['min_score']})",
-               f"Vol {o.price_eur:.0f} € ; séjour complet ≈ {total:.0f} € (budget max {eco['total_trip_cap_eur']} €)",
+               f"Vol {o.price_eur:.0f} € ; séjour complet ≈ {total:.0f} € (budget max {cap:.0f} € pour {km:.0f} km)",
                f"−{sc.discount * 100:.0f} % vs prix habituel de la ligne" + (" (historique)" if hist_median else " (estimation selon la distance)")]
     if sc.error_fare:
         reasons.append("Erreur de prix probable")

@@ -16,6 +16,15 @@ qualité du vol (1,5) · durée adaptée à la distance (1) · coût par jour (1
 Budget total (vols + sur place) : 1 500 € max jusqu'à 8 000 km, 1 900 € de 8 000 à 12 000 km, 2 500 € au-delà (réglable : `economy.total_trip_cap_eur`). Séjour : 3 semaines max, minimum 5 j (≤3 500 km), 7 j (≤7 000 km),
 10 j (≤10 000 km), 14 j au-delà. Les journaux du scan listent les 5 meilleures offres refusées pour régler le seuil.
 
+## Départs réels et section business
+- **Tu habites à Nantes et Paris** : NTE, CDG et ORY sont tes départs directs. Les autres aéroports (LHR, MAD, FCO, LIS, DUB,
+  AMS, FRA) restent possibles, mais le billet A/R pour les rejoindre depuis Paris ou Nantes est ajouté au **coût du séjour**
+  (`home.positioning_eur` dans `config.json`, estimations modifiables), jamais au prix du vol, qui reste comparé au vrai tarif.
+- **Section business class** (onglet séparé du dashboard, étiquette `business` sur les Issues) : A/R en business ≤ 800 €
+  (`business.flight_cap_eur`), long-courrier (≥ 3 600 km), avec au moins 50 % de remise sur le prix habituel du business. Le prix du
+  séjour n'est PAS pris en compte (affiché à titre indicatif). Ni note sur 11, ni budget total. Ces offres viennent des flux de
+  bons plans (l'API gratuite ne distingue pas la cabine) et sont donc marquées « à confirmer sur le lien ».
+
 ## Réalisme du séjour et vérification avant affichage
 - **Coût du séjour poste par poste** (`data/costs.json`, 86 pays, modifiable) : hébergement (dortoir/chambre simple), nourriture,
   transports locaux, activités, déplacements entre villes, visa/autorisation d'entrée (passeport français, à revérifier),

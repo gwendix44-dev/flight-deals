@@ -34,8 +34,23 @@ def _is_peak(depart: Optional[date], days: int, cfg: dict) -> bool:
     return False
 
 
-def stay_breakdown(costs: dict, cc: str, days: int, depart: Optional[date], cfg: dict):
-    """-> (total_eur, lignes [(libellé, montant)]). None si le pays n'est pas dans la base."""
+def positioning(origin: Optional[str], cfg: dict):
+    """Trajet A/R depuis chez toi (Paris / Nantes) jusqu'à un aéroport de départ éloigné. -> (montant, libellé) ou None."""
+    home = cfg.get("home")
+    if not (home and origin) or origin in home["airports"]:
+        return None
+    table = home["positioning_eur"].get(origin)
+    if not table:
+        return home["default_positioning_eur"], f"Trajet A/R jusqu'à l'aéroport de départ ({origin}), estimation"
+    frm = min(table, key=table.get)
+    return table[frm], f"Trajet A/R {frm} → {origin} pour rejoindre l'aéroport de départ"
+
+
+def stay_breakdown(costs: dict, cc: str, days: int, depart: Optional[date], cfg: dict, origin: Optional[str] = None):
+    """-> (total_eur, lignes [(libellé, montant)]). None si le pays n'est pas dans la base.
+
+    Si le vol part d'un autre aéroport que chez toi (Paris, Nantes), le trajet pour le rejoindre est ajouté ICI,
+    dans le coût du séjour, et non dans le prix du vol (qui reste comparé au vrai tarif du vol)."""
     c = costs.get(cc)
     if not c:
         return None
@@ -57,4 +72,9 @@ def stay_breakdown(costs: dict, cc: str, days: int, depart: Optional[date], cfg:
     sub = sum(v for _, v in lines)
     buf = sub * eco["buffer_pct"] / 100
     lines.append((f"Marge imprévus ({eco['buffer_pct']} %)", buf))
-    return sub + buf, [(k, round(v)) for k, v in lines if round(v) > 0]
+    pos = positioning(origin, cfg)
+    extra = 0.0
+    if pos:
+        extra = pos[0]
+        lines.append(pos[::-1])
+    return sub + buf + extra, [(k, round(v)) for k, v in lines if round(v) > 0]

@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PREFS_PATH = ROOT / "docs" / "preferences.json"
 
 DEFAULT = {
-    "total_cap_eur": None, "cap_by_tier": {}, "min_stay_extra": 0, "max_stay_days": None,
+    "total_cap_eur": None, "cap_by_tier": {}, "business_cap_eur": None, "min_stay_extra": 0, "max_stay_days": None,
     "max_distance_km": None, "min_distance_km": None, "max_flight_hours": None,
     "max_transfers": None, "strict_aircraft": False, "stopovers_disabled": False,
     "excluded_destinations": [], "excluded_countries": [], "excluded_months": [],
@@ -40,6 +40,8 @@ def load_prefs(path: Path = PREFS_PATH) -> dict:
 def apply_prefs(cfg: dict, p: dict) -> dict:
     """config.json + préférences -> configuration effective du scan."""
     c = copy.deepcopy(cfg)
+    if p.get("business_cap_eur"):
+        c["business"]["flight_cap_eur"] = min(c["business"]["flight_cap_eur"], p["business_cap_eur"])
     tiers = c["economy"]["total_trip_cap_eur"]
     for i, (upto, cap) in enumerate(tiers):
         cap = min(cap, p.get("total_cap_eur") or cap, (p.get("cap_by_tier") or {}).get(str(i), cap))
@@ -111,7 +113,11 @@ def learn(prefs: dict, text: str, deal: Optional[dict], cfg: dict) -> tuple:
     # --- prix / budget
     if has(r"trop cher", r"\bcher\b", r"budget", r"depasse", r"prix (trop )?(eleve|haut)"):
         n = _num(t, r"(?:€|euros?\b|eur\b)")
-        if n and 300 <= n <= 5000:
+        if d.get("kind") == "business_deal":
+            n = n or max(400, int(d["offer"]["price_eur"] * 0.9 // 50 * 50))
+            p["business_cap_eur"] = min(p["business_cap_eur"] or 10**6, n)
+            msgs.append(f"Plafond business abaissé à {p['business_cap_eur']} € A/R.")
+        elif n and 300 <= n <= 5000:
             p["total_cap_eur"] = n
             msgs.append(f"Budget total maximum fixé à {n} €.")
         else:

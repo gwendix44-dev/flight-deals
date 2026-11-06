@@ -54,7 +54,8 @@ def dispatch(candidates, seen: dict, cfg: dict, dry: bool, limit: int, verifier=
         prev = seen.get(dedupe_key(v.offer))
         if prev is None or v.offer.price_eur <= prev * drop:
             fresh.append(v)
-    fresh.sort(key=lambda v: (-v.score, v.trip_total))    # meilleure note d'abord
+    # meilleure note d'abord ; le business (sans note) se classe au prix du vol
+    fresh.sort(key=lambda v: (-v.score, v.offer.price_eur if v.kind == "business_deal" else v.trip_total))
     if verifier:
         fresh = verifier(fresh)        # revérification : seules les offres confirmées continuent
     # Toute la planète : on prend à tour de rôle la meilleure offre de chaque région du monde (Asie, Amérique du Nord,
@@ -133,6 +134,7 @@ def run(demo: bool, dry: bool) -> int:
         print("destinations absentes de la base (prix mini) : " + ", ".join(f"{c} {p:.0f}€" for c, p in best))
 
     verdicts = [v for o in offers if (v := evaluate.evaluate(o, cfg, history, budgets, today))]
+    biz_verdicts = [v for o in offers if (v := evaluate.evaluate_business(o, cfg, budgets, today))]
     if evaluate.NEAR_MISSES:
         top = sorted(evaluate.NEAR_MISSES, reverse=True)[:5]
         print(f"{len(evaluate.NEAR_MISSES)} offres sous le seuil ; les 5 meilleures :")
@@ -145,6 +147,7 @@ def run(demo: bool, dry: bool) -> int:
     token = os.environ.get("TRAVELPAYOUTS_TOKEN")
     verifier = None if demo else (lambda lst: verify.verify_all(lst, cfg, token, today))
     sent = dispatch(verdicts, seen, cfg, dry or demo, cfg["max_alerts_per_run"]["scan"], verifier)
+    sent += dispatch(biz_verdicts, seen, cfg, dry or demo, cfg["max_alerts_per_run"]["business"], verifier)   # section business, à part
     if demo:
         return 0
     publish(sent, dry)

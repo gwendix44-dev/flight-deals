@@ -40,18 +40,23 @@
   .send { margin-top:6px; padding:8px 14px; border:0; border-radius:8px; background:var(--err); color:#fff; cursor:pointer; }
   .status { margin-left:8px; font-size:.8rem; color:var(--mut); }
   details.prefs { padding:0 16px 24px; color:var(--mut); font-size:.85rem; } details.prefs summary { cursor:pointer; }
+  nav[hidden] { display:none; }
+  #sections { padding:0 16px 8px; display:flex; gap:10px; } #sections button { flex:1; padding:12px; border-radius:12px; border:2px solid var(--mut); background:transparent; color:var(--fg); font-weight:600; cursor:pointer; }
+  #sections button[aria-pressed="true"] { background:var(--fg); color:var(--bg); border-color:var(--fg); }
+  article.biz .price small { font-size:.9rem; font-weight:400; color:var(--mut); }
   .empty { padding:32px; text-align:center; color:var(--mut); }
 </style>
 </head>
 <body>
 <header><h1>✈️ Flight Deals</h1><span class="mut" id="upd">chargement…</span><button class="refuse" id="tok" title="Nécessaire pour envoyer un refus depuis cette page">🔑 Connecter GitHub</button></header>
+<nav id="sections"></nav>
 <nav id="filters"></nav>
 <main id="list"></main>
 <details class="prefs"><summary>Mes réglages appris de mes refus</summary><div id="prefs">Aucun pour l'instant.</div></details>
 <script>
 const LABEL = {error_fare:"Erreur de prix", deal:"Très bonne affaire", business_deal:"Business", stopover_deal:"Montage d'escales"};
 const AIR = {widebody_probable:"Gros-porteur probable", unverified:"⚠️ Avion à vérifier", not_required:"Vol court"};
-let deals = [], filter = "all", refused = new Set(JSON.parse(localStorage.getItem("hidden") || "[]"));
+let deals = [], filter = "all", section = "voyage", refused = new Set(JSON.parse(localStorage.getItem("hidden") || "[]"));
 const REASONS = ["Trop cher", "Séjour trop court", "Séjour trop long", "Trop loin", "Trop d'escales", "Destination déjà vue", "Avion pas adapté", "Trop touristique", "Billets séparés trop risqués"];
 const REPO = location.hostname.endsWith("github.io") ? [location.hostname.split(".")[0], location.pathname.split("/")[1]] : ["gwendix44-dev", "flight-deals"];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -59,14 +64,20 @@ const safeUrl = u => /^https?:\/\//.test(u || "") ? u : "";
 
 function render() {
   const el = document.getElementById("list");
-  const rows = deals.filter(d => (filter === "all" || d.kind === filter) && !refused.has(d.issue));
-  if (!rows.length) { el.innerHTML = '<div class="empty">Aucune affaire pour le moment. Le scanner tourne en continu.</div>'; return; }
+  const rows = deals.filter(d => !refused.has(d.issue) && (section === "business"
+    ? d.kind === "business_deal"
+    : d.kind !== "business_deal" && (filter === "all" || d.kind === filter)));
+  if (!rows.length) { el.innerHTML = section === "business"
+    ? '<div class="empty">Aucun très bon deal business pour le moment (A/R ≤ 800 €, long-courrier). Le scanner tourne en continu.</div>'
+    : '<div class="empty">Aucune affaire pour le moment. Le scanner tourne en continu.</div>'; return; }
   el.innerHTML = rows.map(d => { const o = d.offer, url = safeUrl(o.link); return `
-    <article class="${esc(d.kind)}">
+    <article class="${esc(d.kind)} ${d.kind === "business_deal" ? "biz" : ""}">
       <div class="tag">${esc(LABEL[d.kind])} ${d.score ? `<span class="score">${esc(d.score)}/11</span>` : ""}</div>
       <div><strong>${esc(o.origin)} → ${esc(d.dest_city)}</strong> <span class="mut">(${esc(d.country)})</span></div>
-      <div class="price">${Math.round(o.price_eur)} €</div>
-      <div class="tot">Séjour complet ≈ ${esc(d.trip_total)} € <span class="mut">(${esc(d.stay_days)} j, ${esc(d.daily_budget)} €/j)</span></div>
+      <div class="price">${Math.round(o.price_eur)} € ${d.kind === "business_deal" ? "<small>A/R en business</small>" : ""}</div>
+      ${d.kind === "business_deal"
+        ? `<div class="mut">Prix du séjour non pris en compte (indicatif : ≈ ${esc(d.stay_cost)} € sur place)</div>`
+        : `<div class="tot">Séjour complet ≈ ${esc(d.trip_total)} € <span class="mut">(${esc(d.stay_days)} j, ${esc(d.daily_budget)} €/j)</span></div>`}
       <div class="mut">${esc(o.depart || "dates sur le lien")} → ${esc(o.return_date || "")} · ${esc(d.distance_km)} km · ~${esc(d.flight_hours)} h · ${o.transfers ? esc(o.transfers) + " escale(s)" : "direct"}</div>
       ${(d.cost_lines || []).length ? `<details class="costs"><summary>Détail du séjour (${esc(d.stay_cost)} € sur place)</summary>${d.cost_lines.map(l => `<div>${esc(l[0])} : <b>${esc(l[1])} €</b></div>`).join("")}</details>` : ""}
       ${d.verification ? `<div class="verif">✔ ${esc(d.verification)}</div>` : ""}
@@ -115,8 +126,15 @@ document.getElementById("tok").onclick = () => {
 };
 
 function buildFilters() {
+  const nb = deals.filter(d => d.kind === "business_deal" && !refused.has(d.issue)).length;
+  const nv = deals.filter(d => d.kind !== "business_deal" && !refused.has(d.issue)).length;
+  const sec = document.getElementById("sections");
+  sec.innerHTML = `<button data-s="voyage" aria-pressed="${section === "voyage"}">✈️ Deals voyage (${nv})</button>
+                   <button data-s="business" aria-pressed="${section === "business"}">💺 Business class (${nb})</button>`;
+  sec.onclick = e => { const k = e.target.dataset.s; if (k) { section = k; buildFilters(); render(); } };
   const nav = document.getElementById("filters");
-  nav.innerHTML = [["all","Tout"],["error_fare","Erreurs de prix"],["deal","Bonnes affaires"],["business_deal","Business"],["stopover_deal","Montages"]]
+  nav.hidden = section === "business";
+  nav.innerHTML = [["all","Tout"],["error_fare","Erreurs de prix"],["deal","Bonnes affaires"],["stopover_deal","Montages"]]
     .map(([k,l]) => `<button data-k="${k}" aria-pressed="${k===filter}">${l}</button>`).join("");
   nav.onclick = e => { const k = e.target.dataset.k; if (k) { filter = k; buildFilters(); render(); } };
 }
@@ -137,7 +155,7 @@ async function load() {
     const rows = Object.entries(p).filter(([k, v]) => k !== "refused_issues" && v !== null && v !== false && v !== 0 && !(Array.isArray(v) && !v.length));
     document.getElementById("prefs").innerHTML = rows.length ? rows.map(([k, v]) => `<div>${esc(k)} : ${esc(Array.isArray(v) ? v.join(", ") : v)}</div>`).join("") : "Aucun pour l'instant.";
   } catch {}
-  render();
+  buildFilters(); render();
 }
 buildFilters(); load(); setInterval(load, 5 * 60 * 1000);
 if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();

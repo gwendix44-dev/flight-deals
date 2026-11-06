@@ -18,6 +18,8 @@ AIRCRAFT = {
 
 def title(v: Verdict) -> str:
     o = v.offer
+    if v.kind == "business_deal":
+        return f"{LABEL[v.kind]} · {o.origin}→{v.dest_city} · {o.price_eur:.0f} € A/R"
     return f"{LABEL[v.kind]} {v.score}/11 · {o.origin}→{v.dest_city} · séjour ~{v.trip_total} €"
 
 
@@ -25,14 +27,15 @@ def body(v: Verdict) -> str:
     o = v.offer
     dates = f"{o.depart} → {o.return_date}" if o.depart else "dates à voir sur le lien"
     lines = [
-        title(v), f"NOTE : {v.score}/11  ({v.score_line})", "",
+        title(v), *([f"NOTE : {v.score}/11  ({v.score_line})"] if v.score else []), "",
         f"Trajet : {o.origin} ⇄ {v.dest_city} ({v.country}) · {v.distance_km} km · ~{v.flight_hours} h · "
         f"{'direct' if o.transfers == 0 else str(o.transfers) + ' escale(s)'}",
         f"Cabine : {'Business' if o.cabin == 'business' else 'Économique'}   Dates : {dates}",
         f"Prix du vol A/R : {o.price_eur:.0f} €",
-        f"Séjour {v.stay_days} j en backpacker : ~{v.stay_cost} € sur place",
+        f"Séjour {v.stay_days} j en backpacker : ~{v.stay_cost} € sur place" + (" (indicatif, non pris en compte)" if v.kind == "business_deal" else ""),
         *[f"     · {lab} : {amt} €" for lab, amt in v.cost_lines],
-        f"➜ COÛT TOTAL ESTIMÉ : ~{v.trip_total} € (vols + tout le séjour)",
+        *([f"➜ Prix du vol : {o.price_eur:.0f} € A/R en business"] if v.kind == "business_deal" else
+          [f"➜ COÛT TOTAL ESTIMÉ : ~{v.trip_total} € (vols + tout le séjour)"]),
         f"✔ {v.verification}" if v.verification else "",
         *(["", "Itinéraire (billets séparés) :", *[f"  {x}" for x in v.itinerary]] if v.itinerary else []),
         "", "Pourquoi :", *[f"  • {r}" for r in v.reasons],

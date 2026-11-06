@@ -62,7 +62,9 @@
   "business": {
     "enabled": true,
     "flight_cap_eur": 800,
-    "min_km": 3600
+    "min_km": 3600,
+    "min_discount": 0.5,
+    "min_plausible_eur": 250
   },
   "aircraft": {
     "long_haul_hours": 5,
@@ -94,7 +96,8 @@
   },
   "max_alerts_per_run": {
     "scan": 5,
-    "combos": 3
+    "combos": 3,
+    "business": 3
   },
   "scoring": {
     "min_score": 7.5,
@@ -117,5 +120,43 @@
     "price_tolerance": 0.1,
     "max_checks": 25,
     "min_plausible_price_eur": 60
+  },
+  "home": {
+    "airports": [
+      "NTE",
+      "CDG",
+      "ORY"
+    ],
+    "default_positioning_eur": 150,
+    "positioning_eur": {
+      "LHR": {
+        "Paris": 90,
+        "Nantes": 110
+      },
+      "MAD": {
+        "Paris": 110,
+        "Nantes": 130
+      },
+      "FCO": {
+        "Paris": 120,
+        "Nantes": 150
+      },
+      "LIS": {
+        "Paris": 120,
+        "Nantes": 130
+      },
+      "DUB": {
+        "Paris": 110,
+        "Nantes": 120
+      },
+      "AMS": {
+        "Paris": 90,
+        "Nantes": 110
+      },
+      "FRA": {
+        "Paris": 100,
+        "Nantes": 130
+      }
+    }
   }
 }

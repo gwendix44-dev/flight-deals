@@ -50,12 +50,6 @@ class Rules(unittest.TestCase):
     def test_six_months_window(self):
         self.assertIsNone(self.ev(mk("BKK", 300, days=(250, 264), transfers=1)))
 
-    def test_business(self):
-        v = self.ev(mk("BOG", 760, origin="MAD", days=(45, 57), cabin="business"))
-        self.assertEqual(v.kind, "business_deal")
-        self.assertIsNone(self.ev(mk("BOG", 900, origin="MAD", days=(45, 57), cabin="business")))
-        self.assertIsNone(self.ev(mk("DKR", 300, origin="MAD", days=(45, 52), cabin="business")))   # trop court
-
     def test_error_fare_by_history(self):
         hist = {"CDG-BKK-economy": [600, 650, 580, 620, 610, 640]}
         v = self.ev(mk("BKK", 250, days=(60, 72), transfers=1), hist)
@@ -298,6 +292,82 @@ class WholePlanet(unittest.TestCase):
         for reg in REGIONS:
             self.assertGreaterEqual(sum(region_of(v[1]) == reg for v in DESTINATIONS.values()), 4, reg)
         self.assertTrue(all(v[1] in BUD or v[1] in CFG["excluded_countries"] for v in DESTINATIONS.values()))   # chaque pays autorisé a un barème
+
+
+class Home(unittest.TestCase):
+    def test_home_airports_have_no_positioning_cost(self):
+        for o in ("NTE", "CDG", "ORY"):
+            self.assertIsNone(costs.positioning(o, CFG))
+
+    def test_other_airports_add_the_cheapest_ticket_from_home(self):
+        amt, label = costs.positioning("LIS", CFG)
+        self.assertEqual(amt, 120)                       # Paris -> Lisbonne, moins cher que depuis Nantes (130)
+        self.assertIn("Paris", label)
+        self.assertEqual(costs.positioning("DUB", CFG)[0], 110)
+
+    def test_positioning_in_stay_not_in_flight_price(self):
+        cdg = evaluate.evaluate(mk("BKK", 300, origin="CDG", days=(60, 76), transfers=1), LOOSE, {}, BUD, TODAY)
+        lis = evaluate.evaluate(mk("BKK", 300, origin="LIS", days=(60, 76), transfers=1), LOOSE, {}, BUD, TODAY)
+        self.assertEqual(cdg.offer.price_eur, lis.offer.price_eur)                 # le prix du vol ne change pas
+        self.assertGreater(lis.stay_cost, cdg.stay_cost)                           # le séjour, si
+        self.assertTrue(any("Trajet A/R" in lab for lab, _ in lis.cost_lines))
+        self.assertFalse(any("Trajet A/R" in lab for lab, _ in cdg.cost_lines))
+        self.assertGreaterEqual(lis.trip_total - cdg.trip_total, 110)
+
+    def test_positioning_can_make_an_offer_unaffordable(self):
+        # sans le trajet l'offre tient dans le budget, avec elle non
+        cfg = copy.deepcopy(LOOSE)
+        cfg["economy"]["total_trip_cap_eur"] = [[8000, 1500], [12000, 1000], [1000000, 2500]]
+        base = evaluate.evaluate(mk("BKK", 400, origin="CDG", days=(60, 72), transfers=1), cfg, {}, BUD, TODAY)
+        self.assertIsNotNone(base)
+        cfg["economy"]["total_trip_cap_eur"][1][1] = base.trip_total + 60               # marge < trajet de 120 €
+        self.assertIsNotNone(evaluate.evaluate(mk("BKK", 400, origin="CDG", days=(60, 72), transfers=1), cfg, {}, BUD, TODAY))
+        self.assertIsNone(evaluate.evaluate(mk("BKK", 400, origin="LIS", days=(60, 72), transfers=1), cfg, {}, BUD, TODAY))
+
+
+class Business(unittest.TestCase):
+    def biz(self, dest, price, origin="CDG", **kw):
+        o = Offer(origin, dest, price, cabin="business", **kw)
+        return evaluate.evaluate_business(o, CFG, BUD, TODAY)
+
+    def test_good_business_deal_ignores_stay_price(self):
+        v = self.biz("TYO", 780)                    # Japon : séjour cher, sans importance ici
+        self.assertEqual(v.kind, "business_deal")
+        self.assertEqual(v.score, 0)                # pas de note sur 11 : section à part
+        self.assertTrue(v.stay_cost > 600)          # affiché à titre indicatif
+
+    def test_cap_800_long_haul_and_real_discount(self):
+        self.assertIsNone(self.biz("TYO", 850))                       # au-dessus de 800 €
+        self.assertIsNone(self.biz("DKR", 700, origin="MAD"))        # court-courrier (3 000 km)
+        self.assertIsNone(self.biz("TYO", 100))                       # prix irréaliste
+        self.assertIsNotNone(self.biz("TYO", 100, flagged_error=True))   # sauf erreur de prix signalée
+
+    def test_minimum_discount_is_enforced(self):
+        self.assertIsNotNone(self.biz("ACC", 800))                       # ~ -53 % vs prix habituel du business
+        cfg = copy.deepcopy(CFG)
+        cfg["business"]["min_discount"] = 0.6
+        o = Offer("CDG", "ACC", 800, cabin="business")
+        self.assertIsNone(evaluate.evaluate_business(o, cfg, BUD, TODAY))   # trop peu de remise pour être « très bon »
+
+    def test_business_and_economy_are_separate_flows(self):
+        o = Offer("CDG", "TYO", 500, cabin="business", depart=TODAY + timedelta(days=60),
+                  return_date=TODAY + timedelta(days=75))
+        self.assertIsNone(evaluate.evaluate(o, LOOSE, {}, BUD, TODAY))           # jamais dans la section voyage
+        eco = Offer("CDG", "TYO", 500, depart=TODAY + timedelta(days=60), return_date=TODAY + timedelta(days=75))
+        self.assertIsNone(evaluate.evaluate_business(eco, CFG, BUD, TODAY))      # ni l'inverse
+
+    def test_preferences_and_dates_apply_to_business(self):
+        self.assertIsNone(self.biz("TYO", 700, depart=TODAY + timedelta(days=3)))         # trop proche
+        cfg = copy.deepcopy(CFG)
+        cfg["excluded_countries"].append("JP")
+        o = Offer("CDG", "TYO", 700, cabin="business")
+        self.assertIsNone(evaluate.evaluate_business(o, cfg, BUD, TODAY))
+
+    def test_too_expensive_feedback_lowers_business_cap(self):
+        deal = {"kind": "business_deal", "offer": {"price_eur": 780, "dest": "TYO"}}
+        p, msgs = preferences.learn(preferences.load_prefs(Path("/nonexistent")), "trop cher", deal, CFG)
+        self.assertEqual(p["business_cap_eur"], 700)
+        self.assertEqual(preferences.apply_prefs(CFG, p)["business"]["flight_cap_eur"], 700)
 
 
 if __name__ == "__main__":

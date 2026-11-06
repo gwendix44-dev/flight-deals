@@ -145,7 +145,7 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
         if st in ("unverified", "widebody_probable"):
             notes.append(f"{leg.orig}→{leg.dest} : {note}")
 
-    bd = costcalc.stay_breakdown(budgets, cc, stay, last.arr_utc.date(), cfg)
+    bd = costcalc.stay_breakdown(budgets, cc, stay, last.arr_utc.date(), cfg, origin=o)
     if bd is None:
         return None
     stay_cost, cost_lines = bd

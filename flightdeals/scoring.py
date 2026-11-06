@@ -68,8 +68,13 @@ def score_deal(*, price: float, km: float, cabin: str, total: float, stay: int, 
                hist_median: Optional[float] = None, hist_disc: Optional[float] = None,
                flagged_error: bool = False) -> Score:
     sc = cfg["scoring"]
-    ref = hist_median or reference_price(km, cabin, cfg)
+    # Remise : on retient la plus favorable des deux références. Le barème de distance dit « bon marché par rapport
+    # au marché » ; l'historique dit « bon marché par rapport à d'habitude sur cette ligne ». L'historique ne contient que
+    # les prix les plus bas du mois : l'utiliser seul écraserait presque toutes les notes à zéro.
+    ref = reference_price(km, cabin, cfg)
     disc = 1 - price / ref if ref else 0.0
+    if hist_median:
+        disc = max(disc, 1 - price / hist_median)
 
     prix = 3 * clamp((disc - sc["price_disc_zero"]) / (sc["price_disc_full"] - sc["price_disc_zero"]))
     cap = total_cap(km, cfg)

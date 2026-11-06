@@ -165,6 +165,8 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
                             aircraft_status=worst, secrecy=secrecy(d), separate_tickets=True, cfg=cfg)
     if sc.total < cfg["scoring"]["min_score"]:
         return None
+    if cfg["scoring"].get("require_anomaly") and not sc.error_fare:
+        return None                                   # une pépite = une vraie anomalie de prix, pas un simple bon plan
 
     itin = []
     for leg in path.legs:

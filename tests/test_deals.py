@@ -10,6 +10,7 @@ from flightdeals.core import Offer, haversine_km
 ROOT = Path(__file__).resolve().parent.parent
 CFG = json.loads((ROOT / "config.json").read_text())
 LOOSE = copy.deepcopy(CFG)
+LOOSE["scoring"]["require_anomaly"] = False
 LOOSE["scoring"]["min_score"] = 0          # teste les règles dures indépendamment de la note
 BUD = evaluate.load_budgets()
 TODAY = date(2026, 11, 6)
@@ -368,6 +369,53 @@ class Business(unittest.TestCase):
         p, msgs = preferences.learn(preferences.load_prefs(Path("/nonexistent")), "trop cher", deal, CFG)
         self.assertEqual(p["business_cap_eur"], 700)
         self.assertEqual(preferences.apply_prefs(CFG, p)["business"]["flight_cap_eur"], 700)
+
+
+class Pepite(unittest.TestCase):
+    """L'appli ne cherche pas un bon voyage : elle cherche la pépite (3 à 5 fois par an)."""
+
+    def test_good_but_normal_deal_is_not_alerted(self):
+        o = mk("ALA", 330, days=(60, 69))                                 # bon plan, direct, destination rare
+        base = copy.deepcopy(LOOSE)
+        score = evaluate.evaluate(o, base, {}, BUD, TODAY).score
+        cfg = copy.deepcopy(CFG)
+        cfg["scoring"]["min_score"] = score - 0.1
+        self.assertTrue(cfg["scoring"]["require_anomaly"])
+        self.assertIsNone(evaluate.evaluate(o, cfg, {}, BUD, TODAY))      # trop banal : on ne te dérange pas
+        cfg["scoring"]["require_anomaly"] = False
+        self.assertIsNotNone(evaluate.evaluate(o, cfg, {}, BUD, TODAY))   # il aurait passé sans l'exigence d'anomalie
+
+    def test_real_anomaly_is_alerted(self):
+        for kw, hist in (({"flagged_error": True}, {}), ({}, {"CDG-ALA-economy": [600, 620, 580, 610, 590, 640]})):
+            v = evaluate.evaluate(mk("ALA", 200, days=(60, 69), **kw), CFG, hist, BUD, TODAY)
+            self.assertIsNotNone(v)
+            self.assertEqual(v.kind, "error_fare")
+
+    def test_price_far_below_the_market_is_an_anomaly(self):
+        # 25 % du prix habituel pour la distance, sans historique ni signalement : anomalie
+        ref = scoring.reference_price(5400, "economy", CFG)
+        v = evaluate.evaluate(mk("ALA", ref * 0.2, days=(60, 69)), CFG, {}, BUD, TODAY)
+        self.assertIsNotNone(v)
+
+    def test_rarity_percentile_is_shown(self):
+        hist = {"CDG-ALA-economy": [600, 620, 580, 610, 590, 640, 650, 630]}
+        v = evaluate.evaluate(mk("ALA", 200, days=(60, 69)), CFG, hist, BUD, TODAY)
+        self.assertTrue(any("Moins cher que 100 %" in r for r in v.reasons))
+
+    def test_yearly_counter(self):
+        from datetime import datetime, timedelta, timezone
+        from flightdeals import main
+        now = datetime.now(timezone.utc)
+        log = [{"at": (now - timedelta(days=d)).isoformat()} for d in (5, 100, 364, 400, 700)]
+        orig = main._load
+        main._load = lambda p, default: log if p == main.ALERTS else orig(p, default)
+        try:
+            self.assertEqual(main.alerts_last_year(now), 3)               # les alertes de plus d'un an ne comptent pas
+        finally:
+            main._load = orig
+
+    def test_few_alerts_per_scan(self):
+        self.assertLessEqual(CFG["max_alerts_per_run"]["scan"], 2)
 
 
 if __name__ == "__main__":

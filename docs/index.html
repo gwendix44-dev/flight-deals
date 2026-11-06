@@ -48,7 +48,7 @@
 </style>
 </head>
 <body>
-<header><h1>✈️ Flight Deals</h1><span class="mut" id="upd">chargement…</span><button class="refuse" id="tok" title="Nécessaire pour envoyer un refus depuis cette page">🔑 Connecter GitHub</button></header>
+<header><h1>✈️ Flight Deals</h1><span class="mut" id="upd">chargement…</span><span class="mut" id="cnt"></span><button class="refuse" id="tok" title="Nécessaire pour envoyer un refus depuis cette page">🔑 Connecter GitHub</button></header>
 <nav id="sections"></nav>
 <nav id="filters"></nav>
 <main id="list"></main>
@@ -143,6 +143,7 @@ async function load() {
   try {
     const r = await fetch("deals.json?t=" + Date.now()); const j = await r.json();
     deals = j.deals || [];
+    document.getElementById("cnt").textContent = `Pépites sur 12 mois : ${j.pepites_12m || 0} (objectif 3 à 5)`;
     document.getElementById("upd").textContent = j.updated ? "Dernier scan : " + new Date(j.updated).toLocaleString("fr-FR") : "Aucun scan";
     const seen = +localStorage.getItem("seen") || 0, latest = deals.length ? Date.parse(deals[0].found_at) : 0;
     if (latest > seen && seen && "Notification" in window && Notification.permission === "granted")

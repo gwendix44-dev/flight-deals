@@ -106,12 +106,20 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
         NEAR_MISSES.append((sc.total, f"{o.origin}→{city} {o.price_eur:.0f}€ (séjour ~{total:.0f}€) : {sc.line()}"))
         return None
 
+    if cfg["scoring"].get("require_anomaly") and not sc.error_fare:
+        # Un bon prix ne suffit pas : l'appli cherche une pépite rare, pas un voyage correct qui te ferait partir
+        # juste avant une vraie occasion.
+        NEAR_MISSES.append((sc.total - 0.05, f"{o.origin}→{city} {o.price_eur:.0f}€ : bon deal ({sc.total}/11) mais PAS une anomalie de prix"))
+        return None
     kind = "error_fare" if sc.error_fare else "deal"
     reasons = [f"Note {sc.total}/11 (seuil {cfg['scoring']['min_score']})",
                f"Vol {o.price_eur:.0f} € ; séjour complet ≈ {total:.0f} € (budget max {cap:.0f} € pour {km:.0f} km)",
                f"−{sc.discount * 100:.0f} % vs prix habituel de la ligne" + (" (historique)" if hist_median else " (estimation selon la distance)")]
     if sc.error_fare:
         reasons.append("Erreur de prix probable")
+    if hist_median:
+        cheaper = sum(1 for x in prices if x > o.price_eur)
+        reasons.append(f"Moins cher que {round(100 * cheaper / len(prices))} % des {len(prices)} prix observés sur cette ligne")
 
     return Verdict(
         kind=kind, offer=o, dest_city=city, country=cc, distance_km=round(km),

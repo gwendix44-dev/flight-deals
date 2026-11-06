@@ -9,6 +9,15 @@ filtres (plafonds, gros-porteur > 5 h, 6 mois, coût total du séjour backpacker
 
 Réglages : `config.json` · budgets par pays : `data/budgets.json`
 
+## Philosophie : la pépite, pas le voyage correct
+L'appli ne sert pas à partir tous les mois : elle cherche l'occasion exceptionnelle qui ne se présente que **3 à 5 fois par an**.
+Un bon plan qui te ferait partir juste avant une vraie occasion est exactement ce qu'il faut éviter. Une alerte n'est donc
+envoyée que si l'offre est une **anomalie de prix** (`scoring.require_anomaly`) : erreur signalée par une source, prix au moins
+moitié moins cher que d'habitude sur la ligne, ou au moins 75 % sous le prix habituel pour la distance. Il faut en plus
+atteindre la note minimale (faisabilité et attrait du séjour complet) et passer la revérification. Chaque alerte indique son
+rang dans les 12 derniers mois (`data/alerts_log.json`, compteur aussi visible sur le dashboard) et sa rareté sur la ligne.
+Mesuré sur l'historique réel du dépôt : 0 ligne ne remplissait ces conditions un jour normal.
+
 ## Grille de notation (sur 11)
 Un deal n'est alerté que s'il atteint **7,5/11** (`scoring.min_score` dans `config.json`). Mesuré sur l'historique réel : la meilleure note observée est ~7,9 ; à 9,5 aucune alerte ne partirait.
 Prix vs prix habituel (3) · budget total du séjour (2) · destination hors sentiers battus (1,5) ·

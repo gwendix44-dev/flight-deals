@@ -95,9 +95,9 @@
     "max_candidates_to_verify": 25
   },
   "max_alerts_per_run": {
-    "scan": 5,
-    "combos": 3,
-    "business": 3
+    "scan": 2,
+    "combos": 1,
+    "business": 2
   },
   "scoring": {
     "min_score": 7.5,
@@ -112,7 +112,8 @@
     "error_bench_disc": 0.75,
     "overall_ratio_full": 0.55,
     "overall_ratio_zero": 0.9,
-    "budget_full_share": 0.6
+    "budget_full_share": 0.6,
+    "require_anomaly": true
   },
   "max_alerts_per_region": 2,
   "verification": {
@@ -158,5 +159,8 @@
         "Nantes": 130
       }
     }
+  },
+  "pepite": {
+    "target_per_year": "3 à 5"
   }
 }

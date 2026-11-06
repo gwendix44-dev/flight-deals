@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 HISTORY = ROOT / "data" / "history.json"
 SEEN = ROOT / "data" / "seen.json"
 DEALS = ROOT / "docs" / "deals.json"
+ALERTS = ROOT / "data" / "alerts_log.json"      # journal des pépites envoyées
 
 
 def _load(p: Path, default):
@@ -38,6 +39,18 @@ def months_ahead(n: int, today: date) -> list[str]:
         if m > 12:
             y, m = y + 1, 1
     return out
+
+
+def alerts_last_year(now=None) -> int:
+    now = now or datetime.now(timezone.utc)
+    n = 0
+    for a in _load(ALERTS, []):
+        try:
+            if (now - datetime.fromisoformat(a["at"])).days < 365:
+                n += 1
+        except (KeyError, ValueError):
+            pass
+    return n
 
 
 def dedupe_key(o: Offer) -> str:
@@ -84,7 +97,16 @@ def dispatch(candidates, seen: dict, cfg: dict, dry: bool, limit: int, verifier=
         for v in top:
             print("\n" + notify.body(v))
         return top
+    n_year = alerts_last_year()
+    for i, v in enumerate(top):
+        v.reasons.append(f"Pépite n°{n_year + i + 1} sur les 12 derniers mois (objectif : 3 à 5 par an)")
     sent = notify.create_issues(top)
+    log = _load(ALERTS, [])
+    now_iso = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    for v in sent:
+        log.append({"at": now_iso, "route": f"{v.offer.origin}-{v.offer.dest}", "price": v.offer.price_eur, "kind": v.kind})
+    if sent:
+        _save(ALERTS, log[-200:])
     for v in sent:
         k = dedupe_key(v.offer)
         seen[k] = min(v.offer.price_eur, seen.get(k, 1e9))
@@ -101,6 +123,7 @@ def publish(top: list, dry: bool) -> None:
     keys = {dedupe_key(v.offer) for v in top}
     old = [d for d in store.get("deals", []) if d.get("key") not in keys]
     store["updated"] = now
+    store["pepites_12m"] = alerts_last_year()
     store["deals"] = ([dict(v.to_dict(), found_at=now, key=dedupe_key(v.offer)) for v in top] + old)[:200]
     _save(DEALS, store)
 

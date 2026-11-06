@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parent.parent
 import copy
 CFG = json.loads((ROOT / "config.json").read_text())
 LOOSE = copy.deepcopy(CFG)
+LOOSE["scoring"]["require_anomaly"] = False
 LOOSE["scoring"]["min_score"] = 0
 BUD = evaluate.load_budgets()
 ROUTES = str(ROOT / "data" / "routes.dat")

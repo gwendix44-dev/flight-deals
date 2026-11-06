@@ -56,6 +56,8 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
         stay = sd["default_when_unknown"]
 
     city, cc, dlat, dlon, dest_airports = DESTINATIONS[o.dest]
+    if cc in cfg.get("excluded_countries", []):
+        return None
     _, olat, olon = ORIGINS[o.origin]
     km = haversine_km(olat, olon, dlat, dlon)
     hours = estimate_hours(km, o.transfers, o.duration_min)

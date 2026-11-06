@@ -49,5 +49,12 @@
   "rss_feeds": [
     "https://www.secretflying.com/feed/",
     "https://www.fly4free.com/feed/"
+  ],
+  "excluded_countries": [
+    "MA",
+    "DZ",
+    "TN",
+    "LY",
+    "EG"
   ]
 }

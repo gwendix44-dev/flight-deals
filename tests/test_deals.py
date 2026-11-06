@@ -31,8 +31,8 @@ class T(unittest.TestCase):
     def test_total_cap_short_haul(self):
         # CDG-NYC ~5850 km: total cap 1000 €. 10 j à 105 €/j dépasse
         self.assertIsNone(self.ev(mk("NYC", 250, days=(30, 40))))
-        # Marrakech: court + pas cher
-        self.assertIsNotNone(self.ev(mk("RAK", 80, days=(30, 37))))
+        # Accra: pas cher, séjour court
+        self.assertIsNotNone(self.ev(mk("ACC", 80, days=(30, 37))))
 
     def test_six_months_window(self):
         self.assertIsNone(self.ev(mk("BKK", 300, days=(250, 270), transfers=1)))
@@ -41,7 +41,7 @@ class T(unittest.TestCase):
         v = self.ev(mk("BOG", 760, origin="MAD", cabin="business"))
         self.assertEqual(v.kind, "business_deal")
         self.assertIsNone(self.ev(mk("BOG", 900, origin="MAD", cabin="business")))
-        self.assertIsNone(self.ev(mk("RAK", 300, origin="MAD", cabin="business")))  # trop court
+        self.assertIsNone(self.ev(mk("DKR", 300, origin="MAD", cabin="business")))  # trop court
 
     def test_error_fare_by_history(self):
         hist = {"CDG-BKK-economy": [600, 650, 580, 620, 610, 640]}
@@ -70,12 +70,16 @@ class T(unittest.TestCase):
         b = providers.parse_deal_title("Business class: Madrid to Bogota from €699 roundtrip")
         self.assertEqual(b.cabin, "business")
 
+    def test_north_africa_excluded(self):
+        for d in ("RAK", "CMN", "TUN", "CAI", "HRG"):
+            self.assertIsNone(self.ev(mk(d, 60, days=(30, 37))), d)
+
     def test_tokyo_rejected_when_total_too_high(self):
         # vol bon marché mais séjour au Japon (70 €/j) -> au-dessus de 1400 € au total
         self.assertIsNone(self.ev(mk("TYO", 380)))
 
     def test_unknown_stay_uses_default(self):
-        o = Offer("CDG", "RAK", 90, depart=TODAY + timedelta(days=30))
+        o = Offer("CDG", "ACC", 90, depart=TODAY + timedelta(days=30))
         self.assertEqual(self.ev(o).stay_days, 14)
 
 

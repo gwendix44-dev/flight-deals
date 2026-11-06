@@ -1,1 +1,189 @@
-{"deals": [], "updated": "2026-11-06T22:40:58+00:00"}
+{
+ "deals": [
+  {
+   "kind": "deal",
+   "offer": {
+    "origin": "LIS",
+    "dest": "SID",
+    "price_eur": 165.0,
+    "cabin": "economy",
+    "depart": "2026-11-19",
+    "return_date": "2026-11-24",
+    "transfers": 0,
+    "airline": "U2",
+    "duration_min": 260,
+    "link": "https://www.aviasales.com/search/LIS1911SID24111?t=U217950938001795105800000260LISSID17955432001795561200000240SIDLIS_4edc1d1349dc02749e1184bf9220784d_14993&search_date=06112026&expected_price_uuid=01a1ae39-5281-8040-a31b-47ef5be549ce&static_fare_key=TY%7CP0%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=GLfynlMHdER5Szd3vgY2bg&expected_price_source=share&expected_price_currency=eur&expected_price=165",
+    "source": "travelpayouts",
+    "title": "",
+    "flagged_error": false
+   },
+   "dest_city": "Cap-Vert (Sal)",
+   "country": "CV",
+   "distance_km": 2794,
+   "flight_hours": 4.3,
+   "stay_days": 5,
+   "daily_budget": 53,
+   "stay_cost": 519,
+   "trip_total": 684,
+   "discount_pct": 56,
+   "aircraft": "not_required",
+   "aircraft_note": "vol de 4.3 h, pas de contrainte d'avion",
+   "reasons": [
+    "Note 9.1/11 (seuil 7.5)",
+    "Vol 165 € ; séjour complet ≈ 684 € (budget max 1500 € pour 2794 km)",
+    "−56 % vs prix habituel de la ligne (historique)"
+   ],
+   "itinerary": [],
+   "baseline_eur": null,
+   "saving_pct": null,
+   "score": 9.1,
+   "score_parts": {
+    "prix": 2.7,
+    "budget": 2.0,
+    "destination": 1.5,
+    "vol": 1.5,
+    "duree": 1.0,
+    "valeur": 0.4,
+    "bonus": 0.0
+   },
+   "score_line": "prix 2.7/3 · budget 2.0/2 · destination 1.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.4/1",
+   "cost_lines": [
+    [
+     "Hébergement (dortoir / chambre simple)",
+     110
+    ],
+    [
+     "Nourriture (cuisine locale)",
+     75
+    ],
+    [
+     "Transports locaux",
+     30
+    ],
+    [
+     "Activités et visites",
+     50
+    ],
+    [
+     "Déplacements entre villes",
+     11
+    ],
+    [
+     "Visa / autorisation d'entrée (taxe EASE, à revérifier)",
+     31
+    ],
+    [
+     "Assurance voyage",
+     11
+    ],
+    [
+     "Transferts aéroport + SIM locale",
+     45
+    ],
+    [
+     "Marge imprévus (10 %)",
+     36
+    ],
+    [
+     "Trajet A/R Paris → LIS pour rejoindre l'aéroport de départ",
+     120
+    ]
+   ],
+   "verification": "Revérifié le 06/11/2026 pour les dates exactes (19/11 → 24/11) : 165 €. Prix issu du cache des moteurs de recherche : confirme sur le lien avant d'acheter.",
+   "issue": 86,
+   "found_at": "2026-11-06T23:25:58+00:00",
+   "key": "a84f69def47e0dcf"
+  },
+  {
+   "kind": "deal",
+   "offer": {
+    "origin": "FRA",
+    "dest": "ALA",
+    "price_eur": 288.0,
+    "cabin": "economy",
+    "depart": "2027-02-01",
+    "return_date": "2027-02-08",
+    "transfers": 1,
+    "airline": "VF",
+    "duration_min": 510,
+    "link": "https://www.aviasales.com/search/FRA0102ALA08021?t=VF18015009001801627500001870FRASAWALA18020637001802102100000880ALASAWFRA_17acf5fede7b1a8a10c6bbc191cc9157_26283&search_date=06112026&expected_price_uuid=01a1b0e9-a4f1-8030-eaf4-8d06923d2fbe&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=_7zat_RAyo5UsYDE_MReMg&expected_price_source=share&expected_price_currency=eur&expected_price=288",
+    "source": "travelpayouts",
+    "title": "",
+    "flagged_error": false
+   },
+   "dest_city": "Almaty",
+   "country": "KZ",
+   "distance_km": 5089,
+   "flight_hours": 8.5,
+   "stay_days": 7,
+   "daily_budget": 40,
+   "stay_cost": 491,
+   "trip_total": 779,
+   "discount_pct": 48,
+   "aircraft": "unverified",
+   "aircraft_note": "escale(s) : type d'avion de chaque tronçon à vérifier avant d'acheter",
+   "reasons": [
+    "Note 7.8/11 (seuil 7.5)",
+    "Vol 288 € ; séjour complet ≈ 779 € (budget max 1500 € pour 5089 km)",
+    "−48 % vs prix habituel de la ligne (historique)"
+   ],
+   "itinerary": [],
+   "baseline_eur": null,
+   "saving_pct": null,
+   "score": 7.8,
+   "score_parts": {
+    "prix": 2.1,
+    "budget": 2.0,
+    "destination": 1.5,
+    "vol": 0.7,
+    "duree": 1.0,
+    "valeur": 0.4,
+    "bonus": 0.0
+   },
+   "score_line": "prix 2.1/3 · budget 2.0/2 · destination 1.5/1,5 · vol 0.7/1,5 · durée 1.0/1 · économie globale 0.4/1",
+   "cost_lines": [
+    [
+     "Hébergement (dortoir / chambre simple)",
+     98
+    ],
+    [
+     "Nourriture (cuisine locale)",
+     84
+    ],
+    [
+     "Transports locaux",
+     42
+    ],
+    [
+     "Activités et visites",
+     56
+    ],
+    [
+     "Déplacements entre villes",
+     15
+    ],
+    [
+     "Assurance voyage",
+     15
+    ],
+    [
+     "Transferts aéroport + SIM locale",
+     45
+    ],
+    [
+     "Marge imprévus (10 %)",
+     36
+    ],
+    [
+     "Trajet A/R Paris → FRA pour rejoindre l'aéroport de départ",
+     100
+    ]
+   ],
+   "verification": "Revérifié le 06/11/2026 pour les dates exactes (01/02 → 08/02) : 288 €. Prix issu du cache des moteurs de recherche : confirme sur le lien avant d'acheter.",
+   "issue": 87,
+   "found_at": "2026-11-06T23:25:58+00:00",
+   "key": "39b9cc10d5e1a432"
+  }
+ ],
+ "updated": "2026-11-06T23:25:58+00:00"
+}

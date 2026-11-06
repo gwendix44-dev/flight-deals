@@ -1,12 +1,9 @@
-"""Alertes : email (Gmail SMTP) + push ntfy.sh (notification dans l'appli/téléphone)."""
+"""Alertes : une Issue GitHub par affaire (GitHub envoie l'email + la notif mobile)."""
 from __future__ import annotations
 
 import json
 import os
-import smtplib
-import ssl
 import urllib.request
-from email.message import EmailMessage
 
 from .core import Verdict
 
@@ -44,35 +41,24 @@ def body(v: Verdict) -> str:
     return "\n".join(lines)
 
 
-def send_email(vs: list[Verdict], to: str) -> bool:
-    user, pwd = os.environ.get("GMAIL_USER"), os.environ.get("GMAIL_APP_PASSWORD")
-    if not (user and pwd):
-        print("[email] GMAIL_USER / GMAIL_APP_PASSWORD absents : email non envoyé")
-        return False
-    msg = EmailMessage()
-    msg["From"], msg["To"] = user, to
-    msg["Subject"] = title(vs[0]) + (f" (+{len(vs) - 1} autres)" if len(vs) > 1 else "")
-    msg.set_content("\n\n" + ("\n" + "─" * 40 + "\n\n").join(body(v) for v in vs))
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ssl.create_default_context(), timeout=30) as s:
-        s.login(user, pwd)
-        s.send_message(msg)
-    return True
+LABELS = {"error_fare": "erreur-de-prix", "deal": "bonne-affaire", "business_deal": "business"}
 
 
-def send_push(vs: list[Verdict], click_url: str = "") -> bool:
-    topic = os.environ.get("NTFY_TOPIC")
-    if not topic:
-        print("[ntfy] NTFY_TOPIC absent : push non envoyé")
-        return False
+def create_issues(vs: list[Verdict]) -> int:
+    token, repo = os.environ.get("GITHUB_TOKEN"), os.environ.get("GITHUB_REPOSITORY")
+    if not (token and repo):
+        print("[issues] GITHUB_TOKEN / GITHUB_REPOSITORY absents : aucune Issue créée")
+        return 0
+    n = 0
     for v in vs:
-        payload = {
-            "topic": topic, "title": title(v), "message": f"Total séjour ~{v.trip_total} € · {v.offer.depart or ''}",
-            "priority": 5 if v.kind == "error_fare" else 4, "tags": ["airplane"],
-        }
-        click = v.offer.link or click_url
-        if click:
-            payload["click"] = click
-        req = urllib.request.Request("https://ntfy.sh/", data=json.dumps(payload).encode(),
-                                     headers={"Content-Type": "application/json"})
-        urllib.request.urlopen(req, timeout=20).read()
-    return True
+        data = json.dumps({"title": title(v), "body": body(v), "labels": [LABELS[v.kind]]}).encode()
+        req = urllib.request.Request(
+            f"https://api.github.com/repos/{repo}/issues", data=data, method="POST",
+            headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json",
+                     "Content-Type": "application/json", "User-Agent": "flight-deals"})
+        try:
+            urllib.request.urlopen(req, timeout=20).read()
+            n += 1
+        except Exception as e:
+            print(f"[issues] échec : {e}")
+    return n

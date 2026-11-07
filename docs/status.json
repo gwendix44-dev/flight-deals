@@ -1,6 +1,6 @@
 {
  "ok": true,
- "updated": "2026-11-07T11:59:32+00:00",
+ "updated": "2026-11-07T12:37:48+00:00",
  "waiting": 1,
  "next_slot": "aujourd'hui 19:00",
  "errors": [],
@@ -13,9 +13,12 @@
   "business": 0,
   "waiting_after": 1
  },
- "offers": 10047,
- "candidates": 3,
- "verified": 2,
+ "offers": 10073,
+ "candidates": 1,
+ "verified": 0,
  "instant": 0,
- "last_scan": "2026-11-07T11:59:32+00:00"
+ "last_scan": "2026-11-07T12:37:48+00:00",
+ "live_used": 0,
+ "live_budget": 90,
+ "live_active": false
 }

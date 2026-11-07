@@ -5,6 +5,108 @@
    "offer": {
     "origin": "LIS",
     "dest": "SID",
+    "price_eur": 178.0,
+    "cabin": "economy",
+    "depart": "2027-04-29",
+    "return_date": "2027-05-06",
+    "transfers": 0,
+    "airline": "U2",
+    "duration_min": 260,
+    "link": "https://www.aviasales.com/search/LIS2904SID06051?t=U218089787001808987100000260LISSID18095955001809617400000245SIDLIS_422a549a99b8ae50a3833fe7cd8c588c_16009&search_date=31102026&expected_price_uuid=01a193a7-8f76-8040-6dda-49e531ef6ba3&static_fare_key=TY%7CP0%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=q8y5dDBW9hhmaJxrjvX2qQ&expected_price_source=share&expected_price_currency=eur&expected_price=178",
+    "source": "travelpayouts",
+    "title": "",
+    "flagged_error": false
+   },
+   "dest_city": "Cap-Vert (Sal)",
+   "country": "CV",
+   "distance_km": 2794,
+   "flight_hours": 4.3,
+   "stay_days": 7,
+   "daily_budget": 53,
+   "stay_cost": 645,
+   "trip_total": 823,
+   "discount_pct": 52,
+   "aircraft": "not_required",
+   "aircraft_note": "vol de 4.3 h, pas de contrainte d'avion",
+   "reasons": [
+    "Note 8.7/11 (seuil 8.0)",
+    "Vol 178 € ; séjour complet ≈ 823 € (budget max 1500 € pour 2794 km)",
+    "−52 % vs prix habituel de la ligne (historique)",
+    "Moins cher que 17 % des 24 prix observés sur cette ligne",
+    "Publication de 19h"
+   ],
+   "itinerary": [],
+   "baseline_eur": null,
+   "saving_pct": null,
+   "score": 8.7,
+   "score_parts": {
+    "prix": 2.4,
+    "budget": 2.0,
+    "destination": 1.5,
+    "vol": 1.5,
+    "duree": 1.0,
+    "valeur": 0.3,
+    "bonus": 0.0
+   },
+   "score_line": "prix 2.4/3 · budget 2.0/2 · destination 1.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.3/1",
+   "cost_lines": [
+    [
+     "Hébergement (dortoir / chambre simple)",
+     154
+    ],
+    [
+     "Nourriture (cuisine locale)",
+     105
+    ],
+    [
+     "Transports locaux",
+     42
+    ],
+    [
+     "Activités et visites",
+     70
+    ],
+    [
+     "Déplacements entre villes",
+     15
+    ],
+    [
+     "Visa / autorisation d'entrée (taxe EASE, à revérifier)",
+     31
+    ],
+    [
+     "Assurance voyage",
+     15
+    ],
+    [
+     "Transferts aéroport + SIM locale",
+     45
+    ],
+    [
+     "Marge imprévus (10 %)",
+     48
+    ],
+    [
+     "Trajet A/R Paris → LIS pour rejoindre l'aéroport de départ",
+     120
+    ]
+   ],
+   "verification": "Revérifié le 07/11/2026 pour les dates exactes (29/04 → 06/05) : 178 €. Prix issu du cache des moteurs de recherche : confirme sur le lien avant d'acheter. | Prix du cache d'un moteur de recherche, revérifié pour ces dates exactes : confirme-le avec le bouton « 1 · Vérifier en direct » avant d'acheter",
+   "flight_all_in": 0.0,
+   "bag_supplement": 0.0,
+   "bag_status": "",
+   "bag_note": "",
+   "links": {},
+   "issue": 90,
+   "found_at": "2026-11-07T18:29:43+00:00",
+   "key": "e5b70c003183ae37",
+   "slot": "Publication de 19h"
+  },
+  {
+   "kind": "deal",
+   "offer": {
+    "origin": "LIS",
+    "dest": "SID",
     "price_eur": 109.0,
     "cabin": "economy",
     "depart": "2027-01-19",
@@ -98,6 +200,6 @@
    "slot": "Publication de 12h"
   }
  ],
- "updated": "2026-11-07T12:01:07+00:00",
+ "updated": "2026-11-07T18:29:43+00:00",
  "pepites_12m": 0
 }

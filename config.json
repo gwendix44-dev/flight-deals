@@ -180,5 +180,11 @@
     "pool_max_age_hours": 36,
     "max_checks": 25,
     "instant_max_per_day": 4
+  },
+  "live": {
+    "enabled": true,
+    "monthly_budget": 90,
+    "price_tolerance": 0.1,
+    "spare_candidates": 3
   }
 }

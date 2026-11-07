@@ -32,7 +32,10 @@ def body(v: Verdict) -> str:
         f"Trajet : {o.origin} ⇄ {v.dest_city} ({v.country}) · {v.distance_km} km · ~{v.flight_hours} h · "
         f"{'direct' if o.transfers == 0 else str(o.transfers) + ' escale(s)'}",
         f"Cabine : {'Business' if o.cabin == 'business' else 'Économique'}   Dates : {dates}",
-        f"Prix du vol A/R : {o.price_eur:.0f} €",
+        (f"Prix du vol A/R AVEC sac à dos + bagage cabine : {v.flight_all_in:.0f} €"
+         + (f"  (tarif affiché {o.price_eur:.0f} € + supplément bagages estimé {v.bag_supplement:.0f} €)" if v.bag_supplement else ""))
+        if v.kind != "business_deal" else f"Prix du vol A/R en business : {o.price_eur:.0f} €",
+        f"🎒 Bagages : {v.bag_note}" if v.bag_note else "",
         f"Séjour {v.stay_days} j en backpacker : ~{v.stay_cost} € sur place" + (" (indicatif, non pris en compte)" if v.kind == "business_deal" else ""),
         *[f"     · {lab} : {amt} €" for lab, amt in v.cost_lines],
         *([f"➜ Prix du vol : {o.price_eur:.0f} € A/R en business"] if v.kind == "business_deal" else
@@ -44,8 +47,16 @@ def body(v: Verdict) -> str:
             "pourquoi : trop cher, séjour trop court, trop d'escales, destination déjà vue… L'appli s'adapte aussitôt.",
         *(["⚠️ Billets séparés : aucune protection si un vol est en retard ; bagages à récupérer et ré-enregistrer à chaque escale ; vérifier les visas de transit."] if v.kind == "stopover_deal" else []),
         f"Avion : {AIRCRAFT.get(v.aircraft, v.aircraft)}" + (f" — {v.aircraft_note}" if v.aircraft in ('widebody_probable', 'unverified') else ""),
-        f"Source : {o.source}" + (f" — « {o.title} »" if o.title else ""),
-        f"Réserver : {o.link or 'rechercher la route sur Google Flights / Skyscanner / Kiwi'}",
+        f"Source du prix : {o.source}" + (f" — « {o.title} »" if o.title else "") + " (cache d'un moteur de recherche, pas un tarif garanti)",
+        "", "AVANT D'ACHETER (2 minutes) :",
+        f"  1. Vérifie le prix EN DIRECT (Google Flights, dates déjà remplies) : {v.links.get('google_flights', '')}"
+        if v.links.get("google_flights") else "  1. Vérifie le prix en direct sur Google Flights pour ces dates exactes",
+        *(["  1. Vérifie chaque billet en direct :", *[f"     - {u}" for u in v.links.get("google_flights_legs", [])]] if v.links.get("google_flights_legs") else []),
+        f"  2. Achète sur le SITE OFFICIEL de la compagnie ({v.links.get('airline_name') or 'voir ci-dessus'}) : {v.links.get('airline_site')}"
+        if v.links.get("airline_site") else "  2. Achète sur le site officiel de la compagnie, pas chez un intermédiaire",
+        *(["  2. Sites officiels : " + " · ".join(v.links.get("airline_sites", []))] if v.links.get("airline_sites") else []),
+        "  3. Contrôle à l'étape de réservation que le tarif choisi inclut bien un sac à dos + un bagage cabine.",
+        f"  (lien du moteur de recherche d'origine : {o.link})" if o.link else "",
         "", "Les erreurs de prix durent parfois quelques heures et peuvent être annulées :",
         "ne réserve pas d'hébergement non remboursable avant confirmation du billet.",
     ]
@@ -126,7 +137,7 @@ def send_push(vs: list[Verdict]) -> list[Verdict]:
     for v in vs:
         o = v.offer
         biz = v.kind == "business_deal"
-        msg = (f"{o.price_eur:.0f} € A/R en business" if biz else f"Vol {o.price_eur:.0f} € · séjour complet ~{v.trip_total} €"
+        msg = (f"{o.price_eur:.0f} € A/R en business" if biz else f"Vol {v.flight_all_in:.0f} € bagages inclus · séjour complet ~{v.trip_total} €"
                ) + f" · {v.distance_km} km"
         if v.reasons:
             msg += "\n" + v.reasons[-1]
@@ -140,7 +151,7 @@ def send_push_summary(vs: list[Verdict], label: str) -> list[Verdict]:
     """UNE notification pour tout un créneau (12h / 19h) : la liste des deals ; un tap ouvre le dashboard."""
     std = [v for v in vs if v.kind != "business_deal"]
     biz = [v for v in vs if v.kind == "business_deal"]
-    lines = [f"• {v.score}/11 {v.offer.origin}→{v.dest_city} : vol {v.offer.price_eur:.0f} €, séjour complet ~{v.trip_total} €" for v in std]
+    lines = [f"• {v.score}/11 {v.offer.origin}→{v.dest_city} : vol {v.flight_all_in:.0f} € bagages inclus, séjour ~{v.trip_total} €" for v in std]
     lines += [f"• 💺 {v.offer.origin}→{v.dest_city} : {v.offer.price_eur:.0f} € A/R en business" for v in biz]
     parts = ([f"{len(std)} deal(s)"] if std else []) + ([f"{len(biz)} business"] if biz else [])
     ok = _deliver(f"✈️ {label} : " + " + ".join(parts), "\n".join(lines), 4, ["airplane"])

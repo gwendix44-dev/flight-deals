@@ -48,6 +48,11 @@ class Verdict:
     score_line: str = ""
     cost_lines: list = field(default_factory=list)  # [(poste, montant €)] détail du séjour
     verification: str = ""                          # résultat de la revérification avant affichage
+    flight_all_in: float = 0.0                      # prix du vol AVEC sac à dos + bagage cabine (tarif affiché + supplément)
+    bag_supplement: float = 0.0                     # supplément bagages estimé ajouté au tarif affiché (A/R)
+    bag_status: str = ""                            # inclus | probable | supplement | inconnu
+    bag_note: str = ""
+    links: dict = field(default_factory=dict)       # google_flights, airline_site, airline_name, source
     legs: list = field(default_factory=list, repr=False)   # billets d'un montage (revérifiés un par un ; non sérialisé)
     issue: Optional[int] = None                    # numéro de l'Issue GitHub (pour les refus)
 

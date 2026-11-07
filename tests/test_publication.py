@@ -50,7 +50,7 @@ class Slots(unittest.TestCase):
 def deal(dest, score, price=250, origin="CDG", stop=1, depart_in=60, stay=15, **kw):
     t = date.today()
     o = Offer(origin, dest, price, depart=t + timedelta(days=depart_in), return_date=t + timedelta(days=depart_in + stay),
-              transfers=stop, source="travelpayouts", link=f"https://x/{dest}", **kw)
+              transfers=stop, source="travelpayouts", link=f"https://x/{dest}", airline=kw.pop("airline", "AF"), **kw)
     v = evaluate.evaluate(o, LOOSE, {}, BUD, t)
     assert v, dest
     v.score = score

@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Optional
 
-from . import aircraft, costs as costcalc, preferences, scoring
+from . import aircraft, baggage, costs as costcalc, links, preferences, scoring
 from .airports import DESTINATIONS, ORIGINS, secrecy
 from .core import Offer, Verdict, estimate_hours, haversine_km
 
@@ -79,6 +79,10 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
     if status == "unverified" and cfg["aircraft"]["strict"]:
         return None
 
+    # Sac à dos + bagage cabine : le prix du vol doit les INCLURE (supplément ajouté si la compagnie les facture)
+    bag = baggage.assess(o.airline, o.transfers)
+    eff = o.price_eur + bag.supplement
+
     # Budget du séjour entier (backpacker éco) : vols + hébergement + nourriture + transports + activités
     bd = costcalc.stay_breakdown(budgets, cc, stay, o.depart, cfg, origin=o.origin)
     if bd is None:
@@ -86,11 +90,11 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
     stay_cost, cost_lines = bd
     daily = costcalc.daily(budgets, cc)
     eco = cfg["economy"]
-    total = o.price_eur + stay_cost
+    total = eff + stay_cost
     cap = scoring.total_cap(km, cfg)
     if total > cap:
         return None
-    if eco.get("flight_cap_eur") and o.price_eur > eco["flight_cap_eur"]:
+    if eco.get("flight_cap_eur") and eff > eco["flight_cap_eur"]:
         return None
 
     prices = history.get(route_key(o), [])
@@ -99,11 +103,11 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
     hist_disc = (1 - o.price_eur / hist_median) if hist_median else None
 
     sc = scoring.score_deal(
-        price=o.price_eur, km=km, cabin=o.cabin, total=total, stay=stay, stops=o.transfers,
+        price=eff, km=km, cabin=o.cabin, total=total, stay=stay, stops=o.transfers,
         aircraft_status=status, secrecy=secrecy(o.dest), separate_tickets=False, cfg=cfg,
         hist_median=hist_median, hist_disc=hist_disc, flagged_error=o.flagged_error)
     if sc.total < cfg["scoring"]["min_score"]:
-        NEAR_MISSES.append((sc.total, f"{o.origin}→{city} {o.price_eur:.0f}€ (séjour ~{total:.0f}€) : {sc.line()}"))
+        NEAR_MISSES.append((sc.total, f"{o.origin}→{city} {eff:.0f}€ avec bagages (séjour ~{total:.0f}€) : {sc.line()}"))
         return None
 
     if cfg["scoring"].get("require_anomaly") and not sc.error_fare:
@@ -113,7 +117,8 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
         return None
     kind = "error_fare" if sc.error_fare else "deal"
     reasons = [f"Note {sc.total}/11 (seuil {cfg['scoring']['min_score']})",
-               f"Vol {o.price_eur:.0f} € ; séjour complet ≈ {total:.0f} € (budget max {cap:.0f} € pour {km:.0f} km)",
+               f"Vol {eff:.0f} € AVEC sac à dos + bagage cabine" + (f" (tarif {o.price_eur:.0f} € + supplément bagages estimé {bag.supplement:.0f} €)" if bag.supplement else "")
+               + f" ; séjour complet ≈ {total:.0f} € (budget max {cap:.0f} € pour {km:.0f} km)",
                f"−{sc.discount * 100:.0f} % vs prix habituel de la ligne" + (" (historique)" if hist_median else " (estimation selon la distance)")]
     if sc.error_fare:
         reasons.append("Erreur de prix probable")
@@ -128,6 +133,8 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
         discount_pct=round(sc.discount * 100),
         aircraft=status, aircraft_note=note, reasons=reasons,
         score=sc.total, score_parts=sc.parts, score_line=sc.line(), cost_lines=cost_lines,
+        flight_all_in=round(eff), bag_supplement=bag.supplement, bag_status=bag.status, bag_note=bag.note,
+        links=links.build(o.origin, city, o.depart, o.return_date, o.airline, o.link),
     )
 
 
@@ -185,6 +192,9 @@ def evaluate_business(o: Offer, cfg: dict, budgets: dict, today: Optional[date] 
                    flight_hours=round(hours, 1), stay_days=stay, daily_budget=costcalc.daily(budgets, cc) or 0,
                    stay_cost=round(stay_cost), trip_total=round(o.price_eur + stay_cost), discount_pct=round(disc * 100),
                    aircraft=status, aircraft_note=anote, reasons=reasons, cost_lines=lines, score=note,
+                   flight_all_in=round(o.price_eur), bag_status="inclus",
+                   bag_note="Classe business : bagage cabine et bagage en soute inclus (franchise selon la compagnie, à confirmer)",
+                   links=links.build(o.origin, city, o.depart, o.return_date, o.airline, o.link),
                    score_line=f"remise {disc * 100:.0f} % vs prix habituel du business (~{ref:.0f} €) · note {note}/11")
 
 

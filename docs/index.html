@@ -84,18 +84,23 @@ function render() {
     <article class="${esc(d.kind)} ${d.kind === "business_deal" ? "biz" : ""}">
       <div class="tag">${esc(LABEL[d.kind])}${d.slot ? `<span class="slotbadge">${esc(d.slot)}</span>` : ""} ${d.score ? `<span class="score">${esc(d.score)}/11</span>` : ""}</div>
       <div><strong>${esc(o.origin)} → ${esc(d.dest_city)}</strong> <span class="mut">(${esc(d.country)})</span></div>
-      <div class="price">${Math.round(o.price_eur)} € ${d.kind === "business_deal" ? "<small>A/R en business</small>" : ""}</div>
+      <div class="price">${Math.round(d.kind === "business_deal" ? o.price_eur : (d.flight_all_in || o.price_eur))} € ${d.kind === "business_deal" ? "<small>A/R en business</small>" : "<small>bagages inclus</small>"}</div>
+      ${d.bag_supplement ? `<div class="mut">tarif affiché ${Math.round(o.price_eur)} € + supplément bagages estimé ${Math.round(d.bag_supplement)} €</div>` : ""}
+      ${d.bag_note ? `<div class="${["inclus","probable"].includes(d.bag_status) ? "mut" : "warn"}">🎒 ${esc(d.bag_note)}</div>` : ""}
       ${d.kind === "business_deal"
         ? `<div class="mut">Prix du séjour non pris en compte (indicatif : ≈ ${esc(d.stay_cost)} € sur place)</div>`
         : `<div class="tot">Séjour complet ≈ ${esc(d.trip_total)} € <span class="mut">(${esc(d.stay_days)} j, ${esc(d.daily_budget)} €/j)</span></div>`}
       <div class="mut">${esc(o.depart || "dates sur le lien")} → ${esc(o.return_date || "")} · ${esc(d.distance_km)} km · ~${esc(d.flight_hours)} h · ${o.transfers ? esc(o.transfers) + " escale(s)" : "direct"}</div>
       ${(d.cost_lines || []).length ? `<details class="costs"><summary>Détail du séjour (${esc(d.stay_cost)} € sur place)</summary>${d.cost_lines.map(l => `<div>${esc(l[0])} : <b>${esc(l[1])} €</b></div>`).join("")}</details>` : ""}
-      ${d.verification ? `<div class="verif">✔ ${esc(d.verification)}</div>` : ""}
+      ${d.verification ? `<div class="verif">${/^[✔⚠]/.test(d.verification) ? "" : "✔ "}${esc(d.verification)}</div>` : ""}
       ${d.score_line ? `<div class="grid">${esc(d.score_line)}</div>` : ""}
       ${d.saving_pct ? `<div class="mut">−${esc(d.saving_pct)} % vs billet classique (${Math.round(d.baseline_eur)} €)</div>` : ""}
       ${(d.itinerary || []).length ? `<div class="itin">${d.itinerary.map(x => `<div>${esc(x.replace(/https?:\/\/\S+/, "").trim())}</div>`).join("")}</div><div class="warn">Billets séparés : pas de protection en cas de retard</div>` : ""}
       <div class="${d.aircraft === "unverified" ? "warn" : "mut"}">${esc(AIR[d.aircraft] || d.aircraft)}</div>
-      ${url ? `<a class="btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Voir l'offre</a>` : ""}<button class="refuse" data-act="open" data-k="${esc(d.key)}">👎 Refuser</button>
+      ${safeUrl((d.links || {}).google_flights) ? `<a class="btn" href="${esc(d.links.google_flights)}" target="_blank" rel="noopener noreferrer">1 · Vérifier en direct</a>` : ""}
+      ${safeUrl((d.links || {}).airline_site) ? `<a class="btn" style="background:#2e7d32" href="${esc(d.links.airline_site)}" target="_blank" rel="noopener noreferrer">2 · Site de ${esc(d.links.airline_name || "la compagnie")}</a>` : ""}
+      ${(d.links || {}).google_flights_legs ? d.links.google_flights_legs.map((u, i) => safeUrl(u) ? `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener noreferrer">Vérifier billet ${i + 1}</a>` : "").join(" ") : ""}
+      ${url ? `<a class="mut" style="margin-left:6px;font-size:.78rem" href="${esc(url)}" target="_blank" rel="noopener noreferrer">source du prix</a>` : ""}<button class="refuse" data-act="open" data-k="${esc(d.key)}">👎 Refuser</button>
       <div class="rform" hidden data-form="${esc(d.key)}">
         <div class="chips">${REASONS.map(r => `<button data-act="chip" data-t="${esc(r)}">${esc(r)}</button>`).join("")}</div>
         <textarea placeholder="Explique pourquoi tu refuses (trop cher, séjour trop court, trop d'escales…)"></textarea>
@@ -168,7 +173,7 @@ async function renderStatus() {
     const t = st.updated ? new Date(st.updated) : null, age = t ? (Date.now() - t.getTime()) / 60000 : 1e9;
     const hh = x => new Date(x).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
     const ls = st.last_slot ? ` · dernière publication : ${st.last_slot.label.replace("Publication de ", "")} (${st.last_slot.standard} deal(s) + ${st.last_slot.business} business)` : "";
-    const base = `${st.offers ? Number(st.offers).toLocaleString("fr-FR") + " offres analysées · " : ""}${st.waiting ?? 0} en attente · prochaine publication ${st.next_slot || "12h / 19h"}${ls}`;
+    const base = `${st.offers ? Number(st.offers).toLocaleString("fr-FR") + " offres analysées · " : ""}${st.waiting ?? 0} en attente · prochaine publication ${st.next_slot || "12h / 19h"}${ls} · prix en direct : ${st.live_active ? "actif (" + st.live_used + "/" + st.live_budget + " ce mois)" : "inactif (prix du cache à confirmer)"}`;
     if (!st.ok || age > 90) {
       el.className = "status-line bad";
       el.textContent = (!st.ok ? "🔴 Problème au dernier scan : " + (st.errors || []).join(" ; ") + ". " : "🟠 Pas de scan depuis " + Math.round(age) + " min. ") + base;

@@ -1,0 +1,472 @@
+{
+ "_note": "Barème bagages par compagnie (mes connaissances, À VÉRIFIER avant d'acheter : les conditions changent selon le tarif). included = sac à dos + bagage cabine inclus ; likely = en général inclus mais pas sur tous les tarifs ; fee = bagage cabine payant, supplément estimé par sens (EUR).",
+ "_default_fee_eur": 30,
+ "AF": {
+  "name": "Air France",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.airfrance.fr"
+ },
+ "KL": {
+  "name": "KLM",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.klm.fr"
+ },
+ "LH": {
+  "name": "Lufthansa",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.lufthansa.com"
+ },
+ "LX": {
+  "name": "Swiss",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.swiss.com"
+ },
+ "OS": {
+  "name": "Austrian",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.austrian.com"
+ },
+ "SN": {
+  "name": "Brussels Airlines",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.brusselsairlines.com"
+ },
+ "BA": {
+  "name": "British Airways",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.britishairways.com"
+ },
+ "IB": {
+  "name": "Iberia",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.iberia.com"
+ },
+ "AY": {
+  "name": "Finnair",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.finnair.com"
+ },
+ "SK": {
+  "name": "SAS",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.flysas.com"
+ },
+ "LO": {
+  "name": "LOT",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.lot.com"
+ },
+ "TK": {
+  "name": "Turkish Airlines",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.turkishairlines.com"
+ },
+ "EK": {
+  "name": "Emirates",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.emirates.com"
+ },
+ "QR": {
+  "name": "Qatar Airways",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.qatarairways.com"
+ },
+ "EY": {
+  "name": "Etihad",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.etihad.com"
+ },
+ "SV": {
+  "name": "Saudia",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.saudia.com"
+ },
+ "WY": {
+  "name": "Oman Air",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.omanair.com"
+ },
+ "GF": {
+  "name": "Gulf Air",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.gulfair.com"
+ },
+ "ET": {
+  "name": "Ethiopian",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.ethiopianairlines.com"
+ },
+ "KQ": {
+  "name": "Kenya Airways",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.kenya-airways.com"
+ },
+ "SA": {
+  "name": "South African Airways",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.flysaa.com"
+ },
+ "SQ": {
+  "name": "Singapore Airlines",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.singaporeair.com"
+ },
+ "TG": {
+  "name": "Thai Airways",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.thaiairways.com"
+ },
+ "MH": {
+  "name": "Malaysia Airlines",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.malaysiaairlines.com"
+ },
+ "GA": {
+  "name": "Garuda Indonesia",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.garuda-indonesia.com"
+ },
+ "VN": {
+  "name": "Vietnam Airlines",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.vietnamairlines.com"
+ },
+ "PR": {
+  "name": "Philippine Airlines",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.philippineairlines.com"
+ },
+ "CX": {
+  "name": "Cathay Pacific",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.cathaypacific.com"
+ },
+ "CI": {
+  "name": "China Airlines",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.china-airlines.com"
+ },
+ "BR": {
+  "name": "EVA Air",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.evaair.com"
+ },
+ "JL": {
+  "name": "Japan Airlines",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.jal.co.jp"
+ },
+ "NH": {
+  "name": "ANA",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.ana.co.jp"
+ },
+ "KE": {
+  "name": "Korean Air",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.koreanair.com"
+ },
+ "OZ": {
+  "name": "Asiana",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://flyasiana.com"
+ },
+ "CA": {
+  "name": "Air China",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.airchina.com"
+ },
+ "MU": {
+  "name": "China Eastern",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.ceair.com"
+ },
+ "CZ": {
+  "name": "China Southern",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.csair.com"
+ },
+ "HU": {
+  "name": "Hainan Airlines",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.hainanairlines.com"
+ },
+ "AI": {
+  "name": "Air India",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.airindia.com"
+ },
+ "UL": {
+  "name": "SriLankan",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.srilankan.com"
+ },
+ "QF": {
+  "name": "Qantas",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.qantas.com"
+ },
+ "NZ": {
+  "name": "Air New Zealand",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.airnewzealand.com"
+ },
+ "LA": {
+  "name": "LATAM",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.latamairlines.com"
+ },
+ "AV": {
+  "name": "Avianca",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.avianca.com"
+ },
+ "CM": {
+  "name": "Copa Airlines",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.copaair.com"
+ },
+ "AM": {
+  "name": "Aeroméxico",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.aeromexico.com"
+ },
+ "AR": {
+  "name": "Aerolíneas Argentinas",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.aerolineas.com.ar"
+ },
+ "TP": {
+  "name": "TAP Air Portugal",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.flytap.com"
+ },
+ "AZ": {
+  "name": "ITA Airways",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.ita-airways.com"
+ },
+ "EI": {
+  "name": "Aer Lingus",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.aerlingus.com"
+ },
+ "AC": {
+  "name": "Air Canada",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.aircanada.com"
+ },
+ "UA": {
+  "name": "United",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.united.com"
+ },
+ "AA": {
+  "name": "American Airlines",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.aa.com"
+ },
+ "DL": {
+  "name": "Delta",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.delta.com"
+ },
+ "DE": {
+  "name": "Condor",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.condor.com"
+ },
+ "EW": {
+  "name": "Eurowings",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.eurowings.com"
+ },
+ "PC": {
+  "name": "Pegasus",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.flypgs.com"
+ },
+ "BF": {
+  "name": "French Bee",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.frenchbee.com"
+ },
+ "DY": {
+  "name": "Norwegian",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.norwegian.com"
+ },
+ "D8": {
+  "name": "Norwegian",
+  "bag": "likely",
+  "fee": 0,
+  "site": "https://www.norwegian.com"
+ },
+ "FZ": {
+  "name": "flydubai",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.flydubai.com"
+ },
+ "G9": {
+  "name": "Air Arabia",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.airarabia.com"
+ },
+ "TR": {
+  "name": "Scoot",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.flyscoot.com"
+ },
+ "JQ": {
+  "name": "Jetstar",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.jetstar.com"
+ },
+ "3K": {
+  "name": "Jetstar Asia",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.jetstar.com"
+ },
+ "AK": {
+  "name": "AirAsia",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.airasia.com"
+ },
+ "D7": {
+  "name": "AirAsia X",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.airasia.com"
+ },
+ "VJ": {
+  "name": "VietJet",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.vietjetair.com"
+ },
+ "XY": {
+  "name": "flynas",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.flynas.com"
+ },
+ "6E": {
+  "name": "IndiGo",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.goindigo.in"
+ },
+ "IX": {
+  "name": "Air India Express",
+  "bag": "included",
+  "fee": 0,
+  "site": "https://www.airindiaexpress.com"
+ },
+ "FR": {
+  "name": "Ryanair",
+  "bag": "fee",
+  "fee": 30,
+  "site": "https://www.ryanair.com"
+ },
+ "W6": {
+  "name": "Wizz Air",
+  "bag": "fee",
+  "fee": 30,
+  "site": "https://wizzair.com"
+ },
+ "W9": {
+  "name": "Wizz Air UK",
+  "bag": "fee",
+  "fee": 30,
+  "site": "https://wizzair.com"
+ },
+ "U2": {
+  "name": "easyJet",
+  "bag": "fee",
+  "fee": 28,
+  "site": "https://www.easyjet.com"
+ },
+ "VY": {
+  "name": "Vueling",
+  "bag": "fee",
+  "fee": 30,
+  "site": "https://www.vueling.com"
+ },
+ "HV": {
+  "name": "Transavia",
+  "bag": "fee",
+  "fee": 25,
+  "site": "https://www.transavia.com"
+ },
+ "TO": {
+  "name": "Transavia France",
+  "bag": "fee",
+  "fee": 25,
+  "site": "https://www.transavia.com"
+ }
+}

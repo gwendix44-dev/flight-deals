@@ -17,6 +17,7 @@ TODAY = date(2026, 11, 6)
 
 
 def mk(dest, price, origin="CDG", days=(60, 75), **kw):
+    kw.setdefault("airline", "AF")
     return Offer(origin, dest, price, depart=TODAY + timedelta(days=days[0]),
                  return_date=TODAY + timedelta(days=days[1]), **kw)
 

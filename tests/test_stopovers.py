@@ -40,7 +40,7 @@ class Layover(unittest.TestCase):
 
 
 def leg(o, d, when, price, mins, tz=0):
-    return Leg(o, d, when.replace(tzinfo=timezone(timedelta(hours=tz))), mins, price, "XX", f"https://x/{o}{d}")
+    return Leg(o, d, when.replace(tzinfo=timezone(timedelta(hours=tz))), mins, price, "AF", f"https://x/{o}{d}")
 
 
 class Build(unittest.TestCase):

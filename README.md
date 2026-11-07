@@ -40,6 +40,25 @@ Budget total (vols + sur place) : 1 500 € max jusqu'à 8 000 km, 1 900 € de 
   séjour n'est PAS pris en compte (affiché à titre indicatif). Ni note sur 11, ni budget total. Ces offres viennent des flux de
   bons plans (l'API gratuite ne distingue pas la cabine) et sont donc marquées « à confirmer sur le lien ».
 
+## Bagages inclus dans le prix
+Sur un long voyage, un **sac à dos + un bagage cabine** sont indispensables : le prix du vol affiché les INCLUT. Les moteurs de
+recherche affichent le tarif nu ; `flightdeals/baggage.py` ajoute le supplément estimé quand la compagnie les facture (Ryanair,
+Wizz, easyJet, Vueling, Transavia…) ou quand elle est inconnue (supplément par prudence). Ce supplément est ajouté **avant** la note et
+le budget, donc une offre bon marché chez une compagnie à bagages payants peut passer sous le seuil. Chaque billet d'un montage
+d'escales est traité séparément. Barème modifiable : `data/airlines.json` (mes connaissances : à vérifier à la réservation).
+Business : bagages inclus par nature.
+
+## Fiabilité des prix : ce que l'appli peut et ne peut pas garantir
+Aucune source gratuite et officielle ne donne de prix en temps réel à un particulier (Amadeus Self-Service est fermé, Kiwi Tequila
+réservé aux partenaires). Les prix de détection viennent du **cache** d'un agrégateur (Travelpayouts/Aviasales). Pour limiter le risque :
+1. revérification pour les dates exactes (offre écartée si le prix a disparu ou monté de plus de 10 %) ;
+2. **vérification en direct optionnelle** sur Google Flights via SerpApi (secret `SERPAPI_KEY`, quota gratuit mensuel limité,
+   budget `live.monthly_budget`, suivi dans `data/live_usage.json`) : appliquée seulement aux finalistes d'un créneau et aux 10/10, avec des
+   remplaçants si l'un est écarté. Elle confirme prix, compagnie, **type d'avion** (donc le double couloir devient vérifié) et niveau de prix ;
+3. chaque alerte contient un lien Google Flights prérempli (dates exactes) pour vérifier en 30 secondes, et le **site officiel de la
+   compagnie** pour acheter (jamais un intermédiaire) ;
+4. sans clé ou quota épuisé, l'offre est publiée avec un avertissement orange « prix non confirmé en direct ».
+
 ## Réalisme du séjour et vérification avant affichage
 - **Coût du séjour poste par poste** (`data/costs.json`, 86 pays, modifiable) : hébergement (dortoir/chambre simple), nourriture,
   transports locaux, activités, déplacements entre villes, visa/autorisation d'entrée (passeport français, à revérifier),

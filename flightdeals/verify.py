@@ -13,7 +13,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Callable, Optional
 
-from . import providers
+from . import live as livemod, providers
 
 
 def verify_one(v, cfg: dict, token: str, today: date, price_fn: Optional[Callable] = None):
@@ -70,3 +70,52 @@ def verify_all(verdicts: list, cfg: dict, token: Optional[str], today: date, pri
     for d in dropped[:8]:
         print("   ✗", d)
     return kept
+
+
+def live_confirm(verdicts: list, cfg: dict, today: date, limit: int, check_fn: Optional[Callable] = None) -> tuple:
+    """Confirme EN DIRECT (Google Flights) les finalistes, dans l'ordre, jusqu'à `limit` offres retenues.
+
+    -> (retenues, écartées). Écartée = prix monté / vol introuvable / monocouloir sur un long vol. Si la vérification en direct
+    n'est pas disponible (pas de clé, quota épuisé, panne) l'offre reste, avec un avertissement bien visible."""
+    kept, dropped = [], []
+    stamp = today.strftime("%d/%m/%Y")
+    for v in verdicts:
+        if len(kept) >= limit:
+            break
+        o = v.offer
+        if o.source.startswith("rss") or o.source == "combo-escales" or not (o.depart and o.return_date):
+            v.verification = (v.verification + " | " if v.verification else "") + \
+                "⚠ Prix non confirmable en direct automatiquement (offre sans dates exactes ou montage) : vérifie sur les liens ci-dessous"
+            kept.append(v)
+            continue
+        if check_fn is None and not livemod.can_spend(cfg):
+            v.verification = (v.verification + " | " if v.verification else "") + \
+                "⚠ Prix NON confirmé en direct (clé SERPAPI_KEY absente ou quota du mois épuisé) : vérifie sur Google Flights avant d'acheter"
+            kept.append(v)
+            continue
+        res = (check_fn or livemod.check)(o.origin, o.dest, o.depart, o.return_date, o.airline, o.price_eur, cfg)
+        if res.status in ("higher", "gone"):
+            dropped.append(v)
+            print(f"[live] ✗ {o.origin}→{v.dest_city} {o.price_eur:.0f}€ : {res.detail}")
+            continue
+        if res.status == "unavailable":
+            print(f"[live] ? {o.origin}→{v.dest_city} : {res.detail}")
+            v.verification = (v.verification + " | " if v.verification else "") + \
+                "⚠ Confirmation en direct indisponible (" + res.detail[:80] + ") : vérifie sur Google Flights avant d'acheter"
+            kept.append(v)
+            continue
+        kind = livemod.aircraft_verdict(res.aircraft)
+        if kind == "narrowbody" and v.flight_hours > cfg["aircraft"]["long_haul_hours"]:
+            dropped.append(v)
+            print(f"[live] ✗ {o.origin}→{v.dest_city} : avion monocouloir annoncé sur un vol de {v.flight_hours} h ({', '.join(res.aircraft)})")
+            continue
+        if kind == "widebody":
+            v.aircraft, v.aircraft_note = "widebody_confirmed", "Avions annoncés par Google Flights : " + ", ".join(res.aircraft)
+        niv = {"low": "bas", "typical": "habituel", "high": "élevé"}.get(res.level, "")
+        v.verification = (f"✔ Confirmé EN DIRECT sur Google Flights le {stamp} : {res.price:.0f} € pour ces dates exactes"
+                          + (f" ({', '.join(res.airlines)})" if res.airlines else "")
+                          + (f" · niveau de prix {niv}" if niv else "")
+                          + (f" · fourchette habituelle {res.typical[0]}–{res.typical[1]} €" if len(res.typical) == 2 else "")
+                          + (f" · {res.detail}" if res.detail else ""))
+        kept.append(v)
+    return kept, dropped

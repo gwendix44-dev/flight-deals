@@ -186,6 +186,10 @@ def ingest(ctx: Ctx, candidates: list) -> None:
             poolmod.add(ctx.pool, v, ctx.now_iso)
     ctx.stats.update(candidates=len(candidates), verified=len(verified), instant=len(instant))
     if instant:
+        instant, _dropped = verify.live_confirm(instant, ctx.cfg, ctx.today, len(instant))      # prix en direct avant d'alerter
+        for v in _dropped:
+            ctx.state.setdefault("live_rejected", []).append(dedupe_key(v.offer))
+    if instant:
         done = announce(instant, ctx.seen, "⚡ 10/10 : publication immédiate", ctx.dry, summary=False)
         publish(done, ctx.dry, "⚡ 10/10 immédiat")
 
@@ -208,7 +212,14 @@ def tick_slots(ctx: Ctx) -> None:
     # dernière revérification : un prix vu ce matin peut avoir disparu depuis
     std_ok = verify.verify_all(std, cfg, ctx.token, ctx.today)
     biz_ok = verify.verify_all(biz, cfg, ctx.token, ctx.today)
-    top = select_top(std_ok, cfg, pub["per_slot"]["standard"]) + select_top(biz_ok, cfg, pub["per_slot"]["business"])
+    spare = cfg.get("live", {}).get("spare_candidates", 3)
+    cand_std = select_top(std_ok, cfg, pub["per_slot"]["standard"] + spare)
+    cand_biz = select_top(biz_ok, cfg, pub["per_slot"]["business"] + spare)
+    # prix EN DIRECT des finalistes (des remplaçants prennent la place de ceux qui échouent)
+    fin_std, drop_std = verify.live_confirm(cand_std, cfg, ctx.today, pub["per_slot"]["standard"])
+    fin_biz, drop_biz = verify.live_confirm(cand_biz, cfg, ctx.today, pub["per_slot"]["business"])
+    live_dropped = {id(v) for v in drop_std + drop_biz}
+    top = fin_std + fin_biz
     n_std, n_biz = sum(v.kind != "business_deal" for v in top), sum(v.kind == "business_deal" for v in top)
     print(f"{label} ({sid}) : {len(std_ok)} standard et {len(biz_ok)} business confirmés en réserve -> "
           f"{n_std} + {n_biz} publiés")
@@ -222,6 +233,7 @@ def tick_slots(ctx: Ctx) -> None:
     checked = std[: cfg["verification"]["max_checks"]] + biz[: cfg["verification"]["max_checks"]]
     ok_ids = {id(v) for v in std_ok + biz_ok}
     gone |= {dedupe_key(v.offer) for v in checked if id(v) not in ok_ids}
+    gone |= {dedupe_key(v.offer) for v in drop_std + drop_biz}
     ctx.pool = [e for e in ctx.pool if e["key"] not in gone]
     ctx.state.setdefault("published", []).append(sid)
     ctx.state["last_slot"] = {"id": sid, "label": label, "at": ctx.now_iso, "standard": n_std, "business": n_biz,
@@ -236,6 +248,9 @@ def write_status(ctx: Ctx, source: str) -> None:
     st.update({"updated": ctx.now_iso, "source": source, "waiting": len(ctx.pool),
                "next_slot": ctx.stats.get("next_slot", slots.next_slot_label(ctx.cfg, ctx.now_utc)),
                "last_slot": ctx.state.get("last_slot"), "errors": ctx.errors[-3:], "ok": not ctx.errors})
+    from . import live as livemod
+    st["live_used"], st["live_budget"] = livemod.used(ctx.now_utc), ctx.cfg.get("live", {}).get("monthly_budget", 0)
+    st["live_active"] = livemod.can_spend(ctx.cfg, ctx.now_utc)
     for k in ("offers", "candidates", "verified", "instant"):
         if k in ctx.stats:
             st[k] = ctx.stats[k]

@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, time, timedelta, timezone
 from typing import Optional
 
-from . import aircraft, costs as costcalc, preferences, scoring
+from . import aircraft, baggage, costs as costcalc, links, preferences, scoring
 from .airports import DESTINATIONS, HUBS, ORIGINS, SAME_CITY, airports_of, coords, secrecy
 from .core import Leg, Verdict, Offer, estimate_hours, haversine_km
 
@@ -96,6 +96,14 @@ def build_paths(legs_from: dict, max_price: float) -> list:
 _RANK = {"not_required": 0, "widebody_probable": 1, "unverified": 2}
 
 
+def _place(code: str) -> str:
+    """Nom lisible d'un code d'aéroport (pour les liens Google Flights)."""
+    for table, idx in ((DESTINATIONS, 0), (HUBS, 0), (ORIGINS, 0)):
+        if code in table:
+            return table[code][idx]
+    return code
+
+
 def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, budgets: dict,
                    routes_path: str, today=None) -> Optional[Verdict]:
     """Évalue un aller (montage) + un retour. Retourne un Verdict 'stopover_deal' ou None."""
@@ -124,10 +132,17 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
     if preferences.violates(cfg, dest=d, km=km, hours=sum(l.dur_min for l in path.legs) / 60,
                             depart=first.dep_utc.date(), stay=stay):
         return None
-    flights = path.price + ret.price
+    # Billets séparés : la politique bagages de CHAQUE compagnie compte (un aller simple par billet)
+    bags = [baggage.assess(l.airline, l.transfers, directions=1) for l in [*path.legs, ret]]
+    supp = sum(b.supplement for b in bags)
+    bag_status = baggage.worst([b.status for b in bags])
+    bag_note = " | ".join(b.note.split(" : ", 1)[0] + " : " + b.note.split(" : ", 1)[-1] for b in bags if b.status != "inclus") \
+        or "Tous les billets : sac à dos + bagage cabine inclus (à confirmer au moment de réserver)"
+    flights_raw = path.price + ret.price
+    flights = flights_raw + supp                          # tarif avec sac à dos + bagage cabine
     if eco.get("flight_cap_eur") and flights > eco["flight_cap_eur"]:
         return None
-    saving = 1 - flights / baseline
+    saving = 1 - flights / baseline                       # le gain se juge bagages compris
     if saving < sc["min_saving"]:
         return None
 
@@ -179,8 +194,9 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
 
     reasons = [f"Note {sc.total}/11 (seuil {cfg['scoring']['min_score']})",
                f"−{saving * 100:.0f} % vs le meilleur billet classique trouvé ({baseline:.0f} €)",
-               f"Vols {flights:.0f} € ; séjour complet ≈ {total:.0f} € (budget max {cap:.0f} € pour {km:.0f} km)"]
-    offer = Offer(origin=o, dest=d, price_eur=round(flights), depart=first.dep_utc.date(),
+               f"Vols {flights:.0f} € AVEC sac à dos + bagage cabine" + (f" (billets {flights_raw:.0f} € + supplément bagages estimé {supp:.0f} €)" if supp else "")
+               + f" ; séjour complet ≈ {total:.0f} € (budget max {cap:.0f} € pour {km:.0f} km)"]
+    offer = Offer(origin=o, dest=d, price_eur=round(flights_raw), depart=first.dep_utc.date(),
                   return_date=ret.dep_utc.date(), transfers=stops, source="combo-escales",
                   link=first.link, title=" > ".join([o] + [h for h, _, _ in path.layovers] + [d]))
     return Verdict(kind="stopover_deal", offer=offer, dest_city=city, country=cc, distance_km=round(km),
@@ -188,4 +204,7 @@ def evaluate_combo(path: Path, ret: Leg, baseline: Optional[float], cfg: dict, b
                    daily_budget=daily, cost_lines=cost_lines, stay_cost=round(stay_cost + stop_cost), trip_total=round(total),
                    discount_pct=None, aircraft=worst, aircraft_note=" | ".join(notes), reasons=reasons,
                    itinerary=itin, baseline_eur=baseline, saving_pct=round(saving * 100),
-                   score=sc.total, score_parts=sc.parts, score_line=sc.line(), legs=[*path.legs, ret])
+                   score=sc.total, score_parts=sc.parts, score_line=sc.line(), legs=[*path.legs, ret],
+                   flight_all_in=round(flights), bag_supplement=supp, bag_status=bag_status, bag_note=bag_note,
+                   links={"google_flights_legs": [links.google_flights(l.orig, _place(l.dest), l.dep.date(), None) for l in [*path.legs, ret]],
+                          "airline_sites": sorted({baggage.info(l.airline).get("site", "") for l in [*path.legs, ret]} - {""})})

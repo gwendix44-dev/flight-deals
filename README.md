@@ -9,17 +9,23 @@ filtres (plafonds, gros-porteur > 5 h, 6 mois, coût total du séjour backpacker
 
 Réglages : `config.json` · budgets par pays : `data/budgets.json`
 
-## Philosophie : la pépite, pas le voyage correct
-L'appli ne sert pas à partir tous les mois : elle cherche l'occasion exceptionnelle qui ne se présente que **3 à 5 fois par an**.
-Un bon plan qui te ferait partir juste avant une vraie occasion est exactement ce qu'il faut éviter. Une alerte n'est donc
-envoyée que si l'offre est une **anomalie de prix** (`scoring.require_anomaly`) : erreur signalée par une source, prix au moins
-moitié moins cher que d'habitude sur la ligne, ou au moins 75 % sous le prix habituel pour la distance. Il faut en plus
-atteindre la note minimale (faisabilité et attrait du séjour complet) et passer la revérification. Chaque alerte indique son
-rang dans les 12 derniers mois (`data/alerts_log.json`, compteur aussi visible sur le dashboard) et sa rareté sur la ligne.
-Mesuré sur l'historique réel du dépôt : 0 ligne ne remplissait ces conditions un jour normal.
+## Fonctionnement : analyse continue, publication à 12h et 19h
+- **Toute la journée** (scan toutes les 15 min) : l'appli analyse les prix, note chaque offre sur 11 et ne garde que les deals
+  **≥ 8/10**, après revérification du prix pour les dates exactes. Ils attendent dans une réserve (`data/pool.json`).
+- **À 12h et à 19h (heure de Paris)** : les **3 meilleurs deals standard** et les **3 meilleures offres business** de la réserve sont
+  revérifiés une dernière fois, puis publiés sur le dashboard et notifiés (une seule notification groupée par créneau, et une Issue
+  par offre pour pouvoir refuser). Les offres sont choisies à tour de rôle dans chaque région du monde. Si moins de 3 offres
+  atteignent 8/10, on en publie moins : on ne remplit jamais.
+- **10/10** : publication et notification immédiates, sans attendre le créneau (plafond de 4 par jour pour éviter une inondation
+  si une donnée est fausse ; le surplus attend le créneau).
+- **Un créneau manqué est rattrapé** : un scan retardé par GitHub publie jusqu'à 3 h après l'heure prévue, une seule fois.
+- **État visible sur le téléphone** : le bandeau en haut du dashboard (`docs/status.json`) dit si l'appli tourne, combien d'offres
+  ont été analysées, combien attendent leur créneau, et affiche en rouge toute erreur. Un dashboard vide ne veut donc pas dire
+  « panne » : c'est qu'aucune offre n'a atteint 8/10.
+- Réglages : `publication` dans `config.json` (créneaux, seuils, nombre par créneau).
 
 ## Grille de notation (sur 11)
-Un deal n'est alerté que s'il atteint **7,5/11** (`scoring.min_score` dans `config.json`). Mesuré sur l'historique réel : la meilleure note observée est ~7,9 ; à 9,5 aucune alerte ne partirait.
+Un deal n'est retenu que s'il atteint **8/10** (`publication.min_score`) ; **10/10** déclenche la publication immédiate. La note business est calculée sur la même échelle à partir de la remise (11 × remise / 0,85 : 8/10 ≈ −62 %, 10/10 ≈ −77 %).
 Prix vs prix habituel (3) · budget total du séjour (2) · destination hors sentiers battus (1,5) ·
 qualité du vol (1,5) · durée adaptée à la distance (1) · coût par jour (1) · bonus erreur de prix (+1).
 Budget total (vols + sur place) : 1 500 € max jusqu'à 8 000 km, 1 900 € de 8 000 à 12 000 km, 2 500 € au-delà (réglable : `economy.total_trip_cap_eur`). Séjour : 3 semaines max, minimum 5 j (≤3 500 km), 7 j (≤7 000 km),

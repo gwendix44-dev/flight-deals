@@ -19,7 +19,7 @@ AIRCRAFT = {
 def title(v: Verdict) -> str:
     o = v.offer
     if v.kind == "business_deal":
-        return f"{LABEL[v.kind]} · {o.origin}→{v.dest_city} · {o.price_eur:.0f} € A/R"
+        return f"{LABEL[v.kind]} {v.score}/11 · {o.origin}→{v.dest_city} · {o.price_eur:.0f} € A/R"
     return f"{LABEL[v.kind]} {v.score}/11 · {o.origin}→{v.dest_city} · séjour ~{v.trip_total} €"
 
 
@@ -119,3 +119,29 @@ def send_push(vs: list[Verdict]) -> list[Verdict]:
         except Exception as e:
             print(f"[ntfy] échec : {e}")
     return sent
+
+
+def send_push_summary(vs: list[Verdict], label: str) -> list[Verdict]:
+    """UNE notification pour tout un créneau (12h / 19h) : la liste des deals, un tap ouvre le dashboard."""
+    topic = os.environ.get("NTFY_TOPIC")
+    if not topic:
+        print("[ntfy] NTFY_TOPIC absent : pas de notification push (les Issues GitHub restent actives)")
+        return []
+    std = [v for v in vs if v.kind != "business_deal"]
+    biz = [v for v in vs if v.kind == "business_deal"]
+    lines = [f"• {v.score}/11 {v.offer.origin}→{v.dest_city} : vol {v.offer.price_eur:.0f} €, séjour complet ~{v.trip_total} €" for v in std]
+    lines += [f"• 💺 {v.offer.origin}→{v.dest_city} : {v.offer.price_eur:.0f} € A/R en business" for v in biz]
+    parts = ([f"{len(std)} deal(s)"] if std else []) + ([f"{len(biz)} business"] if biz else [])
+    payload = {"topic": topic, "title": f"✈️ {label} : " + " + ".join(parts), "message": "\n".join(lines),
+               "priority": 4, "tags": ["airplane"]}
+    click = dashboard_url()
+    if click:
+        payload["click"] = click
+    req = urllib.request.Request("https://ntfy.sh/", data=json.dumps(payload).encode(), method="POST",
+                                 headers={"Content-Type": "application/json", "User-Agent": "flight-deals"})
+    try:
+        urllib.request.urlopen(req, timeout=20).read()
+        return list(vs)
+    except Exception as e:
+        print(f"[ntfy] échec : {e}")
+        return []

@@ -5,12 +5,14 @@ import argparse
 import json
 import os
 import sys
+import traceback
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-from . import evaluate, preferences, providers, stopovers
-from .airports import HUBS, ORIGINS
-from .main import ROOT, SEEN, _load, _save, dispatch, months_ahead, publish
+from . import evaluate, preferences, providers, scoring, stopovers
+from .airports import DESTINATIONS, HUBS, ORIGINS
+from .core import haversine_km
+from .main import ROOT, Ctx, ingest, months_ahead, tick_slots, write_status
 
 
 def _group(legs, keep: int = 6):
@@ -24,15 +26,15 @@ def _group(legs, keep: int = 6):
     return g
 
 
-def run(dry: bool) -> int:
-    cfg = preferences.load_cfg()
+def run(dry: bool, ctx: Ctx) -> int:
+    cfg = ctx.cfg
     if not cfg["stopovers"]["enabled"]:
         return 0
-    token = os.environ.get("TRAVELPAYOUTS_TOKEN")
+    token = ctx.token
     if not token:
         print("[combos] TRAVELPAYOUTS_TOKEN absent : rien à faire")
         return 0
-    today = datetime.now(timezone.utc).date()
+    today = ctx.today
     months = months_ahead(cfg["months_ahead"], today)
     budgets = evaluate.load_budgets()
     routes_path = str(ROOT / "data" / "routes.dat")
@@ -51,7 +53,7 @@ def run(dry: bool) -> int:
         base[k] = min(base.get(k, 1e9), o.price_eur)
 
     # 3. Aller en montage : on ne garde que les plus prometteurs, puis on cherche un retour pour chacun
-    paths = stopovers.build_paths(legs_from, max_price=cfg["economy"]["flight_cap_eur"]["long"])
+    paths = stopovers.build_paths(legs_from, max_price=cfg["stopovers"]["max_outbound_eur"])
     paths = [p for p in paths if (p.legs[0].orig, p.legs[-1].dest) in base]
     paths.sort(key=lambda p: p.price / base[(p.legs[0].orig, p.legs[-1].dest)])
     print(f"{len(paths)} montages aller candidats")
@@ -59,7 +61,10 @@ def run(dry: bool) -> int:
     ret_cache: dict = {}
 
     def best_return(o, d, arr_date):
-        lo, hi = arr_date + timedelta(days=cfg["stay_days"]["min"]), arr_date + timedelta(days=cfg["stay_days"]["max"])
+        _, olat, olon = ORIGINS[o]
+        km = haversine_km(olat, olon, DESTINATIONS[d][2], DESTINATIONS[d][3])
+        lo = arr_date + timedelta(days=scoring.min_stay_for(km, cfg))       # plus c'est loin, plus le séjour minimum est long
+        hi = arr_date + timedelta(days=cfg["stay_days"]["max"])
         ms = sorted({f"{x.year}-{x.month:02d}" for x in (lo, hi)})
         best = None
         for m in ms:
@@ -88,17 +93,27 @@ def run(dry: bool) -> int:
             verdicts.append(v)
     print(f"{checked} montages vérifiés, {len(verdicts)} retenus")
 
-    seen = _load(SEEN, {})
-    from . import verify
-    sent = dispatch(sorted(verdicts, key=lambda v: -v.score), seen, cfg, dry, cfg["max_alerts_per_run"]["combos"],
-                    lambda lst: verify.verify_all(lst, cfg, token, today))
-    if not dry:
-        publish(sent, dry)
-        _save(SEEN, dict(list(seen.items())[-5000:]))
+    ctx.stats["combos_checked"] = checked
+    ingest(ctx, verdicts)          # mêmes règles que les autres offres : >= 8/10, revérification, 10/10 immédiat ou réserve
+    tick_slots(ctx)
+    return 0
+
+
+def main(dry: bool) -> int:
+    """Ne fait jamais échouer le workflow sur une erreur de données : l'erreur est notée dans docs/status.json."""
+    ctx = Ctx(dry)
+    try:
+        run(dry, ctx)
+    except Exception:
+        traceback.print_exc()
+        ctx.errors.append("montages d'escales : erreur inattendue (voir le journal du scan)")
+    finally:
+        ctx.save()
+        write_status(ctx, "combos")
     return 0
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
-    sys.exit(run(ap.parse_args().dry_run))
+    sys.exit(main(ap.parse_args().dry_run))

@@ -64,7 +64,8 @@
     "flight_cap_eur": 800,
     "min_km": 3600,
     "min_discount": 0.5,
-    "min_plausible_eur": 250
+    "min_plausible_eur": 250,
+    "note_full_discount": 0.85
   },
   "aircraft": {
     "long_haul_hours": 5,
@@ -92,7 +93,8 @@
     "enabled": true,
     "min_saving": 0.2,
     "hubs": null,
-    "max_candidates_to_verify": 25
+    "max_candidates_to_verify": 25,
+    "max_outbound_eur": 700
   },
   "max_alerts_per_run": {
     "scan": 2,
@@ -100,7 +102,7 @@
     "business": 2
   },
   "scoring": {
-    "min_score": 7.5,
+    "min_score": 8.0,
     "max_score": 11,
     "benchmark": {
       "base": 150,
@@ -113,7 +115,7 @@
     "overall_ratio_full": 0.55,
     "overall_ratio_zero": 0.9,
     "budget_full_share": 0.6,
-    "require_anomaly": true
+    "require_anomaly": false
   },
   "max_alerts_per_region": 2,
   "verification": {
@@ -162,5 +164,21 @@
   },
   "pepite": {
     "target_per_year": "3 à 5"
+  },
+  "publication": {
+    "slots": [
+      "12:00",
+      "19:00"
+    ],
+    "window_minutes": 180,
+    "min_score": 8.0,
+    "instant_score": 10.0,
+    "per_slot": {
+      "standard": 3,
+      "business": 3
+    },
+    "pool_max_age_hours": 36,
+    "max_checks": 25,
+    "instant_max_per_day": 4
   }
 }

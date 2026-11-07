@@ -334,7 +334,8 @@ class Business(unittest.TestCase):
     def test_good_business_deal_ignores_stay_price(self):
         v = self.biz("TYO", 780)                    # Japon : séjour cher, sans importance ici
         self.assertEqual(v.kind, "business_deal")
-        self.assertEqual(v.score, 0)                # pas de note sur 11 : section à part
+        self.assertGreaterEqual(v.score, 8)          # note business /11 = remise vs prix habituel (8/10 ≈ -62 %)
+        self.assertIn("remise", v.score_line)
         self.assertTrue(v.stay_cost > 600)          # affiché à titre indicatif
 
     def test_cap_800_long_haul_and_real_discount(self):
@@ -343,12 +344,10 @@ class Business(unittest.TestCase):
         self.assertIsNone(self.biz("TYO", 100))                       # prix irréaliste
         self.assertIsNotNone(self.biz("TYO", 100, flagged_error=True))   # sauf erreur de prix signalée
 
-    def test_minimum_discount_is_enforced(self):
-        self.assertIsNotNone(self.biz("ACC", 800))                       # ~ -53 % vs prix habituel du business
-        cfg = copy.deepcopy(CFG)
-        cfg["business"]["min_discount"] = 0.6
-        o = Offer("CDG", "ACC", 800, cabin="business")
-        self.assertIsNone(evaluate.evaluate_business(o, cfg, BUD, TODAY))   # trop peu de remise pour être « très bon »
+    def test_minimum_note_is_enforced(self):
+        self.assertIsNone(self.biz("ACC", 800))                          # ~ -53 % : note 6,9 < 8
+        self.assertIsNotNone(self.biz("ACC", 600))                       # ~ -65 % : note 8,4
+        self.assertEqual(self.biz("TYO", 400).score >= 10, True)         # très grosse remise : 10/10 (publication immédiate)
 
     def test_business_and_economy_are_separate_flows(self):
         o = Offer("CDG", "TYO", 500, cabin="business", depart=TODAY + timedelta(days=60),
@@ -371,19 +370,18 @@ class Business(unittest.TestCase):
         self.assertEqual(preferences.apply_prefs(CFG, p)["business"]["flight_cap_eur"], 700)
 
 
-class Pepite(unittest.TestCase):
+class Exceptional(unittest.TestCase):
     """L'appli ne cherche pas un bon voyage : elle cherche la pépite (3 à 5 fois par an)."""
 
-    def test_good_but_normal_deal_is_not_alerted(self):
+    def test_threshold_is_8_out_of_10(self):
+        self.assertEqual(CFG["publication"]["min_score"], 8.0)
         o = mk("ALA", 330, days=(60, 69))                                 # bon plan, direct, destination rare
-        base = copy.deepcopy(LOOSE)
-        score = evaluate.evaluate(o, base, {}, BUD, TODAY).score
+        score = evaluate.evaluate(o, LOOSE, {}, BUD, TODAY).score
         cfg = copy.deepcopy(CFG)
-        cfg["scoring"]["min_score"] = score - 0.1
-        self.assertTrue(cfg["scoring"]["require_anomaly"])
-        self.assertIsNone(evaluate.evaluate(o, cfg, {}, BUD, TODAY))      # trop banal : on ne te dérange pas
-        cfg["scoring"]["require_anomaly"] = False
-        self.assertIsNotNone(evaluate.evaluate(o, cfg, {}, BUD, TODAY))   # il aurait passé sans l'exigence d'anomalie
+        cfg["scoring"]["min_score"] = round(score + 0.1, 1)
+        self.assertIsNone(evaluate.evaluate(o, cfg, {}, BUD, TODAY))      # juste sous le seuil : refusé
+        cfg["scoring"]["min_score"] = round(score - 0.1, 1)
+        self.assertIsNotNone(evaluate.evaluate(o, cfg, {}, BUD, TODAY))   # juste au-dessus : accepté
 
     def test_real_anomaly_is_alerted(self):
         for kw, hist in (({"flagged_error": True}, {}), ({}, {"CDG-ALA-economy": [600, 620, 580, 610, 590, 640]})):
@@ -414,8 +412,11 @@ class Pepite(unittest.TestCase):
         finally:
             main._load = orig
 
-    def test_few_alerts_per_scan(self):
-        self.assertLessEqual(CFG["max_alerts_per_run"]["scan"], 2)
+    def test_publication_settings(self):
+        pub = CFG["publication"]
+        self.assertEqual(pub["slots"], ["12:00", "19:00"])
+        self.assertEqual((pub["per_slot"]["standard"], pub["per_slot"]["business"]), (3, 3))
+        self.assertEqual(pub["instant_score"], 10.0)
 
 
 class Phone(unittest.TestCase):

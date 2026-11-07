@@ -28,8 +28,15 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: python -m flightdeals.main
       - name: Save state
+        if: always()
         run: |
           git config user.name "flight-deals-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add data/history.json data/seen.json data/alerts_log.json docs/deals.json
-          git diff --cached --quiet || (git commit -m "scan: update state" && git pull --rebase -q && git push)
+          git add -A data docs
+          git diff --cached --quiet && exit 0
+          git commit -m "scan: update state"
+          for i in 1 2 3 4; do
+            git pull --rebase --autostash -q && git push -q && exit 0
+            echo "push refusé (tentative $i), nouvel essai"; sleep $((i * 4))
+          done
+          echo "::warning::l'état n'a pas pu être enregistré (conflit de push)"; exit 0

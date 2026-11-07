@@ -160,17 +160,23 @@ def evaluate_business(o: Offer, cfg: dict, budgets: dict, today: Optional[date] 
     stay = scoring.default_stay(km, cfg)
     if preferences.violates(cfg, dest=o.dest, km=km, hours=hours, depart=o.depart, stay=stay):
         return None
-    status, note = aircraft.check_route(o.origin, dest_airports or [o.dest], o.transfers, hours,
-                                        cfg["aircraft"]["long_haul_hours"], str(ROOT / "data" / "routes.dat"))
+    status, anote = aircraft.check_route(o.origin, dest_airports or [o.dest], o.transfers, hours,
+                                         cfg["aircraft"]["long_haul_hours"], str(ROOT / "data" / "routes.dat"))
     if status == "REJECT" or (status == "unverified" and cfg["aircraft"]["strict"]):
         return None
     ref = scoring.reference_price(km, "business", cfg)
     disc = 1 - o.price_eur / ref
     if disc < b["min_discount"] and not o.flagged_error:
         return None
+    # Note /11 : 11 x remise / 0,85 (plafonnée). 8/10 correspond à ~62 % de remise, 10/10 à ~77 %.
+    note = min(11.0, 11 * max(disc, 0) / b["note_full_discount"]) + (1.0 if o.flagged_error else 0.0)
+    note = round(min(note, 11.0), 1)
+    if note < cfg["publication"]["min_score"]:
+        NEAR_MISSES.append((note, f"business {o.origin}→{city} {o.price_eur:.0f}€ : remise {disc * 100:.0f} % → note {note}/11"))
+        return None
     bd = costcalc.stay_breakdown(budgets, cc, stay, o.depart, cfg, origin=o.origin)
     stay_cost, lines = bd if bd else (0, [])
-    reasons = [f"Business A/R {o.price_eur:.0f} € (plafond {b['flight_cap_eur']} €), −{disc * 100:.0f} % vs prix habituel "
+    reasons = [f"Note {note}/11 : business A/R {o.price_eur:.0f} € (plafond {b['flight_cap_eur']} €), −{disc * 100:.0f} % vs prix habituel "
                f"(~{ref:.0f} € sur {km:.0f} km)",
                "Le prix du séjour n'est pas pris en compte dans cette sélection (indicatif seulement)"]
     if o.flagged_error:
@@ -178,7 +184,8 @@ def evaluate_business(o: Offer, cfg: dict, budgets: dict, today: Optional[date] 
     return Verdict(kind="business_deal", offer=o, dest_city=city, country=cc, distance_km=round(km),
                    flight_hours=round(hours, 1), stay_days=stay, daily_budget=costcalc.daily(budgets, cc) or 0,
                    stay_cost=round(stay_cost), trip_total=round(o.price_eur + stay_cost), discount_pct=round(disc * 100),
-                   aircraft=status, aircraft_note=note, reasons=reasons, cost_lines=lines)
+                   aircraft=status, aircraft_note=anote, reasons=reasons, cost_lines=lines, score=note,
+                   score_line=f"remise {disc * 100:.0f} % vs prix habituel du business (~{ref:.0f} €) · note {note}/11")
 
 
 def update_history(history: dict, offers: list[Offer], keep: int = 200) -> None:

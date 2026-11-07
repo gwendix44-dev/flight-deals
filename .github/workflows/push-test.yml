@@ -1,0 +1,26 @@
+name: push-test
+# À lancer à la main pour vérifier que les notifications natives arrivent bien sur ton téléphone.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Dépendances
+        run: pip install -r requirements.txt
+      - name: Envoyer une notification de test
+        env:
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          PUSH_SUBSCRIPTION: ${{ secrets.PUSH_SUBSCRIPTION }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python -m flightdeals.webpush --test

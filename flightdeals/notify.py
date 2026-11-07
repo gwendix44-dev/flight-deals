@@ -6,6 +6,7 @@ import os
 import urllib.error
 import urllib.request
 
+from . import webpush
 from .core import Verdict
 
 LABEL = {"error_fare": "🚨 ERREUR DE PRIX", "deal": "✈️ Très bonne affaire", "business_deal": "💺 Business pas cher", "stopover_deal": "🔀 Montage d'escales"}
@@ -89,13 +90,38 @@ def dashboard_url() -> str:
     return f"https://{owner.lower()}.github.io/{name}/?fresh=1"      # ?fresh=1 : le dashboard lit les données sans attendre Pages
 
 
-def send_push(vs: list[Verdict]) -> list[Verdict]:
-    """Notification push sur le téléphone (ntfy.sh, gratuit). Retourne les offres réellement notifiées.
-    Le topic (NTFY_TOPIC) est un secret : n'importe qui connaissant son nom peut lire les notifications."""
+def _ntfy(payload: dict) -> bool:
+    """Canal optionnel (ntfy.sh) : seulement si NTFY_TOPIC est défini. Non nécessaire : les notifications natives suffisent."""
     topic = os.environ.get("NTFY_TOPIC")
     if not topic:
-        print("[ntfy] NTFY_TOPIC absent : pas de notification push (les Issues GitHub restent actives)")
-        return []
+        return False
+    req = urllib.request.Request("https://ntfy.sh/", data=json.dumps(dict(payload, topic=topic)).encode(), method="POST",
+                                 headers={"Content-Type": "application/json", "User-Agent": "flight-deals"})
+    try:
+        urllib.request.urlopen(req, timeout=20).read()
+        return True
+    except Exception as e:
+        print(f"[ntfy] échec : {e}")
+        return False
+
+
+def _deliver(title_: str, message: str, priority: int, tags: list, link: str = "") -> bool:
+    """Notification push : native (Web Push) en premier ; ntfy en option. True si au moins un canal a livré."""
+    click = dashboard_url()
+    native = webpush.send({"title": title_, "body": message, "url": click or "./?fresh=1", "tag": "fd-" + str(abs(hash(title_)) % 10**6)})
+    nt = {"title": title_, "message": message, "priority": priority, "tags": tags}
+    if click:
+        nt["click"] = click
+    if link.startswith("http"):
+        nt["actions"] = [{"action": "view", "label": "Voir l'offre", "url": link}]
+    other = _ntfy(nt)
+    if not native and not other and not (webpush.configured() or os.environ.get("NTFY_TOPIC")):
+        print("[push] aucune notification configurée (secrets VAPID_PRIVATE_KEY + PUSH_SUBSCRIPTION) : les Issues GitHub restent actives")
+    return bool(native or other)
+
+
+def send_push(vs: list[Verdict]) -> list[Verdict]:
+    """Une notification par offre (10/10 immédiats). Retourne les offres réellement notifiées."""
     sent = []
     for v in vs:
         o = v.offer
@@ -104,44 +130,18 @@ def send_push(vs: list[Verdict]) -> list[Verdict]:
                ) + f" · {v.distance_km} km"
         if v.reasons:
             msg += "\n" + v.reasons[-1]
-        payload = {"topic": topic, "title": title(v), "message": msg, "priority": 5 if v.kind == "error_fare" else 4,
-                   "tags": ["airplane", "rotating_light"] if v.kind == "error_fare" else ["airplane"]}
-        click = dashboard_url()
-        if click:
-            payload["click"] = click
-        if o.link.startswith("http"):
-            payload["actions"] = [{"action": "view", "label": "Voir l'offre", "url": o.link}]
-        req = urllib.request.Request("https://ntfy.sh/", data=json.dumps(payload).encode(), method="POST",
-                                     headers={"Content-Type": "application/json", "User-Agent": "flight-deals"})
-        try:
-            urllib.request.urlopen(req, timeout=20).read()
+        if _deliver(title(v), msg, 5 if v.kind == "error_fare" else 4,
+                    ["airplane", "rotating_light"] if v.kind == "error_fare" else ["airplane"], o.link):
             sent.append(v)
-        except Exception as e:
-            print(f"[ntfy] échec : {e}")
     return sent
 
 
 def send_push_summary(vs: list[Verdict], label: str) -> list[Verdict]:
-    """UNE notification pour tout un créneau (12h / 19h) : la liste des deals, un tap ouvre le dashboard."""
-    topic = os.environ.get("NTFY_TOPIC")
-    if not topic:
-        print("[ntfy] NTFY_TOPIC absent : pas de notification push (les Issues GitHub restent actives)")
-        return []
+    """UNE notification pour tout un créneau (12h / 19h) : la liste des deals ; un tap ouvre le dashboard."""
     std = [v for v in vs if v.kind != "business_deal"]
     biz = [v for v in vs if v.kind == "business_deal"]
     lines = [f"• {v.score}/11 {v.offer.origin}→{v.dest_city} : vol {v.offer.price_eur:.0f} €, séjour complet ~{v.trip_total} €" for v in std]
     lines += [f"• 💺 {v.offer.origin}→{v.dest_city} : {v.offer.price_eur:.0f} € A/R en business" for v in biz]
     parts = ([f"{len(std)} deal(s)"] if std else []) + ([f"{len(biz)} business"] if biz else [])
-    payload = {"topic": topic, "title": f"✈️ {label} : " + " + ".join(parts), "message": "\n".join(lines),
-               "priority": 4, "tags": ["airplane"]}
-    click = dashboard_url()
-    if click:
-        payload["click"] = click
-    req = urllib.request.Request("https://ntfy.sh/", data=json.dumps(payload).encode(), method="POST",
-                                 headers={"Content-Type": "application/json", "User-Agent": "flight-deals"})
-    try:
-        urllib.request.urlopen(req, timeout=20).read()
-        return list(vs)
-    except Exception as e:
-        print(f"[ntfy] échec : {e}")
-        return []
+    ok = _deliver(f"✈️ {label} : " + " + ".join(parts), "\n".join(lines), 4, ["airplane"])
+    return list(vs) if ok else []

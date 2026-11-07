@@ -71,15 +71,18 @@ origine -> hub -> destination (2 escales max) et les compare au meilleur billet 
 Règles d'escale : 4 h à 10 h de jour (jamais de nuit à l'aéroport) ou 2 nuits minimum sur place (hébergement compté).
 Le retour est le billet aller simple le moins cher trouvé. Hubs : `HUBS` dans `flightdeals/airports.py`.
 
-## Notifications sur le téléphone et rafraîchissement
-- **Push** : l'appli **ntfy** (gratuite, Android/iOS) reçoit chaque pépite. Secret GitHub `NTFY_TOPIC` = nom du topic (long et
-  aléatoire : quiconque le connaît peut lire les notifications). Un tap sur la notification ouvre le dashboard (`?fresh=1`, données
-  lues directement chez GitHub sans attendre le déploiement de Pages) ; le bouton « Voir l'offre » ouvre le lien de réservation.
-- **Dashboard** : se rafraîchit au retour sur l'appli, toutes les 2 min, et instantanément à chaque notification tant qu'il est
-  ouvert (bouton « 🔔 Notifications » : coller le même topic).
-- **Issues GitHub** : continuent d'exister (point d'entrée du refus par commentaire). Pour ne pas recevoir deux notifications,
-  mets le dépôt en « Watch > Custom > cocher seulement Issues si tu veux garder GitHub, sinon « Ignore ».
-- **Nettoyage** : workflow `cleanup-issues` (à lancer une fois à la main) ferme les anciennes Issues d'alerte.
+## Notifications sur le téléphone (natives, sans appli externe)
+Le raccourci installé sur l'écran d'accueil reçoit lui-même les notifications (Web Push), même appli fermée.
+Un tap ouvre le dashboard sur les données fraîches. À activer une seule fois :
+1. Secret GitHub `VAPID_PRIVATE_KEY` : la clé privée du serveur de notifications (`python scripts/generate_vapid.py` en génère une ;
+   la clé publique correspondante est la constante `VAPID_PUBLIC` de `docs/index.html`).
+2. Sur le téléphone, ouvre le raccourci > « 🔔 Notifications » > « Activer » > copie le texte affiché > colle-le dans le
+   secret GitHub `PUSH_SUBSCRIPTION`.
+3. Actions > push-test > Run workflow : une notification de test doit arriver.
+iPhone : iOS 16.4 minimum, et il faut ouvrir l'appli depuis l'icône de l'écran d'accueil (pas depuis Safari).
+Le dashboard se rafraîchit au retour sur l'appli, toutes les 2 min, et dès qu'une notification arrive.
+(Option : `NTFY_TOPIC` active en plus ntfy.sh, inutile si les notifications natives fonctionnent.)
+Nettoyage : le workflow `cleanup-issues` ferme les anciennes Issues d'alerte.
 
 ## Installation
 1. Dépôt GitHub **public** avec ce code.

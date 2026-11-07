@@ -51,7 +51,13 @@
 </style>
 </head>
 <body>
-<header><h1>✈️ Flight Deals</h1><span class="mut" id="upd">chargement…</span><button class="refuse" id="ntf" title="Notifications instantanées quand l'appli est ouverte">🔔 Notifications</button><button class="refuse" id="tok" title="Nécessaire pour envoyer un refus depuis cette page">🔑 Connecter GitHub</button></header>
+<header><h1>✈️ Flight Deals</h1><span class="mut" id="upd">chargement…</span><button class="refuse" id="ntf">🔔 Notifications</button><button class="refuse" id="tok" title="Nécessaire pour envoyer un refus depuis cette page">🔑 Connecter GitHub</button></header>
+<div id="pushpanel" class="status-line" hidden>
+  <div id="pushmsg"></div>
+  <button class="send" id="pushgo" style="background:var(--acc)">🔔 Activer les notifications</button>
+  <textarea id="pushsub" readonly hidden style="width:100%;box-sizing:border-box;min-height:90px;margin-top:8px;font-size:.7rem"></textarea>
+  <button class="refuse" id="pushcopy" hidden style="margin:6px 0 0 0">Copier le texte</button>
+</div>
 <div id="status" class="status-line">…</div>
 <nav id="sections"></nav>
 <nav id="filters"></nav>
@@ -195,29 +201,46 @@ buildFilters(); load(); setInterval(load, 2 * 60 * 1000);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });   // retour sur l'appli = données fraîches
 window.addEventListener("focus", load);
 
-// Notifications instantanées tant que l'appli est ouverte (la notification du téléphone vient de l'appli ntfy).
-let es = null;
-function listenNtfy() {
-  const topic = localStorage.getItem("ntfytopic");
-  if (es) { es.close(); es = null; }
-  if (!topic) return;
-  es = new EventSource(`https://ntfy.sh/${encodeURIComponent(topic)}/sse`);
-  es.onmessage = ev => {
-    let m = {}; try { m = JSON.parse(ev.data); } catch {}
-    if (m.event && m.event !== "message") return;
-    useApi = true; load(); setTimeout(() => { useApi = false; load(); }, 90 * 1000);       // puis relecture une fois Pages déployé
-    if ("Notification" in window && Notification.permission === "granted")
-      new Notification(m.title || "Nouvelle pépite", { body: m.message || "" });
-  };
+// ---------- Notifications natives (Web Push) : aucune appli externe, tout passe par ce raccourci ----------
+const VAPID_PUBLIC = "BKH9qc1jDaLuszDQqgLSNQ4FDDbhJitb_ycqO_F_PxhQjp3S_fQfVaVXSFuM80AaT6-oUQ2OtVju0lL06Moq2Tc";
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const standalone = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+const b64ToBytes = b => { const s = (b + "=".repeat((4 - b.length % 4) % 4)).replace(/-/g, "+").replace(/_/g, "/"), r = atob(s); return Uint8Array.from(r, c => c.charCodeAt(0)); };
+const pmsg = document.getElementById("pushmsg"), pbox = document.getElementById("pushsub"), pcopy = document.getElementById("pushcopy");
+
+function showSub(sub) {
+  pbox.value = JSON.stringify(sub.toJSON()); pbox.hidden = false; pcopy.hidden = false;
+  pmsg.innerHTML = "✔ Notifications <b>activées sur cet appareil</b>.<br><b>Dernière étape (une seule fois)</b> : copie le texte ci-dessous et colle-le dans le secret GitHub <code>PUSH_SUBSCRIPTION</code> (Settings &gt; Secrets and variables &gt; Actions).";
 }
-document.getElementById("ntf").onclick = () => {
-  const t = prompt("Nom de ton topic ntfy (le même que dans l'appli ntfy). Laisse vide pour désactiver.", localStorage.getItem("ntfytopic") || "");
-  if (t === null) return;
-  t.trim() ? localStorage.setItem("ntfytopic", t.trim()) : localStorage.removeItem("ntfytopic");
-  listenNtfy();
-};
-listenNtfy();
-if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
+async function pushState() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+    pmsg.textContent = isIOS && !standalone
+      ? "Sur iPhone : ajoute d'abord l'appli à l'écran d'accueil (bouton Partager, puis « Sur l'écran d'accueil »), puis ouvre-la depuis son icône et reviens ici."
+      : "Ce navigateur ne gère pas les notifications. Ouvre l'appli dans Chrome (Android) ou depuis l'icône de l'écran d'accueil (iPhone).";
+    document.getElementById("pushgo").hidden = true; return;
+  }
+  const reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription();
+  if (sub && Notification.permission === "granted") { showSub(sub); document.getElementById("pushgo").textContent = "Réactiver"; }
+  else if (Notification.permission === "denied") pmsg.textContent = "Les notifications sont bloquées pour ce site : autorise-les dans les réglages du téléphone, puis reviens ici.";
+  else pmsg.textContent = "Notifications désactivées sur cet appareil.";
+}
+async function enablePush() {
+  try {
+    const perm = await Notification.requestPermission();                       // doit venir d'un tap : c'est le cas ici
+    if (perm !== "granted") { pmsg.textContent = "Autorisation refusée. Autorise les notifications pour ce site dans les réglages du téléphone."; return; }
+    const reg = await navigator.serviceWorker.ready;
+    const sub = (await reg.pushManager.getSubscription()) ||
+      await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(VAPID_PUBLIC) });
+    showSub(sub);
+  } catch (e) { pmsg.textContent = "Impossible d'activer les notifications : " + e.message; }
+}
+document.getElementById("ntf").onclick = () => { const p = document.getElementById("pushpanel"); p.hidden = !p.hidden; if (!p.hidden) pushState(); };
+document.getElementById("pushgo").onclick = enablePush;
+pcopy.onclick = async () => { try { await navigator.clipboard.writeText(pbox.value); pcopy.textContent = "Copié ✔"; } catch { pbox.select(); pcopy.textContent = "Sélectionné : copie-le à la main"; } };
+// Une notification vient d'arriver : relecture immédiate des données (sans attendre le déploiement de la page), puis une 2e fois.
+if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", e => {
+  if (e.data && e.data.type === "refresh") { useApi = true; load(); setTimeout(() => { useApi = false; load(); }, 90 * 1000); }
+});
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 </script>
 </body>

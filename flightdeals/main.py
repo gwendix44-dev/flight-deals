@@ -166,10 +166,40 @@ class Ctx:
 
 
 def ingest(ctx: Ctx, candidates: list) -> None:
-    """Offres ≥ 8/10 -> revérification -> 10/10 : publication immédiate ; sinon : mise en réserve jusqu'au prochain créneau."""
+    """Offres ≥ 8/10 -> revérification -> mise en réserve jusqu'au prochain créneau.
+
+    10/10 : alerte immédiate, mais seulement après DEUX observations séparées d'au moins `instant_confirm_minutes` : un prix
+    aberrant ponctuel du cache ne déclenche pas d'alerte. Un 10/10 pas encore confirmé attend dans la réserve (et, s'il disparaît,
+    la revérification du créneau l'écarte)."""
     pub = ctx.cfg["publication"]
-    fresh = fresh_candidates(candidates, ctx.seen, ctx.cfg, poolmod.waiting_keys(ctx.pool))
+    pending = {e["key"]: e for e in ctx.pool if e.get("pending_instant")}
+    waiting = {k: p for k, p in poolmod.waiting_keys(ctx.pool).items() if k not in pending}
+    fresh = fresh_candidates(candidates, ctx.seen, ctx.cfg, waiting)
     verified = verify.verify_all(fresh, ctx.cfg, ctx.token, ctx.today) if fresh else []
+    wait_min = timedelta(minutes=pub.get("instant_confirm_minutes", 10))
+    confirmed, first_sighting = [], 0
+    for v in verified:
+        k = dedupe_key(v.offer)
+        if v.score < pub["instant_score"]:
+            if not ctx.dry:
+                poolmod.add(ctx.pool, v, ctx.now_iso)
+            continue
+        e = pending.get(k)
+        try:
+            age = ctx.now_utc - datetime.fromisoformat(e["found_at"]) if e else None
+        except (KeyError, ValueError):
+            age = None
+        if e and age is not None and age >= wait_min and v.offer.price_eur <= e["verdict"]["offer"]["price_eur"] * (1 + ctx.cfg["verification"]["price_tolerance"]):
+            confirmed.append(v)
+            ctx.pool = [x for x in ctx.pool if x["key"] != k]
+        elif not e and not ctx.dry:
+            poolmod.add(ctx.pool, v, ctx.now_iso)
+            for x in ctx.pool:
+                if x["key"] == k:
+                    x["pending_instant"] = True                  # première observation : on attend la seconde
+            first_sighting += 1
+            print(f"[10/10] {v.offer.origin}→{v.dest_city} {v.offer.price_eur:.0f}€ détecté : confirmation au prochain scan "
+                  f"(≥ {pub.get('instant_confirm_minutes', 10)} min) avant l'alerte immédiate")
     # Garde-fou : une donnée fausse ne doit pas inonder ton téléphone. Au-delà du plafond quotidien, les 10/10 attendent le créneau.
     day_ago = ctx.now_utc - timedelta(hours=24)
     today_instants = 0
@@ -180,13 +210,12 @@ def ingest(ctx: Ctx, candidates: list) -> None:
         except (KeyError, ValueError):
             pass
     room = max(0, pub.get("instant_max_per_day", 4) - today_instants)
-    instant = [v for v in verified if v.score >= pub["instant_score"]][:min(3, room)]
-    for v in verified:
-        if v not in instant and not ctx.dry:
-            poolmod.add(ctx.pool, v, ctx.now_iso)
-    ctx.stats.update(candidates=len(candidates), verified=len(verified), instant=len(instant))
+    instant = confirmed[:min(3, room)]
+    for v in confirmed[len(instant):]:                            # plafond atteint : ils attendent le créneau
+        poolmod.add(ctx.pool, v, ctx.now_iso)
+    ctx.stats.update(candidates=len(candidates), verified=len(verified), instant=len(instant), instant_pending=first_sighting)
     if instant:
-        instant, _dropped = verify.live_confirm(instant, ctx.cfg, ctx.today, len(instant))      # prix en direct avant d'alerter
+        instant, _dropped = verify.live_confirm(instant, ctx.cfg, ctx.today, len(instant))
         for v in _dropped:
             ctx.state.setdefault("live_rejected", []).append(dedupe_key(v.offer))
     if instant:

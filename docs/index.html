@@ -173,7 +173,7 @@ async function renderStatus() {
     const t = st.updated ? new Date(st.updated) : null, age = t ? (Date.now() - t.getTime()) / 60000 : 1e9;
     const hh = x => new Date(x).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
     const ls = st.last_slot ? ` · dernière publication : ${st.last_slot.label.replace("Publication de ", "")} (${st.last_slot.standard} deal(s) + ${st.last_slot.business} business)` : "";
-    const base = `${st.offers ? Number(st.offers).toLocaleString("fr-FR") + " offres analysées · " : ""}${st.waiting ?? 0} en attente · prochaine publication ${st.next_slot || "12h / 19h"}${ls} · prix en direct : ${st.live_active ? "actif (" + st.live_used + "/" + st.live_budget + " ce mois)" : "inactif (prix du cache à confirmer)"}`;
+    const base = `${st.offers ? Number(st.offers).toLocaleString("fr-FR") + " offres analysées · " : ""}${st.waiting ?? 0} en attente · prochaine publication ${st.next_slot || "12h / 19h"}${ls}${st.live_active ? " · prix en direct : actif (" + st.live_used + "/" + st.live_budget + " ce mois)" : ""}`;
     if (!st.ok || age > 90) {
       el.className = "status-line bad";
       el.textContent = (!st.ok ? "🔴 Problème au dernier scan : " + (st.errors || []).join(" ; ") + ". " : "🟠 Pas de scan depuis " + Math.round(age) + " min. ") + base;

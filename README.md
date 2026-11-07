@@ -52,12 +52,12 @@ Business : bagages inclus par nature.
 Aucune source gratuite et officielle ne donne de prix en temps réel à un particulier (Amadeus Self-Service est fermé, Kiwi Tequila
 réservé aux partenaires). Les prix de détection viennent du **cache** d'un agrégateur (Travelpayouts/Aviasales). Pour limiter le risque :
 1. revérification pour les dates exactes (offre écartée si le prix a disparu ou monté de plus de 10 %) ;
-2. **vérification en direct optionnelle** sur Google Flights via SerpApi (secret `SERPAPI_KEY`, quota gratuit mensuel limité,
-   budget `live.monthly_budget`, suivi dans `data/live_usage.json`) : appliquée seulement aux finalistes d'un créneau et aux 10/10, avec des
-   remplaçants si l'un est écarté. Elle confirme prix, compagnie, **type d'avion** (donc le double couloir devient vérifié) et niveau de prix ;
+2. **un 10/10 n'est alerté immédiatement qu'après DEUX observations** séparées d'au moins 10 minutes (`publication.instant_confirm_minutes`) :
+   un prix aberrant ponctuel du cache ne déclenche rien ; s'il disparaît, il n'est jamais alerté ;
 3. chaque alerte contient un lien Google Flights prérempli (dates exactes) pour vérifier en 30 secondes, et le **site officiel de la
-   compagnie** pour acheter (jamais un intermédiaire) ;
-4. sans clé ou quota épuisé, l'offre est publiée avec un avertissement orange « prix non confirmé en direct ».
+   compagnie** pour acheter (jamais un intermédiaire) ; la mention « prix du cache » rappelle de confirmer avant d'acheter ;
+4. *Option désactivée par défaut* (`live.enabled`) : vérification automatique sur Google Flights via SerpApi (secret `SERPAPI_KEY`,
+   compte gratuit, quota limité). Elle n'est PAS nécessaire : l'appli n'exige aucun autre compte que GitHub et Travelpayouts.
 
 ## Réalisme du séjour et vérification avant affichage
 - **Coût du séjour poste par poste** (`data/costs.json`, 86 pays, modifiable) : hébergement (dortoir/chambre simple), nourriture,

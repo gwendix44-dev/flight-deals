@@ -89,8 +89,11 @@ def live_confirm(verdicts: list, cfg: dict, today: date, limit: int, check_fn: O
             kept.append(v)
             continue
         if check_fn is None and not livemod.can_spend(cfg):
-            v.verification = (v.verification + " | " if v.verification else "") + \
-                "⚠ Prix NON confirmé en direct (clé SERPAPI_KEY absente ou quota du mois épuisé) : vérifie sur Google Flights avant d'acheter"
+            manual = ("Prix du cache d'un moteur de recherche, revérifié pour ces dates exactes : "
+                      "confirme-le avec le bouton « 1 · Vérifier en direct » avant d'acheter")
+            v.verification = (v.verification + " | " if v.verification else "") + (
+                manual if not cfg.get("live", {}).get("enabled") else
+                "⚠ Prix NON confirmé en direct (clé absente ou quota du mois épuisé) : vérifie sur Google Flights avant d'acheter")
             kept.append(v)
             continue
         res = (check_fn or livemod.check)(o.origin, o.dest, o.depart, o.return_date, o.airline, o.price_eur, cfg)

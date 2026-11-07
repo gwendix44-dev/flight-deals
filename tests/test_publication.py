@@ -128,14 +128,39 @@ class Flow(unittest.TestCase):
         c.token = "t"
         return c
 
-    def test_ten_out_of_ten_is_published_immediately_others_wait(self):
+    def second_scan(self, c, minutes=16):
+        c.now_utc += timedelta(minutes=minutes)                                    # le scan suivant (15 min plus tard)
+
+    def test_ten_out_of_ten_needs_a_second_sighting_before_the_immediate_alert(self):
         c = self.ctx(utc(2026, 11, 7, 8, 0))                                       # 9h Paris : aucun créneau
-        main.ingest(c, [deal("ALA", 10.4), deal("BKK", 8.6), deal("DKR", 8.1)])
-        self.assertEqual(self.instants, [["Almaty"]])                              # 10/10 : tout de suite
-        self.assertEqual(len(c.pool), 2)                                           # les autres attendent 12h
+        deals = [deal("ALA", 10.4), deal("BKK", 8.6), deal("DKR", 8.1)]
+        main.ingest(c, deals)
+        self.assertEqual(self.instants, [])                                        # 1re observation : pas d'alerte, juste mise en attente
+        self.assertEqual(c.stats["instant_pending"], 1)
+        self.assertEqual(len(c.pool), 3)
+        self.second_scan(c)
+        main.ingest(c, deals)                                                      # revu 16 min plus tard, toujours là, même prix
+        self.assertEqual(self.instants, [["Almaty"]])                              # 2e observation : alerte immédiate
+        self.assertEqual(len(c.pool), 2)                                           # les 8-10 attendent leur créneau
         main.tick_slots(c)
         self.assertEqual(self.pushes, [])                                          # rien à 9h
-        self.assertEqual(c.state.get("published", []), [])
+
+    def test_a_second_sighting_too_soon_does_not_count(self):
+        c = self.ctx(utc(2026, 11, 7, 8, 0))
+        main.ingest(c, [deal("ALA", 10.4)])
+        self.second_scan(c, minutes=3)
+        main.ingest(c, [deal("ALA", 10.4)])
+        self.assertEqual(self.instants, [])                                        # trop rapproché : ce n'est pas une confirmation
+        self.second_scan(c, minutes=15)
+        main.ingest(c, [deal("ALA", 10.4)])
+        self.assertEqual(self.instants, [["Almaty"]])
+
+    def test_a_ten_that_vanishes_is_never_alerted_immediately(self):
+        c = self.ctx(utc(2026, 11, 7, 8, 0))
+        main.ingest(c, [deal("ALA", 10.4)])
+        self.second_scan(c)
+        main.ingest(c, [])                                                         # plus de trace au scan suivant : prix aberrant ponctuel
+        self.assertEqual(self.instants, [])
 
     def test_noon_slot_publishes_best_three_standard_and_three_business_once(self):
         c = self.ctx(utc(2026, 11, 7, 11, 5))                                      # 12h05 Paris
@@ -159,17 +184,25 @@ class Flow(unittest.TestCase):
         main.tick_slots(c)                                                         # même créneau : jamais deux fois
         self.assertEqual(len(self.pushes), main_pushes)
 
-    def test_business_ten_out_of_ten_is_also_immediate(self):
+    def test_business_ten_out_of_ten_is_also_immediate_after_confirmation(self):
         c = self.ctx(utc(2026, 11, 7, 8, 0))
         main.ingest(c, [biz("TYO", 400)])                                          # ~ -87 % : 10/10
+        self.assertEqual(self.instants, [])
+        self.second_scan(c)
+        main.ingest(c, [biz("TYO", 400)])
         self.assertEqual(self.instants, [["Tokyo"]])
 
     def test_instant_alerts_are_capped_per_day(self):
         c = self.ctx(utc(2026, 11, 7, 8, 0))
-        main.ingest(c, [deal(d, 10.5) for d in ("ALA", "BKK", "DKR")])                 # 3 immédiates
-        main.ingest(c, [deal(d, 10.5) for d in ("BOG", "LIM", "MEX")])                 # plafond de 4 par jour
+        a, b = [deal(d, 10.5) for d in ("ALA", "BKK", "DKR")], [deal(d, 10.5) for d in ("BOG", "LIM")]
+        main.ingest(c, a)                                                              # 1re observation de A
+        self.second_scan(c)
+        main.ingest(c, a + b)                                                          # A confirmées : 3 partent ; B vues une 1re fois
+        self.assertEqual(sum(len(x) for x in self.instants), 3)
+        self.second_scan(c)
+        main.ingest(c, b)                                                              # B confirmées : plafond de 4 par jour -> 1 seule
         self.assertEqual(sum(len(x) for x in self.instants), 4)
-        self.assertEqual(len(c.pool), 2)                                               # le reste attend le prochain créneau
+        self.assertEqual(len(c.pool), 1)                                               # la 5e attend le prochain créneau (pas perdue)
 
     def test_best_scores_are_chosen(self):
         c = self.ctx(utc(2026, 11, 7, 11, 5))

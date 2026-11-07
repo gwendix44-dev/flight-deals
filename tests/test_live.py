@@ -92,6 +92,7 @@ class Budget(unittest.TestCase):
     def test_monthly_budget_is_enforced_and_resets(self):
         os.environ["SERPAPI_KEY"] = "k"
         cfg = copy.deepcopy(CFG)
+        cfg["live"]["enabled"] = True
         cfg["live"]["monthly_budget"] = 2
         now = datetime(2026, 11, 7, tzinfo=timezone.utc)
         self.assertTrue(live.can_spend(cfg, now))
@@ -146,11 +147,21 @@ class Confirm(unittest.TestCase):
         self.assertIn("indisponible", v.verification)
         self.assertIn("avant d'acheter", v.verification)
 
-    def test_no_key_keeps_but_warns(self):
+    def test_disabled_by_default_means_manual_check_without_any_account(self):
+        self.assertFalse(CFG["live"]["enabled"])                                   # aucun compte supplémentaire requis
         os.environ.pop("SERPAPI_KEY", None)
         v = self.v()
         kept, _ = verify.live_confirm([v], CFG, TODAY, 3)
         self.assertEqual(len(kept), 1)
+        self.assertIn("Vérifier en direct", v.verification)                        # renvoie vers le bouton, ne parle d'aucune clé
+        self.assertNotIn("SERPAPI", v.verification)
+
+    def test_enabled_without_key_warns(self):
+        cfg = copy.deepcopy(CFG)
+        cfg["live"]["enabled"] = True
+        os.environ.pop("SERPAPI_KEY", None)
+        v = self.v()
+        verify.live_confirm([v], cfg, TODAY, 3)
         self.assertIn("NON confirmé en direct", v.verification)
 
     def test_spares_replace_the_dropped_and_the_limit_is_respected(self):

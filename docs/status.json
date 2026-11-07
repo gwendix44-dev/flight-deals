@@ -1,1 +1,21 @@
-{"ok": true, "updated": null, "waiting": 0, "next_slot": "12h / 19h", "errors": []}
+{
+ "ok": true,
+ "updated": "2026-11-07T11:59:32+00:00",
+ "waiting": 1,
+ "next_slot": "aujourd'hui 19:00",
+ "errors": [],
+ "source": "scan",
+ "last_slot": {
+  "id": "2026-11-07@12:00",
+  "label": "Publication de 12h",
+  "at": "2026-11-07T11:59:32+00:00",
+  "standard": 1,
+  "business": 0,
+  "waiting_after": 1
+ },
+ "offers": 10047,
+ "candidates": 3,
+ "verified": 2,
+ "instant": 0,
+ "last_scan": "2026-11-07T11:59:32+00:00"
+}

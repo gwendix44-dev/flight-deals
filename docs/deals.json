@@ -1,1 +1,103 @@
-{"deals": [], "updated": "2026-11-06T23:25:58+00:00", "pepites_12m": 0}
+{
+ "deals": [
+  {
+   "kind": "deal",
+   "offer": {
+    "origin": "LIS",
+    "dest": "SID",
+    "price_eur": 109.0,
+    "cabin": "economy",
+    "depart": "2027-01-19",
+    "return_date": "2027-01-26",
+    "transfers": 0,
+    "airline": "U2",
+    "duration_min": 255,
+    "link": "https://www.aviasales.com/search/LIS1901SID26011?t=U218003675001800379200000255LISSID18009864001801004400000240SIDLIS_d7bbfec0ed662f1720f2c923535ffcb4_9945&search_date=07112026&expected_price_uuid=01a1b59a-a220-8030-610d-3ae2a3490928&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=P8RiOnIu9SEyqFjicOZxOg&expected_price_source=share&expected_price_currency=eur&expected_price=109",
+    "source": "travelpayouts",
+    "title": "",
+    "flagged_error": false
+   },
+   "dest_city": "Cap-Vert (Sal)",
+   "country": "CV",
+   "distance_km": 2794,
+   "flight_hours": 4.2,
+   "stay_days": 7,
+   "daily_budget": 53,
+   "stay_cost": 645,
+   "trip_total": 754,
+   "discount_pct": 71,
+   "aircraft": "not_required",
+   "aircraft_note": "vol de 4.2 h, pas de contrainte d'avion",
+   "reasons": [
+    "Note 9.5/11 (seuil 8.0)",
+    "Vol 109 € ; séjour complet ≈ 754 € (budget max 1500 € pour 2794 km)",
+    "−71 % vs prix habituel de la ligne (historique)",
+    "Moins cher que 100 % des 24 prix observés sur cette ligne",
+    "Publication de 12h"
+   ],
+   "itinerary": [],
+   "baseline_eur": null,
+   "saving_pct": null,
+   "score": 9.5,
+   "score_parts": {
+    "prix": 3.0,
+    "budget": 2.0,
+    "destination": 1.5,
+    "vol": 1.5,
+    "duree": 1.0,
+    "valeur": 0.5,
+    "bonus": 0.0
+   },
+   "score_line": "prix 3.0/3 · budget 2.0/2 · destination 1.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.5/1",
+   "cost_lines": [
+    [
+     "Hébergement (dortoir / chambre simple)",
+     154
+    ],
+    [
+     "Nourriture (cuisine locale)",
+     105
+    ],
+    [
+     "Transports locaux",
+     42
+    ],
+    [
+     "Activités et visites",
+     70
+    ],
+    [
+     "Déplacements entre villes",
+     15
+    ],
+    [
+     "Visa / autorisation d'entrée (taxe EASE, à revérifier)",
+     31
+    ],
+    [
+     "Assurance voyage",
+     15
+    ],
+    [
+     "Transferts aéroport + SIM locale",
+     45
+    ],
+    [
+     "Marge imprévus (10 %)",
+     48
+    ],
+    [
+     "Trajet A/R Paris → LIS pour rejoindre l'aéroport de départ",
+     120
+    ]
+   ],
+   "verification": "Revérifié le 07/11/2026 pour les dates exactes (19/01 → 26/01) : 109 €. Prix issu du cache des moteurs de recherche : confirme sur le lien avant d'acheter.",
+   "issue": 88,
+   "found_at": "2026-11-07T12:01:07+00:00",
+   "key": "80e4379aea5fce20",
+   "slot": "Publication de 12h"
+  }
+ ],
+ "updated": "2026-11-07T12:01:07+00:00",
+ "pepites_12m": 0
+}

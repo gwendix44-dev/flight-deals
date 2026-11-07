@@ -1,1 +1,9 @@
-[]
+[
+ {
+  "at": "2026-11-07T12:01:07+00:00",
+  "route": "LIS-SID",
+  "price": 109.0,
+  "kind": "deal",
+  "label": "Publication de 12h"
+ }
+]

@@ -1,0 +1,13 @@
+{
+ "published": [
+  "2026-11-07@12:00"
+ ],
+ "last_slot": {
+  "id": "2026-11-07@12:00",
+  "label": "Publication de 12h",
+  "at": "2026-11-07T11:59:32+00:00",
+  "standard": 1,
+  "business": 0,
+  "waiting_after": 1
+ }
+}

@@ -1,1 +1,218 @@
-[]
+[
+ {
+  "key": "80e4379aea5fce20",
+  "found_at": "2026-11-09T23:20:39+00:00",
+  "verdict": {
+   "kind": "deal",
+   "offer": {
+    "origin": "LIS",
+    "dest": "SID",
+    "price_eur": 91.0,
+    "cabin": "economy",
+    "depart": "2027-01-19",
+    "return_date": "2027-01-26",
+    "transfers": 0,
+    "airline": "U2",
+    "duration_min": 255,
+    "link": "https://www.aviasales.com/search/LIS1901SID26011?t=U218003675001800379200000255LISSID18009864001801004400000240SIDLIS_d7bbfec0ed662f1720f2c923535ffcb4_8416&search_date=09112026&expected_price_uuid=01a1c273-4f7e-8030-ea61-d85bd28a947f&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=P8RiOnIu9SEyqFjicOZxOg&expected_price_source=share&expected_price_currency=eur&expected_price=91",
+    "source": "travelpayouts",
+    "title": "",
+    "flagged_error": false
+   },
+   "dest_city": "Cap-Vert (Sal)",
+   "country": "CV",
+   "distance_km": 2794,
+   "flight_hours": 4.2,
+   "stay_days": 7,
+   "daily_budget": 53,
+   "stay_cost": 645,
+   "trip_total": 792,
+   "discount_pct": 61,
+   "aircraft": "not_required",
+   "aircraft_note": "vol de 4.2 h, pas de contrainte d'avion",
+   "reasons": [
+    "Note 9.3/11 (seuil 8.0)",
+    "Vol 147 € AVEC sac à dos + bagage cabine (tarif 91 € + supplément bagages estimé 56 €) ; séjour complet ≈ 792 € (budget max 1500 € pour 2794 km)",
+    "−61 % vs prix habituel de la ligne (historique)",
+    "Moins cher que 100 % des 200 prix observés sur cette ligne"
+   ],
+   "itinerary": [],
+   "baseline_eur": null,
+   "saving_pct": null,
+   "score": 9.3,
+   "score_parts": {
+    "prix": 3.0,
+    "budget": 2.0,
+    "destination": 1.5,
+    "vol": 1.5,
+    "duree": 1.0,
+    "valeur": 0.3,
+    "bonus": 0.0
+   },
+   "score_line": "prix 3.0/3 · budget 2.0/2 · destination 1.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.3/1",
+   "cost_lines": [
+    [
+     "Hébergement (dortoir / chambre simple)",
+     154
+    ],
+    [
+     "Nourriture (cuisine locale)",
+     105
+    ],
+    [
+     "Transports locaux",
+     42
+    ],
+    [
+     "Activités et visites",
+     70
+    ],
+    [
+     "Déplacements entre villes",
+     15
+    ],
+    [
+     "Visa / autorisation d'entrée (taxe EASE, à revérifier)",
+     31
+    ],
+    [
+     "Assurance voyage",
+     15
+    ],
+    [
+     "Transferts aéroport + SIM locale",
+     45
+    ],
+    [
+     "Marge imprévus (10 %)",
+     48
+    ],
+    [
+     "Trajet A/R Paris → LIS pour rejoindre l'aéroport de départ",
+     120
+    ]
+   ],
+   "verification": "Revérifié le 09/11/2026 pour les dates exactes (19/01 → 26/01) : 91 €. Prix issu du cache des moteurs de recherche : confirme sur le lien avant d'acheter.",
+   "flight_all_in": 147,
+   "bag_supplement": 56.0,
+   "bag_status": "supplement",
+   "bag_note": "easyJet : bagage cabine PAYANT en plus du sac à dos, supplément estimé 56 € A/R ajouté au tarif",
+   "links": {
+    "google_flights": "https://www.google.com/travel/flights?q=Flights%20from%20LIS%20to%20Cap-Vert%20%28Sal%29%20on%202027-01-19%20through%202027-01-26&curr=EUR&hl=fr",
+    "airline_site": "https://www.easyjet.com",
+    "airline_name": "easyJet",
+    "source": "https://www.aviasales.com/search/LIS1901SID26011?t=U218003675001800379200000255LISSID18009864001801004400000240SIDLIS_d7bbfec0ed662f1720f2c923535ffcb4_8416&search_date=09112026&expected_price_uuid=01a1c273-4f7e-8030-ea61-d85bd28a947f&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=P8RiOnIu9SEyqFjicOZxOg&expected_price_source=share&expected_price_currency=eur&expected_price=91"
+   },
+   "issue": null,
+   "legs": []
+  }
+ },
+ {
+  "key": "d1f3692908660249",
+  "found_at": "2026-11-09T23:20:39+00:00",
+  "verdict": {
+   "kind": "deal",
+   "offer": {
+    "origin": "LIS",
+    "dest": "SID",
+    "price_eur": 107.0,
+    "cabin": "economy",
+    "depart": "2027-02-10",
+    "return_date": "2027-02-17",
+    "transfers": 0,
+    "airline": "U2",
+    "duration_min": 260,
+    "link": "https://www.aviasales.com/search/LIS1002SID17021?t=U218022683001802280300000260LISSID18028881001802906100000240SIDLIS_26113a9d08f3c2f635a89a128564b31c_9930&search_date=09112026&expected_price_uuid=01a1c27c-d843-8030-6e9a-46e31e514869&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=3CE_c_8EJlpEFE7gZry0gA&expected_price_source=share&expected_price_currency=eur&expected_price=107",
+    "source": "travelpayouts",
+    "title": "",
+    "flagged_error": false
+   },
+   "dest_city": "Cap-Vert (Sal)",
+   "country": "CV",
+   "distance_km": 2794,
+   "flight_hours": 4.3,
+   "stay_days": 7,
+   "daily_budget": 53,
+   "stay_cost": 645,
+   "trip_total": 808,
+   "discount_pct": 56,
+   "aircraft": "not_required",
+   "aircraft_note": "vol de 4.3 h, pas de contrainte d'avion",
+   "reasons": [
+    "Note 9.0/11 (seuil 8.0)",
+    "Vol 163 € AVEC sac à dos + bagage cabine (tarif 107 € + supplément bagages estimé 56 €) ; séjour complet ≈ 808 € (budget max 1500 € pour 2794 km)",
+    "−56 % vs prix habituel de la ligne (historique)",
+    "Moins cher que 84 % des 200 prix observés sur cette ligne"
+   ],
+   "itinerary": [],
+   "baseline_eur": null,
+   "saving_pct": null,
+   "score": 9.0,
+   "score_parts": {
+    "prix": 2.7,
+    "budget": 2.0,
+    "destination": 1.5,
+    "vol": 1.5,
+    "duree": 1.0,
+    "valeur": 0.3,
+    "bonus": 0.0
+   },
+   "score_line": "prix 2.7/3 · budget 2.0/2 · destination 1.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.3/1",
+   "cost_lines": [
+    [
+     "Hébergement (dortoir / chambre simple)",
+     154
+    ],
+    [
+     "Nourriture (cuisine locale)",
+     105
+    ],
+    [
+     "Transports locaux",
+     42
+    ],
+    [
+     "Activités et visites",
+     70
+    ],
+    [
+     "Déplacements entre villes",
+     15
+    ],
+    [
+     "Visa / autorisation d'entrée (taxe EASE, à revérifier)",
+     31
+    ],
+    [
+     "Assurance voyage",
+     15
+    ],
+    [
+     "Transferts aéroport + SIM locale",
+     45
+    ],
+    [
+     "Marge imprévus (10 %)",
+     48
+    ],
+    [
+     "Trajet A/R Paris → LIS pour rejoindre l'aéroport de départ",
+     120
+    ]
+   ],
+   "verification": "Revérifié le 09/11/2026 pour les dates exactes (10/02 → 17/02) : 107 €. Prix issu du cache des moteurs de recherche : confirme sur le lien avant d'acheter.",
+   "flight_all_in": 163,
+   "bag_supplement": 56.0,
+   "bag_status": "supplement",
+   "bag_note": "easyJet : bagage cabine PAYANT en plus du sac à dos, supplément estimé 56 € A/R ajouté au tarif",
+   "links": {
+    "google_flights": "https://www.google.com/travel/flights?q=Flights%20from%20LIS%20to%20Cap-Vert%20%28Sal%29%20on%202027-02-10%20through%202027-02-17&curr=EUR&hl=fr",
+    "airline_site": "https://www.easyjet.com",
+    "airline_name": "easyJet",
+    "source": "https://www.aviasales.com/search/LIS1002SID17021?t=U218022683001802280300000260LISSID18028881001802906100000240SIDLIS_26113a9d08f3c2f635a89a128564b31c_9930&search_date=09112026&expected_price_uuid=01a1c27c-d843-8030-6e9a-46e31e514869&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=3CE_c_8EJlpEFE7gZry0gA&expected_price_source=share&expected_price_currency=eur&expected_price=107"
+   },
+   "issue": null,
+   "legs": []
+  }
+ }
+]

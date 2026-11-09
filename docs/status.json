@@ -1,10 +1,10 @@
 {
  "ok": true,
- "updated": "2026-11-09T03:58:46+00:00",
+ "updated": "2026-11-09T04:41:51+00:00",
  "waiting": 0,
  "next_slot": "aujourd'hui 12:00",
  "errors": [],
- "source": "combos",
+ "source": "scan",
  "last_slot": {
   "id": "2026-11-08@19:00",
   "label": "Publication de 19h",
@@ -13,11 +13,11 @@
   "business": 0,
   "waiting_after": 0
  },
- "offers": 10229,
- "candidates": 0,
+ "offers": 10236,
+ "candidates": 1,
  "verified": 0,
  "instant": 0,
- "last_scan": "2026-11-09T03:30:45+00:00",
+ "last_scan": "2026-11-09T04:41:51+00:00",
  "live_used": 0,
  "live_budget": 90,
  "live_active": false,

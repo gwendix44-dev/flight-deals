@@ -26,5 +26,12 @@
   "price": 91.0,
   "kind": "deal",
   "label": "Publication de 12h"
+ },
+ {
+  "at": "2026-11-10T18:05:32+00:00",
+  "route": "LIS-SID",
+  "price": 107.0,
+  "kind": "deal",
+  "label": "Publication de 19h"
  }
 ]

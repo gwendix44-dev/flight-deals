@@ -50,5 +50,15 @@
   "changes": [
    "Mode strict avion : seuls les vols dont le gros-porteur est confirmé seront proposés."
   ]
+ },
+ {
+  "at": "2026-11-12T13:11:06+00:00",
+  "issue": 0,
+  "key": "cbb4fc57ff97771c",
+  "text": "trop cher, avion pas adapté",
+  "changes": [
+   "Budget total maximum abaissé à 800 € pour les destinations à cette distance (l'offre refusée coûtait ~928 €).",
+   "Mode strict avion : seuls les vols dont le gros-porteur est confirmé seront proposés."
+  ]
  }
 ]

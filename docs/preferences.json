@@ -1,6 +1,8 @@
 {
  "total_cap_eur": null,
- "cap_by_tier": {},
+ "cap_by_tier": {
+  "0": 800
+ },
  "business_cap_eur": null,
  "min_stay_extra": 0,
  "max_stay_days": null,
@@ -28,6 +30,7 @@
   "80e4379aea5fce20",
   "e5b70c003183ae37",
   "a84f69def47e0dcf",
-  "a27d8819889f027c"
+  "a27d8819889f027c",
+  "cbb4fc57ff97771c"
  ]
 }

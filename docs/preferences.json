@@ -10,15 +10,19 @@
  "max_transfers": null,
  "strict_aircraft": false,
  "stopovers_disabled": false,
- "excluded_destinations": [],
+ "excluded_destinations": [
+  "SID"
+ ],
  "excluded_countries": [],
  "excluded_months": [],
  "min_secrecy": null,
  "min_score_bonus": 0.0,
  "refused_issues": [
-  93
+  93,
+  92
  ],
  "refused_keys": [
-  "d1f3692908660249"
+  "d1f3692908660249",
+  "80e4379aea5fce20"
  ]
 }

@@ -19,10 +19,12 @@
  "min_score_bonus": 0.0,
  "refused_issues": [
   93,
-  92
+  92,
+  90
  ],
  "refused_keys": [
   "d1f3692908660249",
-  "80e4379aea5fce20"
+  "80e4379aea5fce20",
+  "e5b70c003183ae37"
  ]
 }

@@ -8,7 +8,7 @@
  "min_distance_km": null,
  "max_flight_hours": null,
  "max_transfers": null,
- "strict_aircraft": false,
+ "strict_aircraft": true,
  "stopovers_disabled": false,
  "excluded_destinations": [
   "SID"
@@ -27,6 +27,7 @@
   "d1f3692908660249",
   "80e4379aea5fce20",
   "e5b70c003183ae37",
-  "a84f69def47e0dcf"
+  "a84f69def47e0dcf",
+  "a27d8819889f027c"
  ]
 }

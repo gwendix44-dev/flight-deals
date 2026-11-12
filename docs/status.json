@@ -1,6 +1,6 @@
 {
  "ok": true,
- "updated": "2026-11-12T16:39:21+00:00",
+ "updated": "2026-11-12T17:30:04+00:00",
  "waiting": 0,
  "next_slot": "aujourd'hui 19:00",
  "errors": [],
@@ -19,11 +19,11 @@
    "7.1/11 ORY→Almaty 356€ avec bagages (séjour ~796€) : prix 1.5/3 · budget 2.0/2 · destination 1.5/1,5 · vol 0.7/1,5 · durée 1.0/1 · économie globale 0.4/1"
   ]
  },
- "offers": 10542,
+ "offers": 10509,
  "candidates": 0,
  "verified": 0,
  "instant": 0,
- "last_scan": "2026-11-12T16:39:21+00:00",
+ "last_scan": "2026-11-12T17:30:04+00:00",
  "live_used": 0,
  "live_budget": 90,
  "live_active": false,

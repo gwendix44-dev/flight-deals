@@ -188,7 +188,8 @@ def learn(prefs: dict, text: str, deal: Optional[dict], cfg: dict) -> tuple:
             if m not in p["excluded_months"]:
                 p["excluded_months"].append(m)
             msgs.append(f"Départs exclus pour le mois {m:02d}.")
-    if has(r"touristique", r"trop connu", r"banal", r"mainstream", r"pas assez secret", r"commun"):
+    if has(r"touristique", r"trop connu", r"banal", r"mainstream", r"pas assez secret", r"commun",
+           r"pas (assez |tres )?original", r"classique", r"ennuy", r"vu et revu", r"trop vu"):
         base = secrecy(d["offer"]["dest"]) if d.get("offer", {}).get("dest") else 0.5
         p["min_secrecy"] = min(1.5, max(p["min_secrecy"] or 0, base + 0.5))
         msgs.append("Destinations plus confidentielles exigées.")

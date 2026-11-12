@@ -167,6 +167,12 @@ class Feedback(unittest.TestCase):
         self.assertTrue(self.learn("trop risqué ces billets séparés")[0]["stopovers_disabled"])
         self.assertEqual(self.learn("mauvaise période")[0]["excluded_months"], [12])
 
+    def test_not_original_means_rarer_destinations(self):
+        for phrase in ("Pas original", "trop classique", "pas assez original", "vu et revu"):
+            p, msgs = self.learn(phrase)
+            self.assertIsNotNone(p["min_secrecy"], phrase)
+            self.assertTrue(msgs, phrase)
+
     def test_unknown_reason_changes_nothing(self):
         p, msgs = self.learn("bof je sais pas trop")
         self.assertEqual(msgs[0].startswith("Exigence"), True)       # « bof » = pas assez exceptionnel

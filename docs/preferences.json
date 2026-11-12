@@ -1,1 +1,24 @@
-{"total_cap_eur": null, "min_stay_extra": 0, "refused_issues": []}
+{
+ "total_cap_eur": null,
+ "cap_by_tier": {},
+ "business_cap_eur": null,
+ "min_stay_extra": 0,
+ "max_stay_days": null,
+ "max_distance_km": null,
+ "min_distance_km": null,
+ "max_flight_hours": null,
+ "max_transfers": null,
+ "strict_aircraft": false,
+ "stopovers_disabled": false,
+ "excluded_destinations": [],
+ "excluded_countries": [],
+ "excluded_months": [],
+ "min_secrecy": null,
+ "min_score_bonus": 0.0,
+ "refused_issues": [
+  93
+ ],
+ "refused_keys": [
+  "d1f3692908660249"
+ ]
+}

@@ -104,9 +104,9 @@ class Flow(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         t = Path(self.tmp.name)
         self.saved = {k: getattr(m, k) for m, k in ((main, "SEEN"), (main, "DEALS"), (main, "STATUS"), (main, "ALERTS"),
-                                                     (poolmod, "POOL"), (poolmod, "STATE"))}
+                                                     (poolmod, "POOL"), (poolmod, "STATE"), (poolmod, "WATCH"))}
         main.SEEN, main.DEALS, main.STATUS, main.ALERTS = t / "seen.json", t / "deals.json", t / "status.json", t / "alerts.json"
-        poolmod.POOL, poolmod.STATE = t / "pool.json", t / "state.json"
+        poolmod.POOL, poolmod.STATE, poolmod.WATCH = t / "pool.json", t / "state.json", t / "watch.json"
         self.issues, self.pushes, self.instants = [], [], []
         self.o = (notify.create_issues, notify.send_push_summary, notify.send_push, verify.verify_all)
         notify.create_issues = lambda vs: (self.issues.append([v.dest_city for v in vs]), list(vs))[1]
@@ -117,7 +117,7 @@ class Flow(unittest.TestCase):
 
     def tearDown(self):
         notify.create_issues, notify.send_push_summary, notify.send_push, verify.verify_all = self.o
-        for (m, k), v in zip(((main, "SEEN"), (main, "DEALS"), (main, "STATUS"), (main, "ALERTS"), (poolmod, "POOL"), (poolmod, "STATE")),
+        for (m, k), v in zip(((main, "SEEN"), (main, "DEALS"), (main, "STATUS"), (main, "ALERTS"), (poolmod, "POOL"), (poolmod, "STATE"), (poolmod, "WATCH")),
                              self.saved.values()):
             setattr(m, k, v)
         self.tmp.cleanup()

@@ -180,7 +180,14 @@
     "pool_max_age_hours": 36,
     "max_checks": 25,
     "instant_max_per_day": 4,
-    "instant_confirm_minutes": 10
+    "instant_confirm_minutes": 10,
+    "dest_cooldown_days": 7,
+    "cooldown_price_drop": 0.25,
+    "watch_min": 7.0,
+    "watch_per_slot": 4,
+    "watch_max_age_hours": 36,
+    "watch_dest_cooldown_days": 3,
+    "notify_empty_slots": true
   },
   "live": {
     "enabled": false,

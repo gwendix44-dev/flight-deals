@@ -25,11 +25,12 @@ DEFAULT = {
     "max_distance_km": None, "min_distance_km": None, "max_flight_hours": None,
     "max_transfers": None, "strict_aircraft": False, "stopovers_disabled": False,
     "excluded_destinations": [], "excluded_countries": [], "excluded_months": [],
-    "min_secrecy": None, "min_score_bonus": 0.0, "refused_issues": [],
+    "min_secrecy": None, "min_score_bonus": 0.0, "refused_issues": [], "refused_keys": [],
 }
 
 
-def load_prefs(path: Path = PREFS_PATH) -> dict:
+def load_prefs(path: Path | None = None) -> dict:
+    path = path or PREFS_PATH                      # lu à l'appel (et non à la définition) : testable et redirigeable
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError):

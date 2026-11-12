@@ -20,6 +20,7 @@ def load_budgets() -> dict:
 
 
 NEAR_MISSES: list = []      # (note, description) des meilleures offres refusées, pour régler le seuil
+WATCH: list = []            # Verdicts entre `publication.watch_min` et le seuil : « bons plans du moment » (dashboard, sans alerte)
 
 
 def route_key(o: Offer) -> str:
@@ -106,15 +107,10 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
         price=eff, km=km, cabin=o.cabin, total=total, stay=stay, stops=o.transfers,
         aircraft_status=status, secrecy=secrecy(o.dest), separate_tickets=False, cfg=cfg,
         hist_median=hist_median, hist_disc=hist_disc, flagged_error=o.flagged_error)
-    if sc.total < cfg["scoring"]["min_score"]:
+    below = sc.total < cfg["scoring"]["min_score"]
+    not_anomaly = bool(cfg["scoring"].get("require_anomaly")) and not sc.error_fare
+    if below:
         NEAR_MISSES.append((sc.total, f"{o.origin}→{city} {eff:.0f}€ avec bagages (séjour ~{total:.0f}€) : {sc.line()}"))
-        return None
-
-    if cfg["scoring"].get("require_anomaly") and not sc.error_fare:
-        # Un bon prix ne suffit pas : l'appli cherche une pépite rare, pas un voyage correct qui te ferait partir
-        # juste avant une vraie occasion.
-        NEAR_MISSES.append((sc.total - 0.05, f"{o.origin}→{city} {o.price_eur:.0f}€ : bon deal ({sc.total}/11) mais PAS une anomalie de prix"))
-        return None
     kind = "error_fare" if sc.error_fare else "deal"
     reasons = [f"Note {sc.total}/11 (seuil {cfg['scoring']['min_score']})",
                f"Vol {eff:.0f} € AVEC sac à dos + bagage cabine" + (f" (tarif {o.price_eur:.0f} € + supplément bagages estimé {bag.supplement:.0f} €)" if bag.supplement else "")
@@ -126,7 +122,7 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
         cheaper = sum(1 for x in prices if x > o.price_eur)
         reasons.append(f"Moins cher que {round(100 * cheaper / len(prices))} % des {len(prices)} prix observés sur cette ligne")
 
-    return Verdict(
+    verdict = Verdict(
         kind=kind, offer=o, dest_city=city, country=cc, distance_km=round(km),
         flight_hours=round(hours, 1), stay_days=stay, daily_budget=daily,
         stay_cost=round(stay_cost), trip_total=round(total),
@@ -136,6 +132,13 @@ def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[
         flight_all_in=round(eff), bag_supplement=bag.supplement, bag_status=bag.status, bag_note=bag.note,
         links=links.build(o.origin, city, o.depart, o.return_date, o.airline, o.link),
     )
+    if below or not_anomaly:
+        if not below and not_anomaly:
+            NEAR_MISSES.append((sc.total - 0.05, f"{o.origin}→{city} {o.price_eur:.0f}€ : bon deal ({sc.total}/11) mais PAS une anomalie de prix"))
+        if sc.total >= cfg["publication"].get("watch_min", 99):
+            WATCH.append(verdict)                       # pas une pépite, mais un bon plan à montrer sur le dashboard
+        return None
+    return verdict
 
 
 def evaluate_business(o: Offer, cfg: dict, budgets: dict, today: Optional[date] = None) -> Optional[Verdict]:

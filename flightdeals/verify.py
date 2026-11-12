@@ -16,6 +16,9 @@ from typing import Callable, Optional
 from . import live as livemod, providers
 
 
+DROPPED: list = []          # raisons des offres écartées par la revérification (reprises dans docs/status.json)
+
+
 def verify_one(v, cfg: dict, token: str, today: date, price_fn: Optional[Callable] = None):
     """-> (ok, message). Ne modifie pas le prix détecté, ajoute la mention de vérification."""
     price_fn = price_fn or providers.exact_price
@@ -66,6 +69,7 @@ def verify_all(verdicts: list, cfg: dict, token: Optional[str], today: date, pri
             kept.append(v)
         else:
             dropped.append(f"{v.offer.origin}→{v.dest_city} {v.offer.price_eur:.0f}€ : {msg}")
+            DROPPED.append(dropped[-1])
     print(f"[verify] {len(kept)} offre(s) confirmée(s), {len(dropped)} écartée(s)")
     for d in dropped[:8]:
         print("   ✗", d)

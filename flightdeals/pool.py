@@ -10,6 +10,7 @@ from .core import Leg, Offer, Verdict
 
 POOL = ROOT / "data" / "pool.json"
 STATE = ROOT / "data" / "publish_state.json"
+WATCH = ROOT / "data" / "watch.json"            # bons plans 7-8/10 vus récemment (dashboard, sans alerte)
 
 
 def verdict_to_dict(v: Verdict) -> dict:
@@ -38,6 +39,15 @@ def save_pool(pool: list) -> None:
     _save(POOL, pool[-200:])
 
 
+def load_watch() -> list:
+    return _load(WATCH, [])
+
+
+def save_watch(watch: list) -> None:
+    watch.sort(key=lambda e: -e["verdict"].get("score", 0))
+    _save(WATCH, watch[:80])                       # les 80 meilleurs bons plans récents
+
+
 def add(pool: list, v: Verdict, now_iso: str) -> bool:
     """Ajoute (ou améliore) une offre. Retourne True si la réserve a changé."""
     key = dedupe_key(v.offer)
@@ -55,7 +65,7 @@ def waiting_keys(pool: list) -> dict:
     return {e["key"]: e["verdict"]["offer"]["price_eur"] for e in pool}
 
 
-def still_valid(v: Verdict, cfg: dict, today: date) -> bool:
+def still_valid(v: Verdict, cfg: dict, today: date, min_score: float | None = None) -> bool:
     """Une offre en attente reste publiable si ses dates, tes préférences et ton budget l'acceptent encore."""
     o = v.offer
     if v.country in cfg.get("excluded_countries", []):
@@ -64,16 +74,17 @@ def still_valid(v: Verdict, cfg: dict, today: date) -> bool:
         return False
     if preferences.violates(cfg, dest=o.dest, km=v.distance_km, hours=v.flight_hours, depart=o.depart, stay=v.stay_days):
         return False
-    if v.score < cfg["publication"]["min_score"] + cfg.get("score_bonus_from_prefs", 0):
+    floor = cfg["publication"]["min_score"] if min_score is None else min_score
+    if v.score < floor + cfg.get("score_bonus_from_prefs", 0):
         return False
     if v.kind == "business_deal":
         return o.price_eur <= cfg["business"]["flight_cap_eur"]
     return v.trip_total <= scoring.total_cap(v.distance_km, cfg)
 
 
-def expire(pool: list, cfg: dict, now: Optional[datetime] = None) -> list:
+def expire(pool: list, cfg: dict, now: Optional[datetime] = None, hours: Optional[float] = None) -> list:
     now = now or datetime.now(timezone.utc)
-    max_age = timedelta(hours=cfg["publication"]["pool_max_age_hours"])
+    max_age = timedelta(hours=hours if hours is not None else cfg["publication"]["pool_max_age_hours"])
     keep = []
     for e in pool:
         try:

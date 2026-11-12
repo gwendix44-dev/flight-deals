@@ -70,19 +70,24 @@ réservé aux partenaires). Les prix de détection viennent du **cache** d'un ag
 - **Toute la planète** : 155 destinations hors Europe et Afrique du Nord ; chaque scan sélectionne à tour de rôle la meilleure
   offre de chaque région (2 maximum par région, 1 par destination).
 
-## Refuser une offre : l'appli apprend
-Deux façons de dire pourquoi tu refuses (« trop cher », « séjour trop court », « trop d'escales »,
-« destination déjà vue », « trop loin », « vol trop long », « avion pas adapté », « trop touristique »,
-« billets séparés trop risqués », « mauvaise période », « pas assez exceptionnel ») :
-1. **Dashboard** : bouton « 👎 Refuser » sur la carte, zone de texte + raisons rapides. Pour envoyer depuis la page,
-   clique sur « 🔑 Connecter GitHub » et colle un token *fine-grained* limité à ce dépôt, permission **Issues : Read and write**
-   (créé sur github.com/settings/personal-access-tokens/new ; il reste dans ton navigateur). Sans token, le texte est copié
-   et l'Issue s'ouvre pour que tu le colles en commentaire.
-2. **Appli GitHub / site** : commente directement l'Issue de l'offre.
-Le workflow `feedback` lit le commentaire aussitôt (uniquement s'il vient du propriétaire du dépôt), met à jour
-`docs/preferences.json`, répond sur l'Issue et la ferme. Les préférences s'appliquent au scan suivant (15 min max).
-Commandes : `/prefs` liste les réglages appris, `/reset` les efface. Le lecteur de raisons fonctionne par mots-clés
-(gratuit, prévisible) : si ta phrase n'est pas comprise, la réponse te le dit.
+## Refuser une offre : elle est supprimée, ta raison est apprise
+Touche « 👎 Refuser » sur une carte, choisis ou écris la raison (« trop cher », « séjour trop court », « destination déjà vue »…),
+puis « Envoyer le refus » :
+1. **l'offre disparaît immédiatement de ton écran** (et le reste, même après rechargement) ;
+2. le refus part vers GitHub **sans compte ni jeton** : une page GitHub s'ouvre avec le texte déjà rempli, tu touches le bouton vert
+   « Submit new issue ». Avec un jeton enregistré (« 🔑 Connecter GitHub »), l'envoi est direct, sans aucune page. Tant que le refus
+   n'est pas validé, un bandeau orange te le rappelle : rien ne se perd en silence ;
+3. le workflow `feedback` apprend ta raison (`docs/preferences.json`), ferme les Issues concernées et inscrit l'offre comme refusée :
+   les scans la retirent du dashboard, de la réserve et des bons plans, et **ne la republient jamais** (même dates, même route).
+Autre voie, sans le dashboard : commenter l'Issue de l'offre dans GitHub. `/prefs` liste ce qui a été appris, `/reset` l'efface
+(sans ressusciter les offres refusées). Seul le propriétaire du dépôt est écouté.
+
+## Variété, créneaux vides et bons plans
+- **Une même destination n'est pas republiée dans la semaine** (`publication.dest_cooldown_days`), sauf prix au moins 25 % plus bas.
+- **Un créneau vide n'est jamais silencieux** : notification « rien d'exceptionnel » avec la meilleure offre vue, et détail dans le
+  dashboard (« Pourquoi pas plus d'offres ? » : meilleures offres sous le seuil, offres écartées par la revérification et pourquoi).
+- **👀 Bons plans du moment** (entre 7 et 8/10, `publication.watch_min`) : visibles sur le dashboard, une destination par région, sans
+  alerte ni Issue, renouvelés aux créneaux. Les pépites (≥ 8/10) restent les seules offres notifiées.
 
 ## Montages d'escales (billets séparés)
 `python -m flightdeals.combos` (workflow `scan-combos`, toutes les 3 h) assemble des billets aller simple

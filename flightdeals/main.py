@@ -42,9 +42,31 @@ def alerts_last_year(now=None) -> int:
 
 
 # ----------------------------------------------------------------------------------------------- sélection
-def fresh_candidates(candidates: list, seen: dict, cfg: dict, waiting: Optional[dict] = None) -> list:
-    """Offres jamais publiées (ou au moins X % moins chères que la dernière publication), pas déjà en réserve à ce prix."""
+def _group(v) -> str:
+    return "biz" if v.kind == "business_deal" else "std"
+
+
+def recent_dests(now: datetime, days: int) -> dict:
+    """{(destination, std|biz): prix le plus bas publié} sur les `days` derniers jours : sert à ne pas republier la même destination."""
+    out: dict = {}
+    for a in _load(ALERTS, []):
+        try:
+            if (now - datetime.fromisoformat(a["at"])).days >= days:
+                continue
+        except (KeyError, ValueError):
+            continue
+        dest = a.get("dest") or (a.get("route", "").split("-")[-1])
+        k = (dest, "biz" if a.get("kind") == "business_deal" else "std")
+        out[k] = min(out.get(k, 1e9), a.get("price", 1e9))
+    return out
+
+
+def fresh_candidates(candidates: list, seen: dict, cfg: dict, waiting: Optional[dict] = None,
+                     cooldown: Optional[dict] = None) -> list:
+    """Offres jamais publiées (ou au moins X % moins chères que la dernière publication), pas déjà en réserve à ce prix, et dont la
+    destination n'a pas été publiée récemment (sauf prix nettement plus bas) : sinon une même route bon marché occuperait tout."""
     drop = 1 - cfg["realert_if_price_drops_pct"] / 100
+    keep = 1 - cfg["publication"].get("cooldown_price_drop", 0.25)
     out = []
     for v in candidates:
         k = dedupe_key(v.offer)
@@ -53,6 +75,9 @@ def fresh_candidates(candidates: list, seen: dict, cfg: dict, waiting: Optional[
             continue
         if waiting and k in waiting and v.offer.price_eur >= waiting[k]:
             continue
+        last = (cooldown or {}).get((v.offer.dest, _group(v)))
+        if last is not None and v.offer.price_eur > last * keep:
+            continue                                           # même destination déjà publiée cette semaine, pas assez moins chère
         out.append(v)
     out.sort(key=lambda v: (-v.score, v.offer.price_eur if v.kind == "business_deal" else v.trip_total))
     return out
@@ -114,8 +139,8 @@ def announce(top: list, seen: dict, label: str, dry: bool, summary: bool) -> lis
         log = _load(ALERTS, [])
         now_iso = datetime.now(timezone.utc).isoformat(timespec="seconds")
         for v in sent:
-            log.append({"at": now_iso, "route": f"{v.offer.origin}-{v.offer.dest}", "price": v.offer.price_eur,
-                        "kind": v.kind, "label": label})
+            log.append({"at": now_iso, "route": f"{v.offer.origin}-{v.offer.dest}", "dest": v.offer.dest,
+                        "price": v.offer.price_eur, "kind": v.kind, "label": label})
             k = dedupe_key(v.offer)
             seen[k] = min(v.offer.price_eur, seen.get(k, 1e9))
         _save(ALERTS, log[-200:])
@@ -123,8 +148,8 @@ def announce(top: list, seen: dict, label: str, dry: bool, summary: bool) -> lis
     return top      # le dashboard affiche tout ce qui a été publié, même si l'envoi a échoué
 
 
-def publish(top: list, dry: bool, label: str = "") -> None:
-    """Met à jour le dashboard (docs/deals.json), sans doublons."""
+def publish(top: list, dry: bool, label: str = "", tier: str = "pepite", cfg: Optional[dict] = None) -> None:
+    """Met à jour le dashboard (docs/deals.json), sans doublons. tier : pepite (>= 8/10, notifiée) | bon_plan (7 à 8/10, sans alerte)."""
     if dry or not top:
         return
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -132,8 +157,30 @@ def publish(top: list, dry: bool, label: str = "") -> None:
     keys = {dedupe_key(v.offer) for v in top}
     old = [d for d in store.get("deals", []) if d.get("key") not in keys]
     store["updated"] = now
-    store["deals"] = ([dict(v.to_dict(), found_at=now, key=dedupe_key(v.offer), slot=label) for v in top] + old)[:200]
+    store["deals"] = ([dict(v.to_dict(), found_at=now, key=dedupe_key(v.offer), slot=label, tier=tier) for v in top] + old)[:200]
     _save(DEALS, store)
+
+
+def prune_deals(ctx: "Ctx") -> int:
+    """Retire du dashboard : les offres refusées (pour de bon), et les bons plans trop anciens. Retourne le nombre retiré."""
+    store = _load(DEALS, {"deals": []})
+    max_age = timedelta(hours=ctx.cfg["publication"].get("watch_max_age_hours", 36))
+    keep = []
+    for d in store.get("deals", []):
+        if d.get("key") in ctx.refused_keys or d.get("issue") in ctx.refused_issues:
+            continue
+        if d.get("tier") == "bon_plan":
+            try:
+                if ctx.now_utc - datetime.fromisoformat(d["found_at"]) > max_age:
+                    continue
+            except (KeyError, ValueError):
+                pass
+        keep.append(d)
+    removed = len(store.get("deals", [])) - len(keep)
+    if removed and not ctx.dry:
+        store["deals"] = keep
+        _save(DEALS, store)
+    return removed
 
 
 # ------------------------------------------------------------------------------------------ déroulé commun
@@ -147,7 +194,13 @@ class Ctx:
         self.cfg = preferences.load_cfg()
         self.token = os.environ.get("TRAVELPAYOUTS_TOKEN")
         self.seen = _load(SEEN, {})
+        prefs = preferences.load_prefs()
+        self.refused_keys = set(prefs.get("refused_keys", []))
+        self.refused_issues = set(prefs.get("refused_issues", []))
         self.pool = poolmod.load_pool()
+        self.watch = poolmod.load_watch()
+        self.cooldown = recent_dests(self.now_utc, self.cfg["publication"].get("dest_cooldown_days", 7))
+        self.near_raw: list = []                              # (note, description) des meilleures offres sous le seuil
         self.state = _load(poolmod.STATE, {"published": []})
         self.stats: dict = {}
         self.errors: list = []
@@ -160,9 +213,23 @@ class Ctx:
         if self.dry:
             return
         poolmod.save_pool(self.pool)
+        poolmod.save_watch(self.watch)
         _save(SEEN, dict(list(self.seen.items())[-5000:]))
         self.state["published"] = self.state.get("published", [])[-20:]
         _save(poolmod.STATE, self.state)
+
+
+def prune_refused(ctx: Ctx) -> None:
+    """Une offre refusée est SUPPRIMÉE : retirée du dashboard, de la réserve et des bons plans, et bloquée pour toujours."""
+    for k in ctx.refused_keys:
+        ctx.seen[k] = 0.01                                    # même offre (mêmes dates) : plus jamais publiée
+    before = len(ctx.pool) + len(ctx.watch)
+    drop = lambda e: e["key"] in ctx.refused_keys or e["verdict"].get("issue") in ctx.refused_issues
+    ctx.pool = [e for e in ctx.pool if not drop(e)]
+    ctx.watch = [e for e in ctx.watch if not drop(e)]
+    removed = before - len(ctx.pool) - len(ctx.watch) + prune_deals(ctx)
+    if removed:
+        print(f"{removed} offre(s) refusée(s) ou périmée(s) supprimée(s) du dashboard et de la réserve")
 
 
 def ingest(ctx: Ctx, candidates: list) -> None:
@@ -174,7 +241,7 @@ def ingest(ctx: Ctx, candidates: list) -> None:
     pub = ctx.cfg["publication"]
     pending = {e["key"]: e for e in ctx.pool if e.get("pending_instant")}
     waiting = {k: p for k, p in poolmod.waiting_keys(ctx.pool).items() if k not in pending}
-    fresh = fresh_candidates(candidates, ctx.seen, ctx.cfg, waiting)
+    fresh = fresh_candidates(candidates, ctx.seen, ctx.cfg, waiting, ctx.cooldown)
     verified = verify.verify_all(fresh, ctx.cfg, ctx.token, ctx.today) if fresh else []
     wait_min = timedelta(minutes=pub.get("instant_confirm_minutes", 10))
     confirmed, first_sighting = [], 0
@@ -235,7 +302,7 @@ def tick_slots(ctx: Ctx) -> None:
     ctx.pool = poolmod.expire(ctx.pool, cfg, ctx.now_utc)
     entries = [(e["key"], poolmod.verdict_from_dict(e["verdict"])) for e in ctx.pool]
     valid = [(k, v) for k, v in entries if poolmod.still_valid(v, cfg, ctx.today)]
-    fresh = fresh_candidates([v for _, v in valid], ctx.seen, cfg)
+    fresh = fresh_candidates([v for _, v in valid], ctx.seen, cfg, None, ctx.cooldown)
     std = [v for v in fresh if v.kind != "business_deal"]
     biz = [v for v in fresh if v.kind == "business_deal"]
     # dernière revérification : un prix vu ce matin peut avoir disparu depuis
@@ -254,6 +321,15 @@ def tick_slots(ctx: Ctx) -> None:
           f"{n_std} + {n_biz} publiés")
     done = announce(top, ctx.seen, label, ctx.dry, summary=True)
     publish(done, ctx.dry, label)
+    # « Bons plans du moment » (7 à 8/10) : visibles sur le dashboard, une destination par région, sans alerte ni Issue
+    bons_plans = pick_watch(ctx, {v.offer.dest for v in done})
+    publish(bons_plans, ctx.dry, label, tier="bon_plan")
+    for v in bons_plans:
+        ctx.seen[dedupe_key(v.offer)] = min(v.offer.price_eur, ctx.seen.get(dedupe_key(v.offer), 1e9))
+        ctx.state.setdefault("watch_recent", {})[v.offer.dest] = ctx.now_iso
+    best_missed = [f"{sc_}/11 {d}" for sc_, d in ctx.near_raw[:3]]
+    if not done and pub.get("notify_empty_slots", True) and not ctx.dry:
+        notify.send_push_empty(label, len(bons_plans), best_missed)       # le créneau n'est jamais silencieux
     if ctx.dry:
         return
     # nettoyage : publiées + devenues invalides + non confirmées partent ; les autres restent pour le prochain créneau
@@ -266,7 +342,28 @@ def tick_slots(ctx: Ctx) -> None:
     ctx.pool = [e for e in ctx.pool if e["key"] not in gone]
     ctx.state.setdefault("published", []).append(sid)
     ctx.state["last_slot"] = {"id": sid, "label": label, "at": ctx.now_iso, "standard": n_std, "business": n_biz,
-                              "waiting_after": len(ctx.pool)}
+                              "bons_plans": len(bons_plans), "waiting_after": len(ctx.pool), "best_missed": best_missed}
+
+
+def pick_watch(ctx: Ctx, exclude: set) -> list:
+    """Meilleurs bons plans (>= `watch_min`, < seuil) de la réserve, une destination par région, revérifiés pour leurs dates."""
+    cfg, pub = ctx.cfg, ctx.cfg["publication"]
+    ctx.watch = poolmod.expire(ctx.watch, cfg, ctx.now_utc, pub.get("watch_max_age_hours", 36))
+    cutoff = ctx.now_utc - timedelta(days=pub.get("watch_dest_cooldown_days", 3))
+    recent = {d: t for d, t in ctx.state.get("watch_recent", {}).items() if datetime.fromisoformat(t) > cutoff}
+    ctx.state["watch_recent"] = recent
+    vs = [poolmod.verdict_from_dict(e["verdict"]) for e in ctx.watch]
+    vs = [v for v in vs if v.kind != "business_deal" and v.offer.dest not in exclude and v.offer.dest not in recent
+          and poolmod.still_valid(v, cfg, ctx.today, min_score=pub.get("watch_min", 7.0))]
+    fresh = fresh_candidates(vs, ctx.seen, cfg)
+    ok = verify.verify_all(fresh[:12], cfg, ctx.token, ctx.today)
+    top = select_top(ok, dict(cfg, max_alerts_per_region=1), pub.get("watch_per_slot", 4))
+    for v in top:
+        v.reasons.append("Bon plan du moment (entre 7 et 8/10) : pas une pépite, mais le meilleur de sa région")
+    print(f"bons plans : {len(vs)} en réserve -> {len(ok)} confirmés -> {len(top)} publiés")
+    gone = {dedupe_key(v.offer) for v in top} | {dedupe_key(v.offer) for v in fresh[:12] if v not in ok}
+    ctx.watch = [e for e in ctx.watch if e["key"] not in gone]
+    return top
 
 
 def write_status(ctx: Ctx, source: str) -> None:
@@ -283,6 +380,10 @@ def write_status(ctx: Ctx, source: str) -> None:
     for k in ("offers", "candidates", "verified", "instant"):
         if k in ctx.stats:
             st[k] = ctx.stats[k]
+    if source == "scan":
+        st["best_missed"] = [f"{sc_}/11 {d}" for sc_, d in ctx.near_raw[:3]]       # meilleures offres du scan sous le seuil
+        st["rejets"] = verify.DROPPED[-6:]                                          # offres écartées par la revérification, et pourquoi
+        st["watch"] = len(ctx.watch)
     st[f"last_{source}"] = ctx.now_iso
     _save(STATUS, st)
 
@@ -320,8 +421,16 @@ def run(demo: bool, dry: bool, now_utc: Optional[datetime] = None) -> int:
             best = sorted(unknown.items(), key=lambda kv: kv[1])[:15]
             print("destinations absentes de la base (prix mini) : " + ", ".join(f"{c} {p:.0f}€" for c, p in best))
 
+        prune_refused(ctx)
+        evaluate.NEAR_MISSES.clear()
+        evaluate.WATCH.clear()
+        verify.DROPPED.clear()
         verdicts = [v for o in offers if (v := evaluate.evaluate(o, cfg, history, budgets, today))]
         biz_verdicts = [v for o in offers if (v := evaluate.evaluate_business(o, cfg, budgets, today))]
+        if not demo:
+            for v in evaluate.WATCH:                                  # bons plans 7-8/10 de ce scan -> réserve des bons plans
+                poolmod.add(ctx.watch, v, ctx.now_iso)
+        ctx.near_raw = sorted(evaluate.NEAR_MISSES, reverse=True)[:5]
         if evaluate.NEAR_MISSES:
             near = sorted(evaluate.NEAR_MISSES, reverse=True)[:5]
             print(f"{len(evaluate.NEAR_MISSES)} offres sous le seuil ({cfg['publication']['min_score']}/10) ; les 5 meilleures :")

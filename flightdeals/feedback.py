@@ -1,16 +1,24 @@
-"""Traite un commentaire de refus : python -m flightdeals.feedback
+"""Traite un refus : python -m flightdeals.feedback
 
-Lancé par .github/workflows/feedback.yml à chaque commentaire sur une Issue. Variables d'environnement :
-COMMENT_BODY, COMMENT_USER, ISSUE_NUMBER, GITHUB_TOKEN, GITHUB_REPOSITORY, GITHUB_REPOSITORY_OWNER.
-Sécurité : seul le propriétaire du dépôt peut modifier les préférences (le dépôt est public).
+Deux façons de refuser (le workflow .github/workflows/feedback.yml se déclenche dans les deux cas) :
+  * une NOUVELLE Issue « Refus : … » créée par le bouton « Refuser » du dashboard (corps : `deal:<clé>`, `issue:<n>`, `---`,
+    puis ta raison) ;
+  * un COMMENTAIRE de ta part sur l'Issue d'une offre.
+Dans les deux cas : ta raison est apprise (docs/preferences.json), l'offre est inscrite comme refusée (les scans la retirent
+du dashboard et de la réserve et ne la republient jamais), et les Issues concernées sont fermées.
+
+Variables d'environnement : EVENT_NAME, COMMENT_BODY, COMMENT_USER, ISSUE_TITLE, ISSUE_BODY, ISSUE_USER, ISSUE_NUMBER,
+GITHUB_TOKEN, GITHUB_REPOSITORY, GITHUB_REPOSITORY_OWNER. Sécurité : seul le propriétaire du dépôt est écouté (dépôt public).
 """
 from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import urllib.request
 from datetime import datetime, timezone
+from typing import Optional
 
 from . import preferences
 from .main import DEALS, ROOT, _load, _save
@@ -45,35 +53,78 @@ def describe(p: dict) -> str:
     if p["excluded_months"]: rows.append("mois exclus : " + ", ".join(f"{m:02d}" for m in p["excluded_months"]))
     if p["min_secrecy"] is not None: rows.append(f"rareté minimale {p['min_secrecy']}")
     if p["min_score_bonus"]: rows.append(f"seuil de note +{p['min_score_bonus']}")
-    return "\n".join(f"- {r}" for r in rows) or "- aucune préférence apprise pour l'instant"
+    rows.append(f"{len(p.get('refused_keys', []))} offre(s) refusée(s) définitivement")
+    return "\n".join(f"- {r}" for r in rows)
+
+
+def parse_refusal_issue(title: str, body: str) -> Optional[dict]:
+    """Issue « Refus : … » créée par le dashboard -> {key, issue, reason}. None si ce n'est pas un refus."""
+    if not (title or "").strip().lower().startswith("refus"):
+        return None
+    body = body or ""
+    key = re.search(r"^deal:([0-9a-f]{6,40})\s*$", body, re.M)
+    num = re.search(r"^issue:(\d+)\s*$", body, re.M)
+    reason = body.split("\n---", 1)[1].strip() if "\n---" in body else re.sub(r"^(deal|issue):.*$", "", body, flags=re.M).strip()
+    return {"key": key.group(1) if key else "", "issue": int(num.group(1)) if num else 0, "reason": reason}
+
+
+def find_deal(key: str, issue: int) -> Optional[dict]:
+    deals = _load(DEALS, {"deals": []}).get("deals", [])
+    for d in deals:
+        if key and d.get("key") == key:
+            return d
+    for d in deals:
+        if issue and d.get("issue") == issue:
+            return d
+    return None
+
+
+def refuse(prefs: dict, key: str, issue: int) -> dict:
+    """Inscrit l'offre comme refusée pour de bon (les scans la retirent partout et ne la republient jamais)."""
+    if key and key not in prefs["refused_keys"]:
+        prefs["refused_keys"] = (prefs["refused_keys"] + [key])[-500:]
+    if issue and issue not in prefs["refused_issues"]:
+        prefs["refused_issues"] = (prefs["refused_issues"] + [issue])[-500:]
+    return prefs
 
 
 def main() -> int:
-    body = (os.environ.get("COMMENT_BODY") or "").strip()
-    user, owner = os.environ.get("COMMENT_USER", ""), os.environ.get("GITHUB_REPOSITORY_OWNER", "")
-    number = int(os.environ.get("ISSUE_NUMBER", "0"))
-    if not body or user.lower() != owner.lower() or user.endswith("[bot]"):
-        print("commentaire ignoré (pas du propriétaire)")
+    env = os.environ.get
+    owner = env("GITHUB_REPOSITORY_OWNER", "")
+    event = env("EVENT_NAME", "issue_comment")
+    if event == "issues":
+        user, number = env("ISSUE_USER", ""), int(env("ISSUE_NUMBER", "0") or 0)
+        ref = parse_refusal_issue(env("ISSUE_TITLE", ""), env("ISSUE_BODY", ""))
+        body = (ref or {}).get("reason", "")
+    else:
+        user, number = env("COMMENT_USER", ""), int(env("ISSUE_NUMBER", "0") or 0)
+        ref, body = None, (env("COMMENT_BODY") or "").strip()
+    if (event == "issues" and not ref) or not body and not ref or user.lower() != owner.lower() or user.endswith("[bot]"):
+        print("événement ignoré (pas un refus du propriétaire)")
         return 0
 
     cfg = preferences.load_cfg()
     prefs = preferences.load_prefs()
     cmd = body.lower()
-    if cmd.startswith("/prefs"):
+    close_numbers: list = []
+    if event != "issues" and cmd.startswith("/prefs"):
         reply = "**Préférences actuelles**\n" + describe(prefs)
-    elif cmd.startswith("/reset"):
-        refused = prefs["refused_issues"]
-        prefs = {**preferences.copy.deepcopy(preferences.DEFAULT), "refused_issues": refused}
+    elif event != "issues" and cmd.startswith("/reset"):
+        keep = {k: prefs[k] for k in ("refused_issues", "refused_keys")}
+        prefs = {**preferences.copy.deepcopy(preferences.DEFAULT), **keep}
         _save(preferences.PREFS_PATH, prefs)
-        reply = "Préférences remises à zéro."
+        reply = "Préférences remises à zéro (les offres déjà refusées restent refusées)."
     else:
-        deal = next((d for d in _load(DEALS, {"deals": []}).get("deals", []) if d.get("issue") == number), None)
+        key, target = (ref["key"], ref["issue"]) if ref else ("", number)
+        deal = find_deal(key, target)
+        if deal:
+            key = key or deal.get("key", "")
+            target = target or deal.get("issue") or 0
         new, msgs = preferences.learn(prefs, body, deal, cfg)
-        if number and number not in new["refused_issues"]:
-            new["refused_issues"] = (new["refused_issues"] + [number])[-300:]
+        refuse(new, key, target)
         _save(preferences.PREFS_PATH, new)
         log = _load(LOG, [])
-        log.append({"at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "issue": number,
+        log.append({"at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "issue": target, "key": key,
                     "text": body[:500], "changes": msgs})
         _save(LOG, log[-500:])
         if msgs:
@@ -82,13 +133,17 @@ def main() -> int:
             reply = ("Refus enregistré, mais je n'ai pas reconnu la raison. Essaie par exemple : « trop cher », "
                      "« séjour trop court », « trop d'escales », « destination déjà vue », « trop loin », "
                      "« avion pas adapté », « trop touristique ».")
+        reply += "\n\n✔ **L'offre est supprimée** : elle disparaît du dashboard au prochain scan et ne sera plus jamais proposée."
         if not deal:
             reply += "\n\n_(Offre introuvable dans le dashboard : seules les règles générales ont pu être appliquées.)_"
-        reply += ("\n\nEffectif dès le prochain scan (15 min max). `/prefs` liste tes réglages, `/reset` les efface.")
+        reply += "\n\nEffectif dès le prochain scan. `/prefs` liste tes réglages, `/reset` les efface."
+        close_numbers = [n for n in {number if event == "issues" else 0, target} if n]
+        if event != "issues" and number:
+            close_numbers = [number]
     try:
         _api("POST", f"/issues/{number}/comments", {"body": reply})
-        if not (cmd.startswith("/prefs") or cmd.startswith("/reset")):
-            _api("PATCH", f"/issues/{number}", {"state": "closed", "state_reason": "not_planned"})
+        for n in close_numbers:
+            _api("PATCH", f"/issues/{n}", {"state": "closed", "state_reason": "not_planned"})
     except Exception as e:
         print(f"[feedback] réponse impossible : {e}")
     print(reply)

@@ -156,3 +156,13 @@ def send_push_summary(vs: list[Verdict], label: str) -> list[Verdict]:
     parts = ([f"{len(std)} deal(s)"] if std else []) + ([f"{len(biz)} business"] if biz else [])
     ok = _deliver(f"✈️ {label} : " + " + ".join(parts), "\n".join(lines), 4, ["airplane"])
     return list(vs) if ok else []
+
+
+def send_push_empty(label: str, n_bons_plans: int, best_missed: list) -> bool:
+    """Un créneau sans pépite n'est jamais silencieux : l'appli dit qu'elle a travaillé et ce qu'elle a trouvé de mieux."""
+    msg = "Aucune offre à 8/10 ou plus pour le moment."
+    if n_bons_plans:
+        msg += f" {n_bons_plans} bon(s) plan(s) à voir sur le dashboard."
+    if best_missed:
+        msg += "\nMeilleure offre vue : " + best_missed[0][:120]
+    return _deliver(f"✈️ {label} : rien d'exceptionnel", msg, 3, ["airplane"])

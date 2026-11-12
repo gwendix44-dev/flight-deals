@@ -1,8 +1,10 @@
 name: feedback
-# Se déclenche dès que tu commentes une Issue d'offre : lit ta raison de refus, adapte les préférences, répond.
+# Traite tes refus : un commentaire sur l'Issue d'une offre, OU une Issue « Refus : … » créée par le bouton « Refuser » du dashboard.
 on:
   issue_comment:
     types: [created]
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
@@ -16,9 +18,13 @@ jobs:
   learn:
     # Dépôt public : n'agir QUE pour le propriétaire, jamais sur les pull requests ni sur les robots.
     if: >-
-      github.event.issue.pull_request == null &&
-      github.event.comment.user.login == github.repository_owner &&
-      github.event.comment.user.type == 'User'
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request == null &&
+       github.event.comment.user.login == github.repository_owner &&
+       github.event.comment.user.type == 'User') ||
+      (github.event_name == 'issues' &&
+       github.event.issue.user.login == github.repository_owner &&
+       startsWith(github.event.issue.title, 'Refus'))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -28,13 +34,18 @@ jobs:
           python-version: "3.12"
       - name: Apprendre du refus
         env:
-          # Le texte du commentaire passe par une variable d'environnement, jamais interpolé dans le shell.
+          # Les textes passent par des variables d'environnement, jamais interpolés dans le shell.
+          EVENT_NAME: ${{ github.event_name }}
           COMMENT_BODY: ${{ github.event.comment.body }}
           COMMENT_USER: ${{ github.event.comment.user.login }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_USER: ${{ github.event.issue.user.login }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python -m flightdeals.feedback
       - name: Sauver les préférences
+        if: always()
         run: |
           git config user.name "flight-deals-bot"
           git config user.email "bot@users.noreply.github.com"

@@ -127,13 +127,20 @@ function renderPending() {
   pending = pending.filter(r => !refusedKeys.has(r.key));                    // déjà pris en compte par l'appli : plus rien à faire
   localStorage.setItem("pendingRefusals", JSON.stringify(pending));
   if (!pending.length) { el.hidden = true; return; }
-  el.hidden = false;
-  el.innerHTML = `⚠ <b>${pending.length} refus pas encore envoyé à l'appli</b> : l'offre est masquée ici, mais ta raison n'est prise en compte qu'une fois validée sur GitHub.<br>` +
-    pending.map((r, i) => `<button class="send" data-pend="${i}">Valider « ${esc(r.title.replace("Refus : ", ""))} »</button>`).join("");
+  const todo = pending.filter(r => !r.opened), doing = pending.filter(r => r.opened);
+  el.hidden = false; el.className = "status-line " + (todo.length ? "bad" : "ok");
+  el.innerHTML = (doing.length ? `⏳ <b>${doing.length} refus en cours de prise en compte</b> (1 à 2 minutes). Cette ligne disparaît toute seule : rien à faire, ne retouche pas « Valider ».` : "") +
+    (todo.length ? `<div style="margin-top:6px">⚠ <b>${todo.length} refus à valider</b> : l'offre est masquée ici, mais ta raison n'est prise en compte qu'après avoir touché « Valider », puis le bouton vert « Create » sur la page GitHub.</div>` +
+      pending.map((r, i) => r.opened ? "" : `<button class="send" data-pend="${i}">Valider « ${esc(r.title.replace("Refus : ", ""))} »</button>`).join("") : "");
+}
+function markOpened(r) {
+  r.opened = true; localStorage.setItem("pendingRefusals", JSON.stringify(pending)); renderPending();
+  setTimeout(load, 70 * 1000); setTimeout(load, 130 * 1000); setTimeout(load, 240 * 1000);       // le robot a besoin d'1 à 2 min
 }
 document.getElementById("pending").addEventListener("click", e => {
   const i = e.target.dataset.pend; if (i === undefined) return;
   window.open(newIssueUrl(pending[+i]), "_blank", "noopener");
+  markOpened(pending[+i]);
 });
 async function sendRefusal(d, text) {
   const r = { ...refusalIssue(d, text), key: d.key };
@@ -145,14 +152,15 @@ async function sendRefusal(d, text) {
   const token = localStorage.getItem("ghtoken");
   if (!token) {
     window.open(newIssueUrl(r), "_blank", "noopener");                       // appelé dans le geste de l'utilisateur : pas bloqué
-    toast("Offre supprimée. Dernière étape : sur la page GitHub qui s'ouvre, touche le bouton vert « Submit new issue ».");
+    toast("Offre supprimée. Dernière étape : sur la page GitHub qui s'ouvre, touche le bouton vert « Create », puis reviens ici.");
+    markOpened(r);
     return;
   }
   try {
     const resp = await fetch(`https://api.github.com/repos/${REPO[0]}/${REPO[1]}/issues`, {
       method: "POST", headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
       body: JSON.stringify({ title: r.title, body: r.body }) });
-    if (resp.ok) { toast("Refus envoyé ✔ : l'offre est supprimée et ta raison sera prise en compte aux prochains scans."); }
+    if (resp.ok) { toast("Refus envoyé ✔ : l'offre est supprimée et ta raison sera prise en compte aux prochains scans."); markOpened(r); }
     else toast(`Offre masquée, mais l'envoi a échoué (${resp.status}) : vérifie ton jeton, ou valide le refus avec le bouton orange.`);
   } catch { toast("Offre masquée, mais pas de connexion : le refus sera à valider avec le bouton orange."); }
 }
@@ -187,8 +195,8 @@ function buildFilters() {
 }
 
 let useApi = new URLSearchParams(location.search).has("fresh");    // ouvert depuis une notification
-async function fetchJSON(name) {
-  if (useApi) {
+async function fetchJSON(name, forceApi = false) {
+  if (useApi || forceApi) {
     try {                                                           // GitHub API : à jour dès le commit du robot, sans le délai de Pages
       const r = await fetch(`https://api.github.com/repos/${REPO[0]}/${REPO[1]}/contents/docs/${name}?ref=main`,
         { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" });
@@ -233,7 +241,7 @@ async function load() {
     localStorage.setItem("seen", latest);
   } catch { document.getElementById("upd").textContent = "Impossible de charger les données"; }
   try {
-    const p = await fetchJSON("preferences.json");
+    const p = await fetchJSON("preferences.json", pending.length > 0);     // refus en attente : lecture directe, sans le délai du site
     (p.refused_issues || []).forEach(n => refused.add(n));
     refusedKeys = new Set(p.refused_keys || []);
     const rows = Object.entries(p).filter(([k, v]) => !["refused_issues", "refused_keys"].includes(k) && v !== null && v !== false && v !== 0 && !(Array.isArray(v) && !v.length));

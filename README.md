@@ -75,7 +75,7 @@ Touche « 👎 Refuser » sur une carte, choisis ou écris la raison (« trop ch
 puis « Envoyer le refus » :
 1. **l'offre disparaît immédiatement de ton écran** (et le reste, même après rechargement) ;
 2. le refus part vers GitHub **sans compte ni jeton** : une page GitHub s'ouvre avec le texte déjà rempli, tu touches le bouton vert
-   « Submit new issue ». Avec un jeton enregistré (« 🔑 Connecter GitHub »), l'envoi est direct, sans aucune page. Tant que le refus
+   « Create » (« Submit new issue » sur ordinateur). Avec un jeton enregistré (« 🔑 Connecter GitHub »), l'envoi est direct, sans aucune page. Tant que le refus
    n'est pas validé, un bandeau orange te le rappelle : rien ne se perd en silence ;
 3. le workflow `feedback` apprend ta raison (`docs/preferences.json`), ferme les Issues concernées et inscrit l'offre comme refusée :
    les scans la retirent du dashboard, de la réserve et des bons plans, et **ne la republient jamais** (même dates, même route).

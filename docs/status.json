@@ -1,10 +1,10 @@
 {
  "ok": true,
- "updated": "2026-11-13T09:38:52+00:00",
+ "updated": "2026-11-13T10:03:40+00:00",
  "waiting": 0,
  "next_slot": "aujourd'hui 12:00",
  "errors": [],
- "source": "scan",
+ "source": "combos",
  "last_slot": {
   "id": "2026-11-12@19:00",
   "label": "Publication de 19h",
@@ -27,7 +27,7 @@
  "live_used": 0,
  "live_budget": 90,
  "live_active": false,
- "last_combos": "2026-11-13T07:19:53+00:00",
+ "last_combos": "2026-11-13T10:03:40+00:00",
  "best_missed": [
   "6.9/11 FRA→Île Maurice 442€ avec bagages (séjour ~1409€) : prix 2.3/3 · budget 1.3/2 · destination 0.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.4/1",
   "6.4/11 MAD→Panama 485€ avec bagages (séjour ~1436€) : prix 1.5/3 · budget 1.2/2 · destination 1.0/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.2/1",

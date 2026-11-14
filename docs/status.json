@@ -1,6 +1,6 @@
 {
  "ok": true,
- "updated": "2026-11-14T11:05:37+00:00",
+ "updated": "2026-11-14T11:43:51+00:00",
  "waiting": 0,
  "next_slot": "aujourd'hui 19:00",
  "errors": [],
@@ -19,11 +19,11 @@
    "5.0/11 MAD→Medellín 893€ avec bagages (séjour ~1537€) : prix 0.0/3 · budget 1.0/2 · destination 1.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.0/1"
   ]
  },
- "offers": 10553,
+ "offers": 10531,
  "candidates": 0,
  "verified": 0,
  "instant": 0,
- "last_scan": "2026-11-14T11:05:37+00:00",
+ "last_scan": "2026-11-14T11:43:51+00:00",
  "live_used": 0,
  "live_budget": 90,
  "live_active": false,

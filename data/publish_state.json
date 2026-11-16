@@ -18,19 +18,20 @@
   "2026-11-14@19:00",
   "2026-11-15@12:00",
   "2026-11-15@19:00",
-  "2026-11-16@12:00"
+  "2026-11-16@12:00",
+  "2026-11-16@19:00"
  ],
  "last_slot": {
-  "id": "2026-11-16@12:00",
-  "label": "Publication de 12h",
-  "at": "2026-11-16T11:49:51+00:00",
+  "id": "2026-11-16@19:00",
+  "label": "Publication de 19h",
+  "at": "2026-11-16T18:29:27+00:00",
   "standard": 0,
   "business": 0,
   "bons_plans": 0,
   "waiting_after": 0,
   "best_missed": [
-   "5.5/11 ORY→La Réunion 628€ avec bagages (séjour ~1472€) : prix 0.8/3 · budget 1.1/2 · destination 1.0/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.2/1",
-   "5.4/11 CDG→La Réunion 642€ avec bagages (séjour ~1486€) : prix 0.6/3 · budget 1.1/2 · destination 1.0/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.1/1",
+   "5.4/11 ORY→La Réunion 641€ avec bagages (séjour ~1485€) : prix 0.7/3 · budget 1.1/2 · destination 1.0/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.1/1",
+   "5.3/11 CDG→La Réunion 645€ avec bagages (séjour ~1489€) : prix 0.6/3 · budget 1.1/2 · destination 1.0/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.1/1",
    "5.0/11 MAD→Medellín 893€ avec bagages (séjour ~1537€) : prix 0.0/3 · budget 1.0/2 · destination 1.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.0/1"
   ]
  },

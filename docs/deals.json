@@ -1,5 +1,111 @@
 {
- "deals": [],
- "updated": "2026-11-12T11:33:51+00:00",
+ "deals": [
+  {
+   "kind": "error_fare",
+   "offer": {
+    "origin": "FRA",
+    "dest": "JNB",
+    "price_eur": 452.0,
+    "cabin": "economy",
+    "depart": "2027-01-25",
+    "return_date": "2027-02-09",
+    "transfers": 0,
+    "airline": "DE",
+    "duration_min": 660,
+    "link": "https://www.aviasales.com/search/FRA2501JNB09021?t=DE18009081001800951300000660FRAJNB18022020001802238900000675JNBFRA_f5b0388d27ba5416c0e467df90aea83a_40833&search_date=18112026&expected_price_uuid=01a1ed55-0339-8031-266b-e935f6ab540c&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=nmso075ab0xZd1fx13BHUw&expected_price_source=share&expected_price_currency=eur&expected_price=452",
+    "source": "travelpayouts",
+    "title": "",
+    "flagged_error": false
+   },
+   "dest_city": "Johannesburg",
+   "country": "ZA",
+   "distance_km": 8690,
+   "flight_hours": 11.0,
+   "stay_days": 15,
+   "daily_budget": 54,
+   "stay_cost": 1148,
+   "trip_total": 1600,
+   "discount_pct": 54,
+   "aircraft": "widebody_probable",
+   "aircraft_note": "gros-porteur observé sur cette ligne (346, 388) ; vérifier le vol exact",
+   "reasons": [
+    "Note 7.6/11 (seuil 8.0)",
+    "Vol 452 € AVEC sac à dos + bagage cabine ; séjour complet ≈ 1600 € (budget max 1900 € pour 8690 km)",
+    "−54 % vs prix habituel de la ligne (historique)",
+    "Erreur de prix probable",
+    "Moins cher que 100 % des 200 prix observés sur cette ligne",
+    "Bon plan du moment (entre 7 et 8/10) : pas une pépite, mais le meilleur de sa région"
+   ],
+   "itinerary": [],
+   "baseline_eur": null,
+   "saving_pct": null,
+   "score": 7.6,
+   "score_parts": {
+    "prix": 2.5,
+    "budget": 0.8,
+    "destination": 0.5,
+    "vol": 1.5,
+    "duree": 1.0,
+    "valeur": 0.3,
+    "bonus": 1.0
+   },
+   "score_line": "prix 2.5/3 · budget 0.8/2 · destination 0.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.3/1 · bonus erreur de prix +1.0",
+   "cost_lines": [
+    [
+     "Hébergement (dortoir / chambre simple)",
+     270
+    ],
+    [
+     "Nourriture (cuisine locale)",
+     210
+    ],
+    [
+     "Transports locaux",
+     150
+    ],
+    [
+     "Activités et visites",
+     180
+    ],
+    [
+     "Déplacements entre villes",
+     64
+    ],
+    [
+     "Assurance voyage",
+     33
+    ],
+    [
+     "Transferts aéroport + SIM locale",
+     45
+    ],
+    [
+     "Marge imprévus (10 %)",
+     95
+    ],
+    [
+     "Trajet A/R Paris → FRA pour rejoindre l'aéroport de départ",
+     100
+    ]
+   ],
+   "verification": "Revérifié le 18/11/2026 pour les dates exactes (25/01 → 09/02) : 453 €. Prix issu du cache des moteurs de recherche : confirme sur le lien avant d'acheter.",
+   "flight_all_in": 452,
+   "bag_supplement": 0.0,
+   "bag_status": "probable",
+   "bag_note": "Condor : sac à dos + bagage cabine en général inclus, mais pas sur tous les tarifs (Basic/Light) : confirme avant de payer",
+   "links": {
+    "google_flights": "https://www.google.com/travel/flights?q=Flights%20from%20FRA%20to%20Johannesburg%20on%202027-01-25%20through%202027-02-09&curr=EUR&hl=fr",
+    "airline_site": "https://www.condor.com",
+    "airline_name": "Condor",
+    "source": "https://www.aviasales.com/search/FRA2501JNB09021?t=DE18009081001800951300000660FRAJNB18022020001802238900000675JNBFRA_f5b0388d27ba5416c0e467df90aea83a_40833&search_date=18112026&expected_price_uuid=01a1ed55-0339-8031-266b-e935f6ab540c&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=nmso075ab0xZd1fx13BHUw&expected_price_source=share&expected_price_currency=eur&expected_price=452"
+   },
+   "issue": null,
+   "found_at": "2026-11-18T11:47:13+00:00",
+   "key": "1b1d712805e46ffa",
+   "slot": "Publication de 12h",
+   "tier": "bon_plan"
+  }
+ ],
+ "updated": "2026-11-18T11:47:13+00:00",
  "pepites_12m": 0
 }

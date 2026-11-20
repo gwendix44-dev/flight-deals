@@ -1,6 +1,6 @@
 {
  "ok": true,
- "updated": "2026-11-20T16:36:08+00:00",
+ "updated": "2026-11-20T17:36:22+00:00",
  "waiting": 0,
  "next_slot": "aujourd'hui 19:00",
  "errors": [],
@@ -19,17 +19,17 @@
    "5.3/11 ORY→La Réunion 651€ avec bagages (séjour ~1495€) : prix 0.6/3 · budget 1.1/2 · destination 1.0/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.1/1"
   ]
  },
- "offers": 10549,
+ "offers": 10532,
  "candidates": 0,
  "verified": 0,
  "instant": 0,
- "last_scan": "2026-11-20T16:36:08+00:00",
+ "last_scan": "2026-11-20T17:36:22+00:00",
  "live_used": 0,
  "live_budget": 90,
  "live_active": false,
  "last_combos": "2026-11-20T16:00:24+00:00",
  "best_missed": [
-  "7.3/11 FRA→Johannesburg 456€ avec bagages (séjour ~1604€) : prix 2.3/3 · budget 0.8/2 · destination 0.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.3/1 · bonus erreur de prix +1.0",
+  "7.3/11 FRA→Johannesburg 457€ avec bagages (séjour ~1605€) : prix 2.2/3 · budget 0.8/2 · destination 0.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.3/1 · bonus erreur de prix +1.0",
   "6.7/11 MAD→Bangkok 482€ avec bagages (séjour ~1340€) : prix 2.3/3 · budget 1.5/2 · destination 0.0/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.5/1",
   "5.9/11 FRA→Île Maurice 456€ avec bagages (séjour ~1709€) : prix 2.1/3 · budget 0.5/2 · destination 0.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.3/1"
  ],

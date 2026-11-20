@@ -1,6 +1,6 @@
 {
  "ok": true,
- "updated": "2026-11-20T07:46:07+00:00",
+ "updated": "2026-11-20T08:49:31+00:00",
  "waiting": 0,
  "next_slot": "aujourd'hui 12:00",
  "errors": [],
@@ -19,11 +19,11 @@
    "5.3/11 ORY→La Réunion 651€ avec bagages (séjour ~1495€) : prix 0.6/3 · budget 1.1/2 · destination 1.0/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.1/1"
   ]
  },
- "offers": 10536,
+ "offers": 10548,
  "candidates": 0,
  "verified": 0,
  "instant": 0,
- "last_scan": "2026-11-20T07:46:07+00:00",
+ "last_scan": "2026-11-20T08:49:31+00:00",
  "live_used": 0,
  "live_budget": 90,
  "live_active": false,

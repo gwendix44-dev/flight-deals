@@ -1,154 +1,187 @@
-"""Traite un refus : python -m flightdeals.feedback
-
-Deux façons de refuser (le workflow .github/workflows/feedback.yml se déclenche dans les deux cas) :
-  * une NOUVELLE Issue « Refus : … » créée par le bouton « Refuser » du dashboard (corps : `deal:<clé>`, `issue:<n>`, `---`,
-    puis ta raison) ;
-  * un COMMENTAIRE de ta part sur l'Issue d'une offre.
-Dans les deux cas : ta raison est apprise (docs/preferences.json), l'offre est inscrite comme refusée (les scans la retirent
-du dashboard et de la réserve et ne la republient jamais), et les Issues concernées sont fermées.
-
-Variables d'environnement : EVENT_NAME, COMMENT_BODY, COMMENT_USER, ISSUE_TITLE, ISSUE_BODY, ISSUE_USER, ISSUE_NUMBER,
-GITHUB_TOKEN, GITHUB_REPOSITORY, GITHUB_REPOSITORY_OWNER. Sécurité : seul le propriétaire du dépôt est écouté (dépôt public).
-"""
+"""Refus d'une offre : la raison est lue (mots-clés, gratuit) et durcit les préférences. L'offre est supprimée pour toujours."""
 from __future__ import annotations
 
-import json
 import os
 import re
-import sys
-import urllib.request
-from datetime import datetime, timezone
-from typing import Optional
+import unicodedata
 
-from . import preferences
-from .main import DEALS, ROOT, _load, _save
-
-LOG = ROOT / "data" / "feedback.json"
+from . import github, prefs as P
+from .util import ROOT, now_utc, read_json, tier_index, write_json
+from .publish import DEALS, STATE, load_state, save_state, write_deals
 
 
-def _api(method: str, path: str, payload: dict | None = None):
-    req = urllib.request.Request(
-        f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}{path}",
-        data=json.dumps(payload).encode() if payload is not None else None, method=method,
-        headers={"Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}", "Accept": "application/vnd.github+json",
-                 "Content-Type": "application/json", "User-Agent": "flight-deals"})
-    return urllib.request.urlopen(req, timeout=20).read()
+def norm(s: str) -> str:
+    s = unicodedata.normalize("NFKD", s.lower())
+    return "".join(c for c in s if not unicodedata.combining(c)).replace("’", "'")
 
 
-def describe(p: dict) -> str:
-    rows = []
-    if p["total_cap_eur"]: rows.append(f"budget total max {p['total_cap_eur']} €")
-    if p.get("business_cap_eur"): rows.append(f"plafond business {p['business_cap_eur']} € A/R")
-    for i, cap in sorted(p["cap_by_tier"].items()): rows.append(f"budget total max {cap} € (palier de distance n°{int(i) + 1})")
-    if p["min_stay_extra"]: rows.append(f"séjour minimum +{p['min_stay_extra']} j")
-    if p["max_stay_days"]: rows.append(f"séjour max {p['max_stay_days']} j")
-    if p["max_distance_km"]: rows.append(f"distance max {p['max_distance_km']} km")
-    if p["min_distance_km"]: rows.append(f"distance min {p['min_distance_km']} km")
-    if p["max_flight_hours"]: rows.append(f"vol max {p['max_flight_hours']} h")
-    if p["max_transfers"] is not None: rows.append(f"escales max {p['max_transfers']}")
-    if p["strict_aircraft"]: rows.append("gros-porteur confirmé exigé")
-    if p["stopovers_disabled"]: rows.append("montages à billets séparés désactivés")
-    if p["excluded_destinations"]: rows.append("destinations exclues : " + ", ".join(p["excluded_destinations"]))
-    if p["excluded_countries"]: rows.append("pays exclus : " + ", ".join(p["excluded_countries"]))
-    if p["excluded_months"]: rows.append("mois exclus : " + ", ".join(f"{m:02d}" for m in p["excluded_months"]))
-    if p["min_secrecy"] is not None: rows.append(f"rareté minimale {p['min_secrecy']}")
-    if p["min_score_bonus"]: rows.append(f"seuil de note +{p['min_score_bonus']}")
-    rows.append(f"{len(p.get('refused_keys', []))} offre(s) refusée(s) définitivement")
-    return "\n".join(f"- {r}" for r in rows)
+def _round50(x):
+    return int(round(x / 50.0) * 50)
 
 
-def parse_refusal_issue(title: str, body: str) -> Optional[dict]:
-    """Issue « Refus : … » créée par le dashboard -> {key, issue, reason}. None si ce n'est pas un refus."""
-    if not (title or "").strip().lower().startswith("refus"):
-        return None
-    body = body or ""
-    key = re.search(r"^deal:([0-9a-f]{6,40})\s*$", body, re.M)
-    num = re.search(r"^issue:(\d+)\s*$", body, re.M)
-    reason = body.split("\n---", 1)[1].strip() if "\n---" in body else re.sub(r"^(deal|issue):.*$", "", body, flags=re.M).strip()
-    return {"key": key.group(1) if key else "", "issue": int(num.group(1)) if num else 0, "reason": reason}
+def apply_reason(p: dict, reason: str, deal: dict | None, cfg: dict) -> list[str]:
+    """Modifie `p` selon la raison. Renvoie la liste des effets, en français."""
+    t = norm(reason)
+    fx: list[str] = []
+    d = deal or {}
+
+    m = re.search(r"max(?:imum)?\s*(\d{3,5})", t)
+    if "trop cher" in t or m:
+        if d.get("kind") == "business":
+            cap = int(m.group(1)) if m else max(300, _round50(d.get("price", 800) * 0.9))
+            p["business_cap_eur"] = min(p.get("business_cap_eur") or 10**6, cap)
+            fx.append(f"Plafond business abaissé à {p['business_cap_eur']} €.")
+        elif d:
+            idx = tier_index(cfg["budget_by_distance_km"], d["km"])
+            cap = int(m.group(1)) if m else max(600, _round50(d["total"] * 0.9))
+            old = (p["cap_by_tier"] or {}).get(str(idx), 10**6)
+            p["cap_by_tier"][str(idx)] = min(old, cap)
+            fx.append(f"Budget total plafonné à {p['cap_by_tier'][str(idx)]} € pour ce palier de distance.")
+    if "sejour trop court" in t or "trop court" in t:
+        p["min_stay_extra"] = int(p.get("min_stay_extra") or 0) + 2
+        fx.append("Séjour minimum +2 jours.")
+    if "sejour trop long" in t and d:
+        p["max_stay_days"] = max(5, d["stay_days"] - 1)
+        fx.append(f"Séjour limité à {p['max_stay_days']} jours.")
+    if "vol trop long" in t and d:
+        p["max_flight_hours"] = max(4, d["hours"] - 1)
+        fx.append(f"Durée de vol limitée à {p['max_flight_hours']} h.")
+    if "trop loin" in t and d:
+        p["max_distance_km"] = max(1500, d["km"] - 800)
+        fx.append(f"Distance maximale : {p['max_distance_km']} km.")
+    if "trop proche" in t and d:
+        p["min_distance_km"] = d["km"] + 500
+        fx.append(f"Distance minimale : {p['min_distance_km']} km.")
+    if "escale" in t and "trop" in t and d:
+        p["max_transfers"] = max(0, d["transfers"] - 1)
+        fx.append(f"{p['max_transfers']} escale(s) maximum.")
+    if any(k in t for k in ("avion pas adapte", "monocouloir", "a320", "a321", "737")):
+        p["strict_aircraft"] = True
+        fx.append("MODE STRICT AVION : seuls les gros-porteurs confirmés passent.")
+    if any(k in t for k in ("billets separes", "risque", "montage")):
+        p["stopovers_disabled"] = True
+        fx.append("Montages à billets séparés désactivés.")
+    if any(k in t for k in ("destination deja vue", "pas interessant", "pas envie")) and d:
+        if d["dest"] not in p["excluded_destinations"]:
+            p["excluded_destinations"].append(d["dest"])
+        fx.append(f"Destination exclue : {d['dest_city']}.")
+    if any(k in t for k in ("mauvaise periode", "dates", "vacances")) and d:
+        mth = int(d["depart"][5:7])
+        if mth not in p["excluded_months"]:
+            p["excluded_months"].append(mth)
+        fx.append(f"Mois de départ exclu : {mth}.")
+    if any(k in t for k in ("trop touristique", "banal", "pas original", "classique")):
+        p["min_secrecy"] = 1.5 if p.get("min_secrecy") else 1.0
+        fx.append("Destinations plus rares exigées.")
+    if any(k in t for k in ("pas assez exceptionnel", "bof")):
+        p["min_score_bonus"] = round(min(1.0, float(p.get("min_score_bonus") or 0) + 0.3), 1)
+        fx.append(f"Seuil de publication relevé de {p['min_score_bonus']}.")
+    return fx
 
 
-def find_deal(key: str, issue: int) -> Optional[dict]:
-    deals = _load(DEALS, {"deals": []}).get("deals", [])
-    for d in deals:
-        if key and d.get("key") == key:
-            return d
-    for d in deals:
-        if issue and d.get("issue") == issue:
-            return d
+def find_deal(key: str):
+    """Retrouve l'offre (publiée, bon plan ou en réserve) pour connaître ses caractéristiques."""
+    s = load_state()
+    for lst in (s["published"], s["good"], s["reserve"]):
+        for d in lst:
+            if d["key"] == key:
+                return d
     return None
 
 
-def refuse(prefs: dict, key: str, issue: int) -> dict:
-    """Inscrit l'offre comme refusée pour de bon (les scans la retirent partout et ne la republient jamais)."""
-    if key and key not in prefs["refused_keys"]:
-        prefs["refused_keys"] = (prefs["refused_keys"] + [key])[-500:]
-    if issue and issue not in prefs["refused_issues"]:
-        prefs["refused_issues"] = (prefs["refused_issues"] + [issue])[-500:]
-    return prefs
+def forget(key: str, state: dict) -> list[int]:
+    """Supprime l'offre partout ; renvoie les numéros d'Issues à fermer."""
+    issues = []
+    for name in ("published", "good", "reserve"):
+        keep = []
+        for d in state[name]:
+            if d["key"] == key:
+                if d.get("issue"):
+                    issues.append(d["issue"])
+            else:
+                keep.append(d)
+        state[name] = keep
+    return issues
 
 
-def main() -> int:
-    env = os.environ.get
-    owner = env("GITHUB_REPOSITORY_OWNER", "")
-    event = env("EVENT_NAME", "issue_comment")
-    if event == "issues":
-        user, number = env("ISSUE_USER", ""), int(env("ISSUE_NUMBER", "0") or 0)
-        ref = parse_refusal_issue(env("ISSUE_TITLE", ""), env("ISSUE_BODY", ""))
-        body = (ref or {}).get("reason", "")
-    else:
-        user, number = env("COMMENT_USER", ""), int(env("ISSUE_NUMBER", "0") or 0)
-        ref, body = None, (env("COMMENT_BODY") or "").strip()
-    if (event == "issues" and not ref) or not body and not ref or user.lower() != owner.lower() or user.endswith("[bot]"):
-        print("événement ignoré (pas un refus du propriétaire)")
-        return 0
+def refuse(key: str, reason: str, cfg: dict, issue_numbers=()) -> dict:
+    p = P.load()
+    state = load_state()
+    deal = find_deal(key)
+    fx = apply_reason(p, reason, deal, cfg)
+    if key and key not in p["refused_keys"]:
+        p["refused_keys"].append(key)
+    for n in issue_numbers:
+        if n and n not in p["refused_issues"]:
+            p["refused_issues"].append(n)
+    closing = forget(key, state)
+    for n in closing:
+        if n not in p["refused_issues"]:
+            p["refused_issues"].append(n)
+    P.save(p)
+    save_state(state)
+    if DEALS.exists():
+        write_deals(state, {k: v for k, v in (read_json(DEALS, {}) or {}).items() if k not in ("updated", "deals", "business", "good")},
+                    now_utc(), lambda d: True)
+    log = read_json(ROOT / "data" / "feedback.json", []) or []
+    log.append({"at": now_utc().isoformat(), "key": key, "text": reason, "changes": fx})
+    write_json(ROOT / "data" / "feedback.json", log[-100:])
+    return {"effects": fx, "close": sorted(set(closing) | set(issue_numbers)), "recognized": bool(fx)}
 
-    cfg = preferences.load_cfg()
-    prefs = preferences.load_prefs()
-    cmd = body.lower()
-    close_numbers: list = []
-    if event != "issues" and cmd.startswith("/prefs"):
-        reply = "**Préférences actuelles**\n" + describe(prefs)
-    elif event != "issues" and cmd.startswith("/reset"):
-        keep = {k: prefs[k] for k in ("refused_issues", "refused_keys")}
-        prefs = {**preferences.copy.deepcopy(preferences.DEFAULT), **keep}
-        _save(preferences.PREFS_PATH, prefs)
-        reply = "Préférences remises à zéro (les offres déjà refusées restent refusées)."
-    else:
-        key, target = (ref["key"], ref["issue"]) if ref else ("", number)
-        deal = find_deal(key, target)
-        if deal:
-            key = key or deal.get("key", "")
-            target = target or deal.get("issue") or 0
-        new, msgs = preferences.learn(prefs, body, deal, cfg)
-        refuse(new, key, target)
-        _save(preferences.PREFS_PATH, new)
-        log = _load(LOG, [])
-        log.append({"at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "issue": target, "key": key,
-                    "text": body[:500], "changes": msgs})
-        _save(LOG, log[-500:])
-        if msgs:
-            reply = "Compris, j'adapte les prochaines offres :\n" + "\n".join(f"- {m}" for m in msgs)
+
+def reset() -> None:
+    p = P.load()
+    fresh = P.load("/nonexistent")
+    fresh["refused_keys"], fresh["refused_issues"] = p["refused_keys"], p["refused_issues"]
+    P.save(fresh)
+
+
+def parse_refusal_body(body: str):
+    key = re.search(r"deal:\s*([0-9a-f]{8,40})", body or "")
+    issue = re.search(r"issue:\s*(\d+)", body or "")
+    reason = (body or "").split("---", 1)[1].strip() if "---" in (body or "") else ""
+    return (key.group(1) if key else ""), (int(issue.group(1)) if issue else None), reason
+
+
+def main() -> None:
+    from .util import read_json as rj
+    cfg = rj(ROOT / "config.json")
+    event, num = os.environ.get("EVENT_NAME", ""), int(os.environ.get("ISSUE_NUMBER") or 0)
+    title, body, comment = os.environ.get("ISSUE_TITLE", ""), os.environ.get("ISSUE_BODY", ""), os.environ.get("COMMENT_BODY", "")
+    if event == "issue_comment":
+        text = comment.strip()
+        if text.startswith("/prefs"):
+            lines = P.describe(P.load()) or ["Aucune préférence apprise."]
+            github.comment(num, "**Préférences apprises :**\n- " + "\n- ".join(lines))
+            return
+        if text.startswith("/reset"):
+            reset()
+            github.comment(num, "Préférences effacées. Les offres refusées restent refusées.")
+            return
+        key, _, _ = parse_refusal_body(body)
+        res = refuse(key, text, cfg, [num])
+    elif event == "issues" and title.lower().startswith("refus"):
+        key, ref_issue, reason = parse_refusal_body(body)
+        res = refuse(key, reason, cfg, [num, ref_issue])
+    elif event == "issues" and title.lower().startswith("commande"):
+        cmd = (body or title).strip().split()[0] if (body or title).strip() else ""
+        cmd = "/reset" if "/reset" in (body + title) else ("/prefs" if "/prefs" in (body + title) else cmd)
+        if cmd == "/reset":
+            reset()
+            github.comment(num, "Préférences effacées. Les offres refusées restent refusées.")
         else:
-            reply = ("Refus enregistré, mais je n'ai pas reconnu la raison. Essaie par exemple : « trop cher », "
-                     "« séjour trop court », « trop d'escales », « destination déjà vue », « trop loin », "
-                     "« avion pas adapté », « trop touristique ».")
-        reply += "\n\n✔ **L'offre est supprimée** : elle disparaît du dashboard au prochain scan et ne sera plus jamais proposée."
-        if not deal:
-            reply += "\n\n_(Offre introuvable dans le dashboard : seules les règles générales ont pu être appliquées.)_"
-        reply += "\n\nEffectif dès le prochain scan. `/prefs` liste tes réglages, `/reset` les efface."
-        close_numbers = [n for n in {number if event == "issues" else 0, target} if n]
-        if event != "issues" and number:
-            close_numbers = [number]
-    try:
-        _api("POST", f"/issues/{number}/comments", {"body": reply})
-        for n in close_numbers:
-            _api("PATCH", f"/issues/{n}", {"state": "closed", "state_reason": "not_planned"})
-    except Exception as e:
-        print(f"[feedback] réponse impossible : {e}")
-    print(reply)
-    return 0
+            github.comment(num, "**Préférences apprises :**\n- " + "\n- ".join(P.describe(P.load()) or ["Aucune préférence apprise."]))
+        github.close_issue(num)
+        return
+    else:
+        print("rien à faire")
+        return
+    msg = ("Offre supprimée pour toujours. " + (" ".join(res["effects"]) if res["recognized"]
+           else "Raison non reconnue : l'offre est supprimée, mais rien d'autre n'a changé."))
+    github.comment(num, msg)
+    for n in res["close"]:
+        github.close_issue(n)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

@@ -1,210 +1,122 @@
-"""Décide si une offre est une erreur de prix / très bonne affaire."""
+"""Règles dures puis note. `evaluate` renvoie (deal|None, raison_du_rejet|None)."""
 from __future__ import annotations
 
-import json
-import statistics
 from datetime import date, timedelta
-from pathlib import Path
-from typing import Optional
 
-from . import aircraft, baggage, costs as costcalc, links, preferences, scoring
-from .airports import DESTINATIONS, ORIGINS, secrecy
-from .core import Offer, Verdict, estimate_hours, haversine_km
-
-ROOT = Path(__file__).resolve().parent.parent
-
-
-def load_budgets() -> dict:
-    """Barème de coûts par pays (data/costs.json)."""
-    return costcalc.load_costs()
+from . import aircraft, scoring
+from .baggage import baggage_for
+from .costs import positioning, stay_cost
+from .links import google_flights_url
+from .model import Offer
+from .util import tier, tier_index
+from .world import city, country, dest_airports, distance_km, region_of, world
 
 
-NEAR_MISSES: list = []      # (note, description) des meilleures offres refusées, pour régler le seuil
-WATCH: list = []            # Verdicts entre `publication.watch_min` et le seuil : « bons plans du moment » (dashboard, sans alerte)
+def _min_stay(cfg, km):
+    return tier(cfg["stay"]["min_by_distance_km"], km)
 
 
-def route_key(o: Offer) -> str:
-    return f"{o.origin}-{o.dest}-{o.cabin}"
+def evaluate(o: Offer, cfg: dict, prefs: dict, history: dict, today: date):
+    """cfg = configuration déjà durcie par les préférences."""
+    w = world()
+    okey = o.key  # clé calculée AVANT toute date par défaut : stable pour les refus
+    if o.dest not in w["destinations"]:
+        return None, "destination inconnue"
+    cc = country(o.dest)
+    if cc in cfg["excluded_countries"]:
+        return None, "pays exclu (Europe / Afrique du Nord / refus)"
+    if o.dest in cfg["excluded_destinations"]:
+        return None, "destination refusée"
+    if okey in set(prefs.get("refused_keys") or []):
+        return None, "offre refusée"
+    km = distance_km(o.origin, o.dest)
+    if not km:
+        return None, "distance inconnue"
+    if cfg["max_distance_km"] and km > cfg["max_distance_km"]:
+        return None, "trop loin (préférence apprise)"
+    if cfg["min_distance_km"] and km < cfg["min_distance_km"]:
+        return None, "trop proche (préférence apprise)"
+    if o.transfers > cfg["max_transfers"]:
+        return None, "trop d'escales"
+    if cfg["min_secrecy"] and scoring.secrecy(o.dest) < cfg["min_secrecy"]:
+        return None, "destination trop touristique (préférence apprise)"
 
-
-def median_discount(history: dict, o: Offer, min_history: int) -> Optional[float]:
-    prices = history.get(route_key(o), [])
-    if len(prices) < min_history:
-        return None
-    med = statistics.median(prices)
-    return 1 - o.price_eur / med if med else None
-
-
-def evaluate(o: Offer, cfg: dict, history: dict, budgets: dict, today: Optional[date] = None) -> Optional[Verdict]:
-    today = today or date.today()
-    if o.origin not in ORIGINS or o.dest not in DESTINATIONS or o.cabin == "business":
-        return None          # le business class a sa propre section (evaluate_business)
-    ver = cfg["verification"]
-    if o.price_eur < ver["min_plausible_price_eur"] and not o.flagged_error:
-        return None          # prix A/R irréaliste (taxes comprises) : donnée douteuse
-    if o.transfers > cfg.get("max_transfers", 2):
-        return None
-
-    # Fenêtre de départ : 6 mois max
-    if o.depart:
-        if o.depart < today + timedelta(days=ver["min_notice_days"]) or o.depart > today + timedelta(days=30 * cfg["months_ahead"]):
-            return None      # trop proche pour réserver sereinement (visa, congés) ou au-delà de 6 mois
-
-    city, cc, dlat, dlon, dest_airports = DESTINATIONS[o.dest]
-    if cc in cfg.get("excluded_countries", []):
-        return None
-    _, olat, olon = ORIGINS[o.origin]
-    km = haversine_km(olat, olon, dlat, dlon)
-    hours = estimate_hours(km, o.transfers, o.duration_min)
-
-    # Durée du séjour : plus la destination est loin, plus le séjour minimum est long (max 3 semaines)
-    sd = cfg["stay_days"]
-    lo = scoring.min_stay_for(km, cfg)
-    if o.depart and o.return_date:
-        stay = (o.return_date - o.depart).days
-        if not lo <= stay <= sd["max"]:
-            return None
+    dated = o.depart is not None and o.return_date is not None
+    if dated:
+        if o.depart < today + timedelta(days=cfg["min_notice_days"]):
+            return None, "départ dans moins de 10 jours"
+        if o.depart > today + timedelta(days=31 * cfg["months_ahead"]):
+            return None, "départ au-delà de 6 mois"
+        if o.depart.month in cfg["excluded_months"]:
+            return None, "mois de départ exclu"
+        stay_days = (o.return_date - o.depart).days
     else:
-        stay = scoring.default_stay(km, cfg)
+        stay_days = _min_stay(cfg, km) + 2  # offre de flux sans dates : séjour type, à confirmer
+        o.depart = today + timedelta(days=45)
+        o.return_date = o.depart + timedelta(days=stay_days)
+    smin = _min_stay(cfg, km)
+    if stay_days < smin:
+        return None, "séjour trop court pour la distance"
+    if stay_days > cfg["stay"]["max_days"]:
+        return None, "séjour au-delà de 3 semaines"
 
-    if preferences.violates(cfg, dest=o.dest, km=km, hours=hours, depart=o.depart, stay=stay):
-        return None
+    business = o.cabin == "business"
+    bcfg = cfg["business"]
+    floor = bcfg["min_plausible_eur"] if business else cfg["min_plausible_eur"]
+    if o.price < floor and not o.flagged_error:
+        return None, "prix aberrant (donnée douteuse)"
 
-    # Contrainte avion (au-delà de 5 h)
-    status, note = aircraft.check_route(
-        o.origin, dest_airports or [o.dest], o.transfers, hours,
-        cfg["aircraft"]["long_haul_hours"], str(ROOT / "data" / "routes.dat"),
-    )
-    if status == "REJECT":
-        return None
-    if status == "unverified" and cfg["aircraft"]["strict"]:
-        return None
+    airports = dest_airports(o.dest)
+    status, anote = aircraft.check(o.origin, airports, km, o.transfers, cfg)
+    if o.stopover:
+        status, anote = "unverified", "Tronçons en billets séparés : avion à vérifier."
+    if status == "reject":
+        return None, "avion monocouloir au-delà de 5 h"
+    hours = aircraft.flight_hours(km, cfg, o.transfers)
+    if cfg["max_flight_hours"] and hours > cfg["max_flight_hours"]:
+        return None, "vol trop long (préférence apprise)"
+    if cfg["aircraft"]["strict"] and status == "unverified":
+        return None, "mode avion strict : gros-porteur non confirmé"
 
-    # Sac à dos + bagage cabine : le prix du vol doit les INCLURE (supplément ajouté si la compagnie les facture)
-    bag = baggage.assess(o.airline, o.transfers)
-    eff = o.price_eur + bag.supplement
+    bag = baggage_for(o.airline, cfg, o.cabin)
+    flight_price = o.price + bag["surcharge"]
+    pos = positioning(o.origin, cfg)
+    st = stay_cost(cc, o.depart, o.return_date, cfg)
+    stay_total = st["total"]
+    total = flight_price + stay_total + pos
+    cap = tier(cfg["budget_by_distance_km"], km)
 
-    # Budget du séjour entier (backpacker éco) : vols + hébergement + nourriture + transports + activités
-    bd = costcalc.stay_breakdown(budgets, cc, stay, o.depart, cfg, origin=o.origin)
-    if bd is None:
-        return None
-    stay_cost, cost_lines = bd
-    daily = costcalc.daily(budgets, cc)
-    eco = cfg["economy"]
-    total = eff + stay_cost
-    cap = scoring.total_cap(km, cfg)
+    base = {
+        "key": okey, "kind": "business" if business else ("combo" if o.stopover else "standard"),
+        "origin": o.origin, "origin_city": city(o.origin), "dest": o.dest, "dest_city": city(o.dest),
+        "country": cc, "region": region_of(cc), "km": km, "price": round(o.price), "flight_price": round(flight_price),
+        "transfers": o.transfers, "airline": bag["airline"], "airline_code": o.airline,
+        "depart": o.depart.isoformat(), "return": o.return_date.isoformat(), "stay_days": stay_days,
+        "dates_unconfirmed": not dated, "source": o.source, "title": o.title, "flagged_error": o.flagged_error,
+        "baggage": bag, "aircraft": {"status": status, "note": anote}, "positioning": round(pos),
+        "stay": st, "total": round(total), "cap": cap, "stopover": o.stopover,
+        "hours": round(hours, 1),
+        "links": {"verify": google_flights_url(o, airports), "airline": bag["site"], "offer": o.link},
+    }
+    if business:
+        if km < bcfg["min_km"]:
+            return None, "business : distance trop courte"
+        if o.price > bcfg["max_price_eur"]:
+            return None, "business : au-dessus du plafond"
+        sc = scoring.score_business(price=o.price, km=km, flagged_error=o.flagged_error, cfg=cfg)
+        if sc["discount"] < bcfg["min_discount"]:
+            return None, "business : remise insuffisante"
+        base.update(sc)
+        base["total"] = round(o.price)  # séjour non pris en compte (indicatif)
+        base["stay_indicative"] = stay_total
+        return base, None
+
     if total > cap:
-        return None
-    if eco.get("flight_cap_eur") and eff > eco["flight_cap_eur"]:
-        return None
-
-    prices = history.get(route_key(o), [])
-    min_hist = cfg["anomaly"]["min_history"]
-    hist_median = statistics.median(prices) if len(prices) >= min_hist else None
-    hist_disc = (1 - o.price_eur / hist_median) if hist_median else None
-
-    sc = scoring.score_deal(
-        price=eff, km=km, cabin=o.cabin, total=total, stay=stay, stops=o.transfers,
-        aircraft_status=status, secrecy=secrecy(o.dest), separate_tickets=False, cfg=cfg,
-        hist_median=hist_median, hist_disc=hist_disc, flagged_error=o.flagged_error)
-    below = sc.total < cfg["scoring"]["min_score"]
-    not_anomaly = bool(cfg["scoring"].get("require_anomaly")) and not sc.error_fare
-    if below:
-        NEAR_MISSES.append((sc.total, f"{o.origin}→{city} {eff:.0f}€ avec bagages (séjour ~{total:.0f}€) : {sc.line()}"))
-    kind = "error_fare" if sc.error_fare else "deal"
-    reasons = [f"Note {sc.total}/11 (seuil {cfg['scoring']['min_score']})",
-               f"Vol {eff:.0f} € AVEC sac à dos + bagage cabine" + (f" (tarif {o.price_eur:.0f} € + supplément bagages estimé {bag.supplement:.0f} €)" if bag.supplement else "")
-               + f" ; séjour complet ≈ {total:.0f} € (budget max {cap:.0f} € pour {km:.0f} km)",
-               f"−{sc.discount * 100:.0f} % vs prix habituel de la ligne" + (" (historique)" if hist_median else " (estimation selon la distance)")]
-    if sc.error_fare:
-        reasons.append("Erreur de prix probable")
-    if hist_median:
-        cheaper = sum(1 for x in prices if x > o.price_eur)
-        reasons.append(f"Moins cher que {round(100 * cheaper / len(prices))} % des {len(prices)} prix observés sur cette ligne")
-
-    verdict = Verdict(
-        kind=kind, offer=o, dest_city=city, country=cc, distance_km=round(km),
-        flight_hours=round(hours, 1), stay_days=stay, daily_budget=daily,
-        stay_cost=round(stay_cost), trip_total=round(total),
-        discount_pct=round(sc.discount * 100),
-        aircraft=status, aircraft_note=note, reasons=reasons,
-        score=sc.total, score_parts=sc.parts, score_line=sc.line(), cost_lines=cost_lines,
-        flight_all_in=round(eff), bag_supplement=bag.supplement, bag_status=bag.status, bag_note=bag.note,
-        links=links.build(o.origin, city, o.depart, o.return_date, o.airline, o.link),
-    )
-    if below or not_anomaly:
-        if not below and not_anomaly:
-            NEAR_MISSES.append((sc.total - 0.05, f"{o.origin}→{city} {o.price_eur:.0f}€ : bon deal ({sc.total}/11) mais PAS une anomalie de prix"))
-        if sc.total >= cfg["publication"].get("watch_min", 99):
-            WATCH.append(verdict)                       # pas une pépite, mais un bon plan à montrer sur le dashboard
-        return None
-    return verdict
-
-
-def evaluate_business(o: Offer, cfg: dict, budgets: dict, today: Optional[date] = None) -> Optional[Verdict]:
-    """Section business class : A/R <= 800 € sur un long-courrier, SANS tenir compte du prix du séjour.
-
-    Pas de note sur 11, pas de budget total ni de durée de séjour imposés : seuls comptent le prix, la remise par rapport au
-    prix habituel du business sur cette distance, l'avion (double couloir au-delà de 5 h), les dates et tes préférences.
-    Le coût d'un séjour n'est affiché qu'à titre indicatif."""
-    today = today or date.today()
-    b = cfg["business"]
-    if not b["enabled"] or o.cabin != "business" or o.origin not in ORIGINS or o.dest not in DESTINATIONS:
-        return None
-    if o.price_eur > b["flight_cap_eur"] or (o.price_eur < b["min_plausible_eur"] and not o.flagged_error):
-        return None
-    if o.transfers > cfg.get("max_transfers", 2):
-        return None
-    ver = cfg["verification"]
-    if o.depart and (o.depart < today + timedelta(days=ver["min_notice_days"])
-                     or o.depart > today + timedelta(days=30 * cfg["months_ahead"])):
-        return None
-    city, cc, dlat, dlon, dest_airports = DESTINATIONS[o.dest]
-    if cc in cfg.get("excluded_countries", []):
-        return None
-    _, olat, olon = ORIGINS[o.origin]
-    km = haversine_km(olat, olon, dlat, dlon)
-    if km < b["min_km"]:
-        return None                                   # court-courrier : pas un « bon deal business »
-    hours = estimate_hours(km, o.transfers, o.duration_min)
-    stay = scoring.default_stay(km, cfg)
-    if preferences.violates(cfg, dest=o.dest, km=km, hours=hours, depart=o.depart, stay=stay):
-        return None
-    status, anote = aircraft.check_route(o.origin, dest_airports or [o.dest], o.transfers, hours,
-                                         cfg["aircraft"]["long_haul_hours"], str(ROOT / "data" / "routes.dat"))
-    if status == "REJECT" or (status == "unverified" and cfg["aircraft"]["strict"]):
-        return None
-    ref = scoring.reference_price(km, "business", cfg)
-    disc = 1 - o.price_eur / ref
-    if disc < b["min_discount"] and not o.flagged_error:
-        return None
-    # Note /11 : 11 x remise / 0,85 (plafonnée). 8/10 correspond à ~62 % de remise, 10/10 à ~77 %.
-    note = min(11.0, 11 * max(disc, 0) / b["note_full_discount"]) + (1.0 if o.flagged_error else 0.0)
-    note = round(min(note, 11.0), 1)
-    if note < cfg["publication"]["min_score"]:
-        NEAR_MISSES.append((note, f"business {o.origin}→{city} {o.price_eur:.0f}€ : remise {disc * 100:.0f} % → note {note}/11"))
-        return None
-    bd = costcalc.stay_breakdown(budgets, cc, stay, o.depart, cfg, origin=o.origin)
-    stay_cost, lines = bd if bd else (0, [])
-    reasons = [f"Note {note}/11 : business A/R {o.price_eur:.0f} € (plafond {b['flight_cap_eur']} €), −{disc * 100:.0f} % vs prix habituel "
-               f"(~{ref:.0f} € sur {km:.0f} km)",
-               "Le prix du séjour n'est pas pris en compte dans cette sélection (indicatif seulement)"]
-    if o.flagged_error:
-        reasons.append("Erreur de prix probable (signalée par la source)")
-    return Verdict(kind="business_deal", offer=o, dest_city=city, country=cc, distance_km=round(km),
-                   flight_hours=round(hours, 1), stay_days=stay, daily_budget=costcalc.daily(budgets, cc) or 0,
-                   stay_cost=round(stay_cost), trip_total=round(o.price_eur + stay_cost), discount_pct=round(disc * 100),
-                   aircraft=status, aircraft_note=anote, reasons=reasons, cost_lines=lines, score=note,
-                   flight_all_in=round(o.price_eur), bag_status="inclus",
-                   bag_note="Classe business : bagage cabine et bagage en soute inclus (franchise selon la compagnie, à confirmer)",
-                   links=links.build(o.origin, city, o.depart, o.return_date, o.airline, o.link),
-                   score_line=f"remise {disc * 100:.0f} % vs prix habituel du business (~{ref:.0f} €) · note {note}/11")
-
-
-def update_history(history: dict, offers: list[Offer], keep: int = 200) -> None:
-    for o in offers:
-        if o.source.startswith("rss"):
-            continue  # les flux ne donnent pas un prix comparable (dates inconnues)
-        lst = history.setdefault(route_key(o), [])
-        lst.append(round(o.price_eur))
-        del lst[:-keep]
+        return None, "budget total dépassé"
+    med = scoring.hist_median(history, o.origin, o.dest)
+    sc = scoring.score_standard(
+        price=flight_price, km=km, total=total, cap=cap, stay_days=stay_days, stay_min=smin, stay_cost=stay_total,
+        dest=o.dest, transfers=o.transfers, aircraft_status=status, separate_tickets=bool(o.stopover),
+        flagged_error=o.flagged_error, med=med, cfg=cfg)
+    base.update(sc)
+    return base, None

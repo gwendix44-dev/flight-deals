@@ -1,119 +1,70 @@
-"""Scan des montages d'escales : python -m flightdeals.combos [--dry-run]"""
+"""Montages d'escales (billets séparés) : origine -> hub -> destination, avec escale courte (4-10 h, jamais de nuit
+à l'aéroport) ou longue (>= 2 nuits). Doit battre le meilleur billet classique A/R d'au moins 20 %."""
 from __future__ import annotations
 
-import argparse
-import json
-import os
-import sys
-import traceback
-from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-from . import evaluate, preferences, providers, scoring, stopovers
-from .airports import DESTINATIONS, HUBS, ORIGINS
-from .core import haversine_km
-from .main import ROOT, Ctx, ingest, months_ahead, tick_slots, write_status
+from .model import Offer
+from .world import coords, dest_code, world
 
 
-def _group(legs, keep: int = 6):
-    g: dict = defaultdict(lambda: defaultdict(list))
-    for l in legs:
-        g[l.orig][l.dest].append(l)
-    for o in g.values():
-        for d, lst in o.items():
-            lst.sort(key=lambda x: x.price)
-            del lst[keep:]
-    return g
+def local_hour_overlap_night(start_utc: datetime, end_utc: datetime, utc_off: int, cfg: dict) -> bool:
+    """Vrai si l'attente à l'aéroport du hub traverse la fenêtre 00h-05h (heure locale)."""
+    s = cfg["stopovers"]
+    t = start_utc + timedelta(hours=utc_off)
+    end = end_utc + timedelta(hours=utc_off)
+    while t < end:
+        if s["night_start"] <= t.hour < s["night_end"]:
+            return True
+        t += timedelta(minutes=30)
+    return False
 
 
-def run(dry: bool, ctx: Ctx) -> int:
-    cfg = ctx.cfg
-    if not cfg["stopovers"]["enabled"]:
-        return 0
-    token = ctx.token
-    if not token:
-        print("[combos] TRAVELPAYOUTS_TOKEN absent : rien à faire")
-        return 0
-    today = ctx.today
-    months = months_ahead(cfg["months_ahead"], today)
-    budgets = evaluate.load_budgets()
-    routes_path = str(ROOT / "data" / "routes.dat")
+def layover_ok(arrive_utc: datetime, depart_utc: datetime, utc_off: int, cfg: dict):
+    """-> 'short' | 'long' | None"""
+    s = cfg["stopovers"]
+    h = (depart_utc - arrive_utc).total_seconds() / 3600
+    if h >= s["long_min_h"]:
+        return "long"
+    if s["short_min_h"] <= h <= s["short_max_h"] and not local_hour_overlap_night(arrive_utc, depart_utc, utc_off, cfg):
+        return "short"
+    return None
 
-    # 1. Tronçons aller simple, directs : origines -> monde, hubs -> monde
-    legs = []
-    for src in dict.fromkeys([*ORIGINS, *HUBS]):   # LIS, MAD, DUB sont origines ET hubs : une seule requête
-        legs += providers.oneway_legs(src, months, token, direct=True, unique=True)
-    print(f"{len(legs)} tronçons collectés")
-    legs_from = _group(legs)
 
-    # 2. Prix de référence = meilleur A/R classique (avec ou sans escale) déjà proposé, par origine/destination
-    base: dict = {}
-    for o in providers.travelpayouts(list(ORIGINS), months, token):
-        k = (o.origin, o.dest)
-        base[k] = min(base.get(k, 1e9), o.price_eur)
-
-    # 3. Aller en montage : on ne garde que les plus prometteurs, puis on cherche un retour pour chacun
-    paths = stopovers.build_paths(legs_from, max_price=cfg["stopovers"]["max_outbound_eur"])
-    paths = [p for p in paths if (p.legs[0].orig, p.legs[-1].dest) in base]
-    paths.sort(key=lambda p: p.price / base[(p.legs[0].orig, p.legs[-1].dest)])
-    print(f"{len(paths)} montages aller candidats")
-
-    ret_cache: dict = {}
-
-    def best_return(o, d, arr_date):
-        _, olat, olon = ORIGINS[o]
-        km = haversine_km(olat, olon, DESTINATIONS[d][2], DESTINATIONS[d][3])
-        lo = arr_date + timedelta(days=scoring.min_stay_for(km, cfg))       # plus c'est loin, plus le séjour minimum est long
-        hi = arr_date + timedelta(days=cfg["stay_days"]["max"])
-        ms = sorted({f"{x.year}-{x.month:02d}" for x in (lo, hi)})
-        best = None
-        for m in ms:
-            key = (d, o, m)
-            if key not in ret_cache:
-                ret_cache[key] = providers.oneway_legs(d, [m], token, destination=o, direct=False, unique=False, limit=60)
-            for leg in ret_cache[key]:
-                if lo <= leg.dep_utc.date() <= hi and (best is None or leg.price < best.price):
-                    best = leg
-        return best
-
-    verdicts, checked = [], 0
-    for p in paths:
-        if checked >= cfg["stopovers"]["max_candidates_to_verify"]:
-            break
-        o, d = p.legs[0].orig, p.legs[-1].dest
-        key = (o, d)
-        if p.price >= base[key] * 0.8:      # l'aller seul dépasse déjà le gain attendu : inutile d'aller chercher un retour
+def build_combos(leg1: list[dict], leg2: list[dict], hub_code: str, origin: str, back_price, classic_best: dict,
+                 cfg: dict, today) -> list[Offer]:
+    """leg1 : origine->hub (dicts de fetch_oneways) ; leg2 : hub->destinations.
+    back_price : fonction(dest) -> prix du retour simple dest->origine ou None.
+    classic_best : {(origine, dest): meilleur prix A/R classique bagages compris}."""
+    hub = world()["hubs"][hub_code]
+    s = cfg["stopovers"]
+    out: list[Offer] = []
+    for a in leg1:
+        arr = a["dep"] + timedelta(minutes=a["dur_min"] or 120)
+        if a["price"] > s["max_outbound_eur"]:
             continue
-        checked += 1
-        ret = best_return(o, d, p.legs[-1].arr_utc.date())
-        if not ret:
-            continue
-        v = stopovers.evaluate_combo(p, ret, base[key], cfg, budgets, routes_path, today)
-        if v:
-            verdicts.append(v)
-    print(f"{checked} montages vérifiés, {len(verdicts)} retenus")
-
-    ctx.stats["combos_checked"] = checked
-    ingest(ctx, verdicts)          # mêmes règles que les autres offres : >= 8/10, revérification, 10/10 immédiat ou réserve
-    tick_slots(ctx)
-    return 0
-
-
-def main(dry: bool) -> int:
-    """Ne fait jamais échouer le workflow sur une erreur de données : l'erreur est notée dans docs/status.json."""
-    ctx = Ctx(dry)
-    try:
-        run(dry, ctx)
-    except Exception:
-        traceback.print_exc()
-        ctx.errors.append("montages d'escales : erreur inattendue (voir le journal du scan)")
-    finally:
-        ctx.save()
-        write_status(ctx, "combos")
-    return 0
-
-
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--dry-run", action="store_true")
-    sys.exit(main(ap.parse_args().dry_run))
+        for b in leg2:
+            dest = dest_code(b["dest"])
+            if not dest:
+                continue
+            kind = layover_ok(arr.astimezone(timezone.utc), b["dep"].astimezone(timezone.utc), hub["utc"], cfg)
+            if not kind:
+                continue
+            back = back_price(dest)
+            ref = classic_best.get((origin, dest))
+            if back is None or ref is None:
+                continue
+            total = a["price"] + b["price"] + back
+            if total > ref * (1 - s["min_saving"]):
+                continue
+            ret_days = cfg["stay"]["max_days"]
+            dep_date = a["dep"].date()
+            out.append(Offer(
+                origin=origin, dest=dest, price=round(total), depart=dep_date,
+                return_date=dep_date + timedelta(days=min(14, ret_days)), transfers=1, airline=a["airline"],
+                source="combo", link=a["link"],
+                stopover={"hub": hub_code, "hub_city": hub["city"], "kind": kind, "leg1": round(a["price"]),
+                          "leg2": round(b["price"]), "back": round(back), "classic": round(ref),
+                          "warning": "Billets séparés : aucune protection en cas de retard ou de correspondance ratée, "
+                                     "bagages à ré-enregistrer, visas de transit à vérifier."}))
+    return out

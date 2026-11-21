@@ -1,30 +1,25 @@
 name: feedback
-# Traite tes refus : un commentaire sur l'Issue d'une offre, OU une Issue « Refus : … » créée par le bouton « Refuser » du dashboard.
 on:
-  issue_comment:
-    types: [created]
   issues:
     types: [opened]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
   issues: write
 
 concurrency:
-  group: feedback
+  group: state-writer
   cancel-in-progress: false
 
 jobs:
   learn:
-    # Dépôt public : n'agir QUE pour le propriétaire, jamais sur les pull requests ni sur les robots.
+    # UNIQUEMENT le propriétaire du dépôt (sécurité), et seulement pour les refus / commandes
     if: >-
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request == null &&
-       github.event.comment.user.login == github.repository_owner &&
-       github.event.comment.user.type == 'User') ||
-      (github.event_name == 'issues' &&
-       github.event.issue.user.login == github.repository_owner &&
-       startsWith(github.event.issue.title, 'Refus'))
+      github.actor == github.repository_owner &&
+      ((github.event_name == 'issues' && (startsWith(github.event.issue.title, 'Refus') || startsWith(github.event.issue.title, 'Commande'))) ||
+       (github.event_name == 'issue_comment' && github.event.comment.user.login == github.repository_owner))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -34,26 +29,23 @@ jobs:
           python-version: "3.12"
       - name: Apprendre du refus
         env:
-          # Les textes passent par des variables d'environnement, jamais interpolés dans le shell.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           EVENT_NAME: ${{ github.event_name }}
-          COMMENT_BODY: ${{ github.event.comment.body }}
-          COMMENT_USER: ${{ github.event.comment.user.login }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
-          ISSUE_USER: ${{ github.event.issue.user.login }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: python -m flightdeals.feedback
-      - name: Sauver les préférences
-        if: always()
+      - name: Enregistrer l'état
         run: |
           git config user.name "flight-deals-bot"
           git config user.email "bot@users.noreply.github.com"
           git add -A data docs
           git diff --cached --quiet && exit 0
-          git commit -m "feedback: update preferences"
+          git commit -m "feedback: refus pris en compte"
           for i in 1 2 3 4; do
             git pull --rebase --autostash -q && git push -q && exit 0
-            echo "push refusé (tentative $i), nouvel essai"; sleep $((i * 4))
+            sleep $((i * 4))
           done
-          echo "::warning::l'état n'a pas pu être enregistré (conflit de push)"; exit 0
+          exit 1

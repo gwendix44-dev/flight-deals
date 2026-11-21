@@ -1,299 +1,350 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0b1d33">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Flight Deals">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
 <title>Flight Deals</title>
 <style>
-  :root { color-scheme: light dark; --bg:#f5f7fa; --card:#fff; --fg:#10202f; --mut:#5b6b7b; --acc:#0b6bcb; --err:#c62828; --bus:#6a1b9a; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#0b1d33; --card:#132a45; --fg:#e8eef5; --mut:#9fb2c6; --acc:#5aa9ff; --err:#ff6b6b; --bus:#c58bff; } }
-  body { margin:0; font:16px/1.4 system-ui, sans-serif; background:var(--bg); color:var(--fg); }
-  header { padding:16px; display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; }
-  h1 { margin:0; font-size:1.3rem; }
-  .mut { color:var(--mut); font-size:.85rem; }
-  nav { padding:0 16px 8px; display:flex; gap:8px; flex-wrap:wrap; }
-  nav button { border:1px solid var(--mut); background:transparent; color:var(--fg); border-radius:20px; padding:6px 14px; cursor:pointer; }
-  nav button[aria-pressed="true"] { background:var(--acc); border-color:var(--acc); color:#fff; }
-  main { padding:8px 16px 32px; display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); }
-  article { background:var(--card); border-radius:12px; padding:14px; border-left:5px solid var(--acc); }
-  article.error_fare { border-color:var(--err); } article.business_deal { border-color:var(--bus); } article.stopover_deal { border-color:#ef6c00; }
-  .itin { font-size:.85rem; margin:6px 0; padding-left:10px; border-left:2px solid var(--mut); } .itin div { margin:2px 0; }
-  .tag { font-size:.75rem; font-weight:700; text-transform:uppercase; }
-  .error_fare .tag { color:var(--err); } .business_deal .tag { color:var(--bus); } .stopover_deal .tag { color:#ef6c00; }
-  .score { float:right; background:var(--acc); color:#fff; border-radius:12px; padding:2px 10px; font-size:.85rem; }
-  .grid { font-size:.78rem; color:var(--mut); margin-top:4px; }
-  details.costs { font-size:.85rem; margin:6px 0; } details.costs div { margin:2px 0 2px 10px; }
-  .verif { font-size:.8rem; color:#2e7d32; margin:4px 0; }
-  .price { font-size:1.6rem; font-weight:700; } .tot { font-weight:600; }
-  .warn { color:#b26a00; font-size:.85rem; } a.btn { display:inline-block; margin-top:8px; padding:8px 14px; background:var(--acc); color:#fff; border-radius:8px; text-decoration:none; }
-  .refuse { margin-left:8px; padding:8px 12px; border-radius:8px; border:1px solid var(--mut); background:transparent; color:var(--fg); cursor:pointer; }
-  .rform { margin-top:10px; } .rform[hidden] { display:none; }
-  .rform textarea { width:100%; box-sizing:border-box; min-height:70px; padding:8px; border-radius:8px; border:1px solid var(--mut); background:var(--bg); color:var(--fg); font:inherit; }
-  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
-  .chips button { border:1px solid var(--mut); background:transparent; color:var(--fg); border-radius:14px; padding:3px 10px; font-size:.78rem; cursor:pointer; }
-  .send { margin-top:6px; padding:8px 14px; border:0; border-radius:8px; background:var(--err); color:#fff; cursor:pointer; }
-  .status { margin-left:8px; font-size:.8rem; color:var(--mut); }
-  details.prefs { padding:0 16px 24px; color:var(--mut); font-size:.85rem; } details.prefs summary { cursor:pointer; }
-  .status-line { margin:0 16px 10px; padding:8px 12px; border-radius:10px; font-size:.82rem; background:var(--card); color:var(--mut); }
-  .status-line.bad { background:#fdecea; color:#b71c1c; } .status-line.ok b { color:#2e7d32; }
-  .slotbadge { font-size:.72rem; background:var(--bg); color:var(--mut); border-radius:10px; padding:2px 8px; margin-left:6px; }
-  #pending button { margin:6px 6px 0 0; } #pending { white-space:normal; }
-  .tier-bon_plan { border-left-color:#9e9e9e !important; opacity:.96; }
-  nav[hidden] { display:none; }
-  #sections { padding:0 16px 8px; display:flex; gap:10px; } #sections button { flex:1; padding:12px; border-radius:12px; border:2px solid var(--mut); background:transparent; color:var(--fg); font-weight:600; cursor:pointer; }
-  #sections button[aria-pressed="true"] { background:var(--fg); color:var(--bg); border-color:var(--fg); }
-  article.biz .price small { font-size:.9rem; font-weight:400; color:var(--mut); }
-  .empty { padding:32px; text-align:center; color:var(--mut); }
+:root{
+  --bg:#0b1020; --bg2:#10172e; --card:#141d38; --card2:#1a2547; --line:#26335c; --txt:#eef2ff; --mut:#93a0c8;
+  --acc:#5eead4; --acc2:#38bdf8; --gold:#fbbf24; --ok:#4ade80; --warn:#fb923c; --bad:#f87171; --r:20px;
+}
+@media (prefers-color-scheme:light){
+  :root{--bg:#f3f6ff; --bg2:#e9eefc; --card:#ffffff; --card2:#f1f4ff; --line:#d8e0f5; --txt:#101936; --mut:#5a6894; --acc:#0d9488; --acc2:#0369a1; --gold:#b45309; --ok:#15803d; --warn:#c2410c; --bad:#b91c1c;}
+  meta[name=theme-color]{content:#f3f6ff}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding:0 0 calc(40px + env(safe-area-inset-bottom));min-height:100vh;
+  background:radial-gradient(900px 420px at 80% -10%,rgba(56,189,248,.16),transparent 60%),radial-gradient(700px 380px at -10% 0,rgba(94,234,212,.12),transparent 55%),var(--bg)}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+header{padding:calc(18px + env(safe-area-inset-top)) 0 6px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:26px;letter-spacing:-.02em;margin:0;font-weight:800}
+h1 span{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.iconbtn{border:1px solid var(--line);background:var(--card);color:var(--txt);width:42px;height:42px;border-radius:14px;font-size:19px;cursor:pointer}
+.status{margin:10px 0 14px;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--card);display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.status .dot{width:11px;height:11px;border-radius:50%;margin-top:5px;flex:none;background:var(--ok);box-shadow:0 0 0 4px rgba(74,222,128,.18)}
+.status.bad{border-color:var(--bad)} .status.bad .dot{background:var(--bad);box-shadow:0 0 0 4px rgba(248,113,113,.2)}
+.status b{display:block;font-size:15px} .status small{color:var(--mut)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:5px;gap:5px;position:sticky;top:0;z-index:5}
+.tab{border:0;background:transparent;color:var(--mut);padding:12px 8px;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer}
+.tab.on{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#04121f}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--txt);padding:8px 13px;border-radius:999px;font-size:14px;cursor:pointer;white-space:nowrap}
+.chip.on{background:var(--txt);color:var(--bg);border-color:var(--txt)}
+.sec{margin:20px 2px 8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:12px 0;position:relative;overflow:hidden}
+.card.gold{border-color:var(--gold);box-shadow:0 0 0 1px rgba(251,191,36,.35),0 10px 40px -18px rgba(251,191,36,.5)}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.route{font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1.15}
+.route small{display:block;font-size:13px;color:var(--mut);font-weight:500;margin-top:3px;letter-spacing:0}
+.ring{--p:0;flex:none;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--c,var(--ok)) calc(var(--p)*1%),var(--line) 0)}
+.ring i{font-style:normal;width:50px;height:50px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-weight:800;font-size:17px;line-height:1}
+.ring i small{display:block;font-size:10px;color:var(--mut);font-weight:600;margin-top:-6px}
+.price{display:flex;align-items:baseline;gap:8px;margin:12px 0 2px}
+.price b{font-size:38px;font-weight:900;letter-spacing:-.03em}
+.price span{color:var(--mut);font-size:13px}
+.trip{font-size:14px;color:var(--mut);margin-bottom:10px}
+.trip b{color:var(--txt)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.tag{font-size:12.5px;padding:5px 9px;border-radius:999px;background:rgba(147,160,200,.14);color:var(--txt)}
+.tag.g{background:rgba(251,191,36,.18);color:var(--gold)} .tag.o{background:rgba(74,222,128,.16);color:var(--ok)}
+.tag.w{background:rgba(251,146,60,.17);color:var(--warn)} .tag.r{background:rgba(248,113,113,.17);color:var(--bad)}
+.warn{font-size:13px;color:var(--warn);background:rgba(251,146,60,.1);border-radius:12px;padding:8px 10px;margin:8px 0}
+details{margin:8px 0;border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--acc);font-weight:700;font-size:14px;list-style:none;padding:4px 0}
+summary::-webkit-details-marker{display:none}
+.bar{display:grid;grid-template-columns:118px 1fr 44px;gap:8px;align-items:center;font-size:13px;margin:6px 0;color:var(--mut)}
+.bar div{height:7px;border-radius:9px;background:var(--line);overflow:hidden}.bar div i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:9px}
+.bar em{font-style:normal;text-align:right;color:var(--txt)}
+.rows{font-size:13.5px;color:var(--mut)} .rows div{display:flex;justify-content:space-between;padding:3px 0}
+.rows b{color:var(--txt);font-weight:600}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+a.btn,button.btn{display:block;text-align:center;text-decoration:none;border:0;padding:13px 10px;border-radius:15px;font-weight:800;font-size:15px;cursor:pointer;color:#04121f;background:linear-gradient(135deg,var(--acc),var(--acc2))}
+a.btn.alt{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+.refuse{grid-column:1/-1;background:transparent!important;color:var(--mut)!important;border:1px dashed var(--line)!important;padding:10px!important;font-weight:600!important}
+.empty{text-align:center;padding:26px 18px}
+.empty .big{font-size:40px}
+.empty h2{margin:6px 0;font-size:20px}
+.empty p{color:var(--mut);margin:6px 0}
+.why{margin-top:14px;text-align:left}
+.why li{margin:5px 0;font-size:14px;color:var(--mut)} .why li b{color:var(--txt)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:12px 0}
+.panel h3{margin:0 0 6px;font-size:16px}
+.panel p,.panel li{color:var(--mut);font-size:14px}
+.panel ul{padding-left:18px;margin:6px 0}
+.tool{border:1px solid var(--line);background:var(--card2);color:var(--txt);padding:11px 14px;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;margin:4px 6px 4px 0}
+.sheet{position:fixed;inset:0;background:rgba(2,6,23,.62);display:none;align-items:flex-end;z-index:20}
+.sheet.on{display:flex}
+.sheet>div{width:100%;max-width:640px;margin:0 auto;background:var(--card);border-radius:26px 26px 0 0;padding:20px 16px calc(24px + env(safe-area-inset-bottom));border:1px solid var(--line)}
+.sheet h3{margin:0 0 4px} .sheet p{color:var(--mut);margin:0 0 12px;font-size:14px}
+textarea{width:100%;min-height:70px;border-radius:14px;border:1px solid var(--line);background:var(--bg2);color:var(--txt);padding:10px;font:inherit;margin:8px 0}
+.foot{text-align:center;color:var(--mut);font-size:12px;margin:26px 0 0}
+.hidden{display:none!important}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--txt);color:var(--bg);padding:11px 16px;border-radius:14px;font-weight:700;font-size:14px;z-index:30;max-width:90vw}
 </style>
 </head>
 <body>
-<header><h1>✈️ Flight Deals</h1><span class="mut" id="upd">chargement…</span><button class="refuse" id="ntf">🔔 Notifications</button><button class="refuse" id="tok" title="Nécessaire pour envoyer un refus depuis cette page">🔑 Connecter GitHub</button></header>
-<div id="toast" class="status-line ok" hidden style="position:sticky;top:0;z-index:5"></div>
-<div id="pushpanel" class="status-line" hidden>
-  <div id="pushmsg"></div>
-  <button class="send" id="pushgo" style="background:var(--acc)">🔔 Activer les notifications</button>
-  <textarea id="pushsub" readonly hidden style="width:100%;box-sizing:border-box;min-height:90px;margin-top:8px;font-size:.7rem"></textarea>
-  <button class="refuse" id="pushcopy" hidden style="margin:6px 0 0 0">Copier le texte</button>
+<div class="wrap">
+  <header>
+    <h1>Flight <span>Deals</span></h1>
+    <button class="iconbtn" id="btnRefresh" aria-label="Actualiser">⟳</button>
+  </header>
+  <div id="status" class="status"><i class="dot"></i><div><b>Chargement…</b></div></div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="std">✈️ Deals voyage</button>
+    <button class="tab" data-tab="biz">💺 Business</button>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <div id="list"></div>
+
+  <div id="learned"></div>
+  <div class="panel">
+    <h3>🔔 Notifications</h3>
+    <p id="pushState">Reçois une alerte à 12h, 19h et pour chaque offre 10/10, même appli fermée.</p>
+    <button class="tool" id="btnPush">Activer</button>
+    <button class="tool hidden" id="btnCopy">Copier le texte</button>
+    <p class="hidden" id="pushHelp">Colle ce texte dans le secret GitHub <b>PUSH_SUBSCRIPTION</b>, puis lance le workflow <b>push-test</b>.</p>
+  </div>
+  <div class="panel">
+    <h3>📲 Installer sur l'écran d'accueil</h3>
+    <p><b>Android (Chrome)</b> : menu ⋮ → « Installer l'application ».<br><b>iPhone (Safari)</b> : Partager → « Sur l'écran d'accueil », puis ouvre l'appli depuis son icône (iOS 16.4 minimum).</p>
+  </div>
+  <p class="foot">Prix du cache d'un agrégateur : aucune garantie. Le dernier contrôle, c'est toi, avec le bouton 1 puis le site de la compagnie.</p>
 </div>
-<div id="pending" class="status-line bad" hidden></div>
-<div id="status" class="status-line">…</div>
-<details id="statusmore" class="prefs" hidden><summary>Pourquoi pas plus d'offres ? (détails du dernier scan)</summary><div id="statusmore-body"></div></details>
-<nav id="sections"></nav>
-<nav id="filters"></nav>
-<main id="list"></main>
-<details class="prefs"><summary>Mes réglages appris de mes refus</summary><div id="prefs">Aucun pour l'instant.</div></details>
+
+<div class="sheet" id="sheet"><div>
+  <h3>👎 Refuser cette offre</h3>
+  <p id="sheetRoute"></p>
+  <div id="reasons"></div>
+  <textarea id="reasonText" placeholder="Pourquoi ? (ex. trop cher, trop loin, pas envie…)"></textarea>
+  <div class="btns"><button class="btn alt" id="sheetCancel" style="background:var(--card);color:var(--txt);border:1px solid var(--line)">Annuler</button><button class="btn" id="sheetSend">Envoyer le refus</button></div>
+  <p style="margin-top:10px">L'offre disparaît tout de suite. GitHub s'ouvre ensuite avec le refus déjà écrit : touche « Create » sans modifier les 3 premières lignes.</p>
+</div></div>
+
 <script>
-const LABEL = {error_fare:"Erreur de prix", deal:"Très bonne affaire", business_deal:"Business", stopover_deal:"Montage d'escales"};
-const AIR = {widebody_probable:"Gros-porteur probable", unverified:"⚠️ Avion à vérifier", not_required:"Vol court"};
-let deals = [], filter = "all", section = "voyage", refused = new Set(JSON.parse(localStorage.getItem("hidden") || "[]"));
-let hiddenKeys = new Set(JSON.parse(localStorage.getItem("hiddenKeys") || "[]")), refusedKeys = new Set(), pending = JSON.parse(localStorage.getItem("pendingRefusals") || "[]");
-const gone = d => hiddenKeys.has(d.key) || refusedKeys.has(d.key) || refused.has(d.issue);       // refusée = supprimée, immédiatement
-const isBP = d => d.tier === "bon_plan";
-const REASONS = ["Trop cher", "Séjour trop court", "Séjour trop long", "Trop loin", "Trop d'escales", "Destination déjà vue", "Avion pas adapté", "Trop touristique", "Billets séparés trop risqués"];
-const REPO = location.hostname.endsWith("github.io") ? [location.hostname.split(".")[0], location.pathname.split("/")[1]] : ["gwendix44-dev", "flight-deals"];
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const safeUrl = u => /^https?:\/\//.test(u || "") ? u : "";
+const REPO = "gwendix44-dev/flight-deals";
+const VAPID_PUBLIC = "BKH9qc1jDaLuszDQqgLSNQ4FDDbhJitb_ycqO_F_PxhQjp3S_fQfVaVXSFuM80AaT6-oUQ2OtVju0lL06Moq2Tc";
+const REASONS = ["Trop cher","Trop loin","Trop proche","Séjour trop court","Séjour trop long","Trop d'escales","Avion pas adapté","Billets séparés","Pas envie","Mauvaise période","Trop touristique","Pas assez exceptionnel"];
+const REGION = {"asie":"Asie","moyen-orient":"Moyen-Orient","afrique":"Afrique","amerique-nord":"Amérique du Nord","amerique-latine":"Amérique latine","oceanie":"Océanie","autre":"Autre"};
+const $ = s => document.querySelector(s);
+const state = { tab: "std", filter: "all", data: null, status: null, prefs: null, refused: new Set(JSON.parse(localStorage.getItem("fd_refused") || "[]")), pending: JSON.parse(localStorage.getItem("fd_pending") || "[]") };
 
-function render() {
-  const el = document.getElementById("list");
-  const rows = deals.filter(d => !gone(d) && (section === "business"
-    ? d.kind === "business_deal"
-    : d.kind !== "business_deal" && (filter === "all" || (filter === "pepite" ? !isBP(d) : filter === "bon_plan" ? isBP(d) : d.kind === filter))));
-  if (!rows.length) { el.innerHTML = section === "business"
-    ? '<div class="empty">Aucun très bon deal business pour le moment (A/R ≤ 800 €, long-courrier). Le scanner tourne en continu.</div>'
-    : '<div class="empty">Aucune offre à afficher pour le moment. Ouvre « Pourquoi pas plus d\'offres ? » plus bas pour voir ce que le dernier scan a trouvé.</div>'; return; }
-  el.innerHTML = rows.map(d => { const o = d.offer, url = safeUrl(o.link); return `
-    <article class="${esc(d.kind)} ${d.kind === "business_deal" ? "biz" : ""} tier-${esc(d.tier || "pepite")}">
-      <div class="tag">${isBP(d) ? "👀 Bon plan (7 à 8/10)" : esc(LABEL[d.kind])}${d.slot ? `<span class="slotbadge">${esc(d.slot)}</span>` : ""} ${d.score ? `<span class="score">${esc(d.score)}/11</span>` : ""}</div>
-      <div><strong>${esc(o.origin)} → ${esc(d.dest_city)}</strong> <span class="mut">(${esc(d.country)})</span></div>
-      <div class="price">${Math.round(d.kind === "business_deal" ? o.price_eur : (d.flight_all_in || o.price_eur))} € ${d.kind === "business_deal" ? "<small>A/R en business</small>" : "<small>bagages inclus</small>"}</div>
-      ${d.bag_supplement ? `<div class="mut">tarif affiché ${Math.round(o.price_eur)} € + supplément bagages estimé ${Math.round(d.bag_supplement)} €</div>` : ""}
-      ${d.bag_note ? `<div class="${["inclus","probable"].includes(d.bag_status) ? "mut" : "warn"}">🎒 ${esc(d.bag_note)}</div>` : ""}
-      ${d.kind === "business_deal"
-        ? `<div class="mut">Prix du séjour non pris en compte (indicatif : ≈ ${esc(d.stay_cost)} € sur place)</div>`
-        : `<div class="tot">Séjour complet ≈ ${esc(d.trip_total)} € <span class="mut">(${esc(d.stay_days)} j, ${esc(d.daily_budget)} €/j)</span></div>`}
-      <div class="mut">${esc(o.depart || "dates sur le lien")} → ${esc(o.return_date || "")} · ${esc(d.distance_km)} km · ~${esc(d.flight_hours)} h · ${o.transfers ? esc(o.transfers) + " escale(s)" : "direct"}</div>
-      ${(d.cost_lines || []).length ? `<details class="costs"><summary>Détail du séjour (${esc(d.stay_cost)} € sur place)</summary>${d.cost_lines.map(l => `<div>${esc(l[0])} : <b>${esc(l[1])} €</b></div>`).join("")}</details>` : ""}
-      ${d.verification ? `<div class="verif">${/^[✔⚠]/.test(d.verification) ? "" : "✔ "}${esc(d.verification)}</div>` : ""}
-      ${d.score_line ? `<div class="grid">${esc(d.score_line)}</div>` : ""}
-      ${d.saving_pct ? `<div class="mut">−${esc(d.saving_pct)} % vs billet classique (${Math.round(d.baseline_eur)} €)</div>` : ""}
-      ${(d.itinerary || []).length ? `<div class="itin">${d.itinerary.map(x => `<div>${esc(x.replace(/https?:\/\/\S+/, "").trim())}</div>`).join("")}</div><div class="warn">Billets séparés : pas de protection en cas de retard</div>` : ""}
-      <div class="${d.aircraft === "unverified" ? "warn" : "mut"}">${esc(AIR[d.aircraft] || d.aircraft)}</div>
-      ${safeUrl((d.links || {}).google_flights) ? `<a class="btn" href="${esc(d.links.google_flights)}" target="_blank" rel="noopener noreferrer">1 · Vérifier en direct</a>` : ""}
-      ${safeUrl((d.links || {}).airline_site) ? `<a class="btn" style="background:#2e7d32" href="${esc(d.links.airline_site)}" target="_blank" rel="noopener noreferrer">2 · Site de ${esc(d.links.airline_name || "la compagnie")}</a>` : ""}
-      ${(d.links || {}).google_flights_legs ? d.links.google_flights_legs.map((u, i) => safeUrl(u) ? `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener noreferrer">Vérifier billet ${i + 1}</a>` : "").join(" ") : ""}
-      ${url ? `<a class="mut" style="margin-left:6px;font-size:.78rem" href="${esc(url)}" target="_blank" rel="noopener noreferrer">source du prix</a>` : ""}<button class="refuse" data-act="open" data-k="${esc(d.key)}">👎 Refuser</button>
-      <div class="rform" hidden data-form="${esc(d.key)}">
-        <div class="chips">${REASONS.map(r => `<button data-act="chip" data-t="${esc(r)}">${esc(r)}</button>`).join("")}</div>
-        <textarea placeholder="Explique pourquoi tu refuses (trop cher, séjour trop court, trop d'escales…)"></textarea>
-        <button class="send" data-act="send" data-k="${esc(d.key)}">Envoyer le refus</button><span class="status"></span>
-      </div>
-    </article>`; }).join("");
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "class") e.className = v; else if (k === "text") e.textContent = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else if (v !== null && v !== undefined) e.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c !== null && c !== undefined && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c)));
+  return e;
+}
+const safeUrl = u => { try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : null; } catch { return null; } };
+const eur = n => Math.round(n).toLocaleString("fr-FR") + " €";
+const dfr = s => new Date(s + "T12:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+const toast = t => { const x = el("div", { class: "toast", text: t }); document.body.append(x); setTimeout(() => x.remove(), 2600); };
+const rel = iso => { const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 1 ? "à l'instant" : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : `il y a ${Math.round(m / 1440)} j`; };
+
+async function getJson(name) {
+  const r = await fetch(name + "?t=" + Date.now(), { cache: "no-store" });
+  if (!r.ok) throw new Error(name + " " + r.status);
+  return r.json();
+}
+async function load() {
+  const [d, s, p] = await Promise.allSettled([getJson("deals.json"), getJson("status.json"), getJson("preferences.json")]);
+  state.data = d.value || state.data || { deals: [], business: [], good: [] };
+  state.status = s.value || state.status;
+  state.prefs = p.value || state.prefs;
+  // un refus déjà pris en compte côté serveur n'a plus besoin d'être mémorisé
+  const gone = new Set((state.prefs && state.prefs.refused_keys) || []);
+  state.pending = state.pending.filter(k => !gone.has(k));
+  localStorage.setItem("fd_pending", JSON.stringify(state.pending));
+  render();
 }
 
-function toast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 9000); }
-function refusalIssue(d, text) {
-  return { title: `Refus : ${d.offer.origin}→${d.dest_city}`, body: `deal:${d.key}\nissue:${d.issue || ""}\n---\n${text}` };
+function renderStatus() {
+  const s = state.status, box = $("#status"); box.replaceChildren();
+  if (!s) { box.className = "status bad"; box.append(el("i", { class: "dot" }), el("div", {}, el("b", { text: "Aucune donnée" }), el("small", { text: "Pas encore de scan enregistré." }))); return; }
+  const age = s.last_scan ? (Date.now() - new Date(s.last_scan)) / 60000 : 1e9;
+  const bad = !s.ok || (s.errors && s.errors.length) || age > 90;
+  box.className = "status" + (bad ? " bad" : "");
+  const lines = [];
+  if (bad) {
+    if (age > 90) lines.push(`Aucun scan depuis ${Math.round(age / 60 * 10) / 10} h : GitHub a peut-être du retard.`);
+    (s.errors || []).slice(0, 3).forEach(e => lines.push(e));
+  }
+  const when = s.last_scan ? new Date(s.last_scan).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : "?";
+  box.append(el("i", { class: "dot" }), el("div", {},
+    el("b", { text: bad ? "🔴 Problème détecté" : `🟢 L'appli tourne (scan de ${when})` }),
+    el("small", { text: `${(s.offers || 0).toLocaleString("fr-FR")} offres analysées · ${s.waiting || 0} en attente · prochaine publication ${s.next_slot || "—"}` }),
+    ...lines.map(l => el("small", { text: "⚠ " + l, style: "display:block;color:var(--bad)" }))));
 }
-const newIssueUrl = r => `https://github.com/${REPO[0]}/${REPO[1]}/issues/new?title=${encodeURIComponent(r.title)}&body=${encodeURIComponent(r.body)}`;
-function renderPending() {
-  const el = document.getElementById("pending");
-  pending = pending.filter(r => !refusedKeys.has(r.key));                    // déjà pris en compte par l'appli : plus rien à faire
-  localStorage.setItem("pendingRefusals", JSON.stringify(pending));
-  if (!pending.length) { el.hidden = true; return; }
-  const todo = pending.filter(r => !r.opened), doing = pending.filter(r => r.opened);
-  el.hidden = false; el.className = "status-line " + (todo.length ? "bad" : "ok");
-  el.innerHTML = (doing.length ? `⏳ <b>${doing.length} refus en cours de prise en compte</b> (1 à 2 minutes). Cette ligne disparaît toute seule : rien à faire, ne retouche pas « Valider ».` : "") +
-    (todo.length ? `<div style="margin-top:6px">⚠ <b>${todo.length} refus à valider</b> : l'offre est masquée ici, mais ta raison n'est prise en compte qu'après avoir touché « Valider », puis le bouton vert « Create » sur la page GitHub.</div>` +
-      pending.map((r, i) => r.opened ? "" : `<button class="send" data-pend="${i}">Valider « ${esc(r.title.replace("Refus : ", ""))} »</button>`).join("") : "");
+
+function filters() {
+  const std = [["all", "Tout"], ["gem", "⭐ Pépites"], ["good", "👀 Bons plans"], ["error", "Erreurs de prix"], ["combo", "Montages"]];
+  const list = state.tab === "std" ? std : [["all", "Tout"], ["error", "Erreurs de prix"]];
+  if (!list.some(x => x[0] === state.filter)) state.filter = "all";
+  const c = $("#chips"); c.replaceChildren(...list.map(([k, t]) => el("button", { class: "chip" + (state.filter === k ? " on" : ""), text: t, onclick: () => { state.filter = k; render(); } })));
 }
-function markOpened(r) {
-  r.opened = true; localStorage.setItem("pendingRefusals", JSON.stringify(pending)); renderPending();
-  setTimeout(load, 70 * 1000); setTimeout(load, 130 * 1000); setTimeout(load, 240 * 1000);       // le robot a besoin d'1 à 2 min
+
+function visible(arr, extra) {
+  return arr.filter(d => !state.refused.has(d.key) && !state.pending.includes(d.key)).map(d => Object.assign({}, d, extra));
 }
-document.getElementById("pending").addEventListener("click", e => {
-  const i = e.target.dataset.pend; if (i === undefined) return;
-  window.open(newIssueUrl(pending[+i]), "_blank", "noopener");
-  markOpened(pending[+i]);
-});
-async function sendRefusal(d, text) {
-  const r = { ...refusalIssue(d, text), key: d.key };
-  // 1) l'offre est SUPPRIMÉE tout de suite de l'écran, quoi qu'il arrive ensuite
-  hiddenKeys.add(d.key); localStorage.setItem("hiddenKeys", JSON.stringify([...hiddenKeys]));
-  pending.push(r); localStorage.setItem("pendingRefusals", JSON.stringify(pending));
-  buildFilters(); render(); renderPending();
-  // 2) envoi : direct avec un jeton, sinon page GitHub déjà remplie (un seul bouton à toucher, aucun compte à créer)
-  const token = localStorage.getItem("ghtoken");
-  if (!token) {
-    window.open(newIssueUrl(r), "_blank", "noopener");                       // appelé dans le geste de l'utilisateur : pas bloqué
-    toast("Offre supprimée. Dernière étape : sur la page GitHub qui s'ouvre, touche le bouton vert « Create », puis reviens ici.");
-    markOpened(r);
+function pick() {
+  const D = state.data || {};
+  if (state.tab === "biz") {
+    let l = visible(D.business || [], { _gem: true });
+    if (state.filter === "error") l = l.filter(d => d.flagged_error); return l;
+  }
+  let gem = visible(D.deals || [], { _gem: true }), good = visible(D.good || [], { _gem: false });
+  if (state.filter === "gem") return gem;
+  if (state.filter === "good") return good;
+  if (state.filter === "error") return [...gem, ...good].filter(d => d.flagged_error);
+  if (state.filter === "combo") return [...gem, ...good].filter(d => d.kind === "combo");
+  return [...gem, ...good];
+}
+
+function ring(score) {
+  const c = score >= 10 ? "var(--gold)" : score >= 8 ? "var(--ok)" : "var(--warn)";
+  return el("div", { class: "ring", style: `--p:${Math.min(score / 11 * 100, 100)};--c:${c}` }, el("i", {}, String(score).replace(".", ","), el("small", { text: "/11" })));
+}
+
+function card(d) {
+  const isBiz = d.kind === "business";
+  const tags = [];
+  tags.push(el("span", { class: "tag " + (d._gem ? "g" : ""), text: d._gem ? (d.instant ? "🚨 10/10" : "⭐ Pépite") : "👀 Bon plan" }));
+  if (d.flagged_error) tags.push(el("span", { class: "tag w", text: "Erreur de prix" }));
+  if (d.kind === "combo") tags.push(el("span", { class: "tag w", text: "Billets séparés" }));
+  tags.push(el("span", { class: "tag", text: d.transfers === 0 ? "Direct" : d.transfers + " escale" + (d.transfers > 1 ? "s" : "") }));
+  tags.push(el("span", { class: "tag", text: `${Math.round(d.km).toLocaleString("fr-FR")} km · ~${d.hours} h` }));
+  tags.push(el("span", { class: "tag " + (d.aircraft.status === "widebody" ? "o" : d.aircraft.status === "unverified" ? "w" : ""), text: "✈ " + (d.aircraft.status === "widebody" ? "Gros-porteur probable" : d.aircraft.status === "unverified" ? "Avion à vérifier" : "Vol court") }));
+  tags.push(el("span", { class: "tag " + (d.baggage.status === "included" ? "o" : "w"), text: "🎒 " + (d.baggage.status === "included" ? "Bagages inclus" : d.baggage.status === "fee" ? `+${Math.round(d.baggage.surcharge)} € bagages` : "Bagages à confirmer") }));
+
+  const warns = [];
+  if (d.baggage.warning) warns.push(d.baggage.warning);
+  if (d.aircraft.status === "unverified" && !isBiz) warns.push(d.aircraft.note);
+  if (d.dates_unconfirmed) warns.push("Dates non fournies par la source : à confirmer sur le lien avant tout.");
+  if (d.stopover && d.stopover.warning) warns.push(d.stopover.warning);
+  if (d.verified) tags.push(el("span", { class: "tag o", text: "✓ " + (typeof d.verified === "string" ? d.verified : "prix revérifié") }));
+
+  const bars = Object.entries(d.detail || {}).map(([k, [v, m]]) => el("div", { class: "bar" }, el("span", { text: k }), el("div", {}, el("i", { style: `width:${v / m * 100}%` })), el("em", { text: `${String(v).replace(".", ",")}/${String(m).replace(".", ",")}` })));
+  if (d.bonus) bars.push(el("div", { class: "bar" }, el("span", { text: "Bonus erreur de prix" }), el("div", {}, el("i", { style: "width:100%" })), el("em", { text: "+1" })));
+  const stayRows = Object.entries(d.stay.lines).filter(([, v]) => v).map(([k, v]) => el("div", {}, el("span", { text: k }), el("b", { text: eur(v) })));
+  if (d.positioning) stayRows.push(el("div", {}, el("span", { text: `Trajet jusqu'à ${d.origin_city} (A/R)` }), el("b", { text: eur(d.positioning) })));
+
+  const fly = safeUrl(d.links.verify), air = safeUrl(d.links.airline), off = safeUrl(d.links.offer);
+  const refuse = el("button", { class: "btn refuse", text: "👎 Refuser", onclick: () => openSheet(d) });
+
+  return el("div", { class: "card" + (d.score >= 10 ? " gold" : "") },
+    el("div", { class: "top" },
+      el("div", { class: "route" }, `${d.origin_city} → ${d.dest_city}`, el("small", { text: `${d.airline || "Compagnie ?"} · ${REGION[d.region] || ""}` })),
+      ring(d.score)),
+    el("div", { class: "price" }, el("b", { text: eur(d.flight_price) }), el("span", { text: isBiz ? "A/R business" : "A/R · bagages compris" })),
+    el("div", { class: "trip" }, el("b", { text: `${dfr(d.depart)} → ${dfr(d.return)}` }), ` · ${d.stay_days} jours`,
+      isBiz ? "" : el("span", {}, " · séjour complet ", el("b", { text: "≈ " + eur(d.total) }), ` (plafond ${eur(d.cap)})`)),
+    el("div", { class: "meta" }, tags),
+    ...warns.filter(Boolean).map(w => el("div", { class: "warn", text: w })),
+    d.title ? el("div", { class: "trip", text: "Source : " + d.title }) : null,
+    el("details", {}, el("summary", { text: "Pourquoi cette note ?" }), bars.length ? bars : el("div", { class: "rows", text: `Remise estimée ${Math.round((d.discount || 0) * 100)} % vs le prix habituel du business.` })),
+    isBiz ? null : el("details", {}, el("summary", { text: "Détail du séjour" }), el("div", { class: "rows" }, stayRows,
+      el("div", {}, el("span", { text: "Total séjour" }), el("b", { text: eur(d.stay.total) })),
+      d.stay.visa_note ? el("div", { text: "Visa : " + d.stay.visa_note }) : null)),
+    el("div", { class: "btns" },
+      fly ? el("a", { class: "btn", href: fly, target: "_blank", rel: "noopener noreferrer", text: "1 · Vérifier en direct" }) : null,
+      (air || off) ? el("a", { class: "btn alt", href: air || off, target: "_blank", rel: "noopener noreferrer", text: "2 · Site de " + (d.airline || "la compagnie") }) : null,
+      refuse));
+}
+
+function renderList() {
+  const items = pick(), box = $("#list"); box.replaceChildren();
+  if (items.length) {
+    const gems = items.filter(d => d._gem), goods = items.filter(d => !d._gem);
+    if (gems.length) box.append(el("div", { class: "sec", text: state.tab === "biz" ? "Offres business" : "Pépites (≥ 8/10)" }), ...gems.sort((a, b) => b.score - a.score).map(card));
+    if (goods.length) box.append(el("div", { class: "sec", text: "Bons plans (7 à 8/10), sans notification" }), ...goods.sort((a, b) => b.score - a.score).map(card));
     return;
   }
-  try {
-    const resp = await fetch(`https://api.github.com/repos/${REPO[0]}/${REPO[1]}/issues`, {
-      method: "POST", headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
-      body: JSON.stringify({ title: r.title, body: r.body }) });
-    if (resp.ok) { toast("Refus envoyé ✔ : l'offre est supprimée et ta raison sera prise en compte aux prochains scans."); markOpened(r); }
-    else toast(`Offre masquée, mais l'envoi a échoué (${resp.status}) : vérifie ton jeton, ou valide le refus avec le bouton orange.`);
-  } catch { toast("Offre masquée, mais pas de connexion : le refus sera à valider avec le bouton orange."); }
+  const s = state.status || {};
+  const why = el("ul", { class: "why" });
+  (s.rejections || []).slice(0, 6).forEach(([r, n]) => why.append(el("li", {}, el("b", { text: n.toLocaleString("fr-FR") }), " offres écartées : " + r)));
+  const missed = (s.best_missed || []).slice(0, 3).map(m => el("li", { text: m.split(" : ")[0] }));
+  box.append(el("div", { class: "card empty" }, el("div", { class: "big", text: state.tab === "biz" ? "💺" : "🧘" }),
+    el("h2", { text: "Rien d'exceptionnel pour l'instant" }),
+    el("p", { text: "Je préfère ne rien publier que de remplir avec du médiocre. Les notes sont sur 11 : 8 minimum pour être publié." }),
+    missed.length ? el("div", { class: "why" }, el("div", { class: "sec", text: "Meilleures offres sous le seuil" }), el("ul", {}, missed)) : null,
+    why.children.length ? el("div", { class: "why" }, el("div", { class: "sec", text: "Pourquoi pas plus d'offres ?" }), why) : null));
 }
-document.getElementById("list").addEventListener("click", e => {
-  const b = e.target.closest("button[data-act]"); if (!b) return;
-  const art = b.closest("article"), form = art.querySelector(".rform"), ta = form.querySelector("textarea");
-  if (b.dataset.act === "open") form.hidden = !form.hidden;
-  if (b.dataset.act === "chip") ta.value = (ta.value ? ta.value + ", " : "") + b.dataset.t.toLowerCase();
-  if (b.dataset.act === "send") {
-    const d = deals.find(x => x.key === b.dataset.k), text = ta.value.trim(), st = form.querySelector(".status");
-    if (!text) { st.textContent = "Écris au moins une raison."; return; }
-    sendRefusal(d, text);
-  }
-});
-document.getElementById("tok").onclick = () => {
-  const t = prompt("Colle ton token GitHub (fine-grained, uniquement ce dépôt, droit « Issues : Read and write »). Il reste dans ce navigateur.");
-  if (t) { localStorage.setItem("ghtoken", t.trim()); alert("Token enregistré sur cet appareil."); }
+
+function renderLearned() {
+  const box = $("#learned"); box.replaceChildren();
+  const lines = (state.status && state.status.prefs) || [];
+  if (!lines.length) return;
+  box.append(el("div", { class: "panel" }, el("h3", { text: "🧠 Ce que l'appli a appris de tes refus" }),
+    el("ul", {}, lines.map(l => el("li", { text: l }))),
+    el("p", { text: "Ces règles durcissent les critères et peuvent vider les créneaux. Tu peux les effacer : les offres refusées restent refusées." }),
+    el("button", { class: "tool", text: "Effacer les préférences apprises", onclick: () => openCommand("/reset") })));
+}
+
+function render() { renderStatus(); filters(); renderList(); renderLearned(); document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.tab === state.tab)); }
+
+/* --- Refus --- */
+let current = null, reason = "";
+function openSheet(d) {
+  current = d; reason = ""; $("#sheetRoute").textContent = `${d.origin_city} → ${d.dest_city} · ${eur(d.flight_price)}`; $("#reasonText").value = "";
+  const r = $("#reasons"); r.replaceChildren(...REASONS.map(t => el("button", { class: "chip", style: "margin:3px", text: t, onclick: () => { $("#reasonText").value = t; } })));
+  $("#sheet").classList.add("on");
+}
+function ghIssue(title, body) { return `https://github.com/${REPO}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`; }
+function openCommand(cmd) { window.open(ghIssue("Commande : " + cmd, cmd + "\n"), "_blank", "noopener"); }
+$("#sheetCancel").onclick = () => $("#sheet").classList.remove("on");
+$("#sheetSend").onclick = () => {
+  const text = $("#reasonText").value.trim();
+  if (!text) return toast("Écris ou choisis une raison");
+  state.pending.push(current.key); localStorage.setItem("fd_pending", JSON.stringify(state.pending));
+  $("#sheet").classList.remove("on"); render();
+  window.open(ghIssue(`Refus : ${current.origin_city} → ${current.dest_city} ${current.price} €`, `deal:${current.key}\nissue:${current.issue || ""}\n---\n${text}`), "_blank", "noopener");
+  toast("Offre masquée. Touche « Create » sur GitHub.");
 };
 
-function buildFilters() {
-  const nb = deals.filter(d => d.kind === "business_deal" && !gone(d)).length;
-  const nv = deals.filter(d => d.kind !== "business_deal" && !gone(d)).length;
-  const sec = document.getElementById("sections");
-  sec.innerHTML = `<button data-s="voyage" aria-pressed="${section === "voyage"}">✈️ Deals voyage (${nv})</button>
-                   <button data-s="business" aria-pressed="${section === "business"}">💺 Business class (${nb})</button>`;
-  sec.onclick = e => { const k = e.target.dataset.s; if (k) { section = k; buildFilters(); render(); } };
-  const nav = document.getElementById("filters");
-  nav.hidden = section === "business";
-  nav.innerHTML = [["all","Tout"],["pepite","⭐ Pépites"],["bon_plan","👀 Bons plans"],["error_fare","Erreurs de prix"],["stopover_deal","Montages"]]
-    .map(([k,l]) => `<button data-k="${k}" aria-pressed="${k===filter}">${l}</button>`).join("");
-  nav.onclick = e => { const k = e.target.dataset.k; if (k) { filter = k; buildFilters(); render(); } };
-}
+/* --- Navigation --- */
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => { state.tab = t.dataset.tab; state.filter = "all"; render(); });
+$("#btnRefresh").onclick = () => load().then(() => toast("Actualisé"));
 
-let useApi = new URLSearchParams(location.search).has("fresh");    // ouvert depuis une notification
-async function fetchJSON(name, forceApi = false) {
-  if (useApi || forceApi) {
-    try {                                                           // GitHub API : à jour dès le commit du robot, sans le délai de Pages
-      const r = await fetch(`https://api.github.com/repos/${REPO[0]}/${REPO[1]}/contents/docs/${name}?ref=main`,
-        { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" });
-      if (r.ok) return await r.json();
-    } catch {}
-  }
-  return await (await fetch(name + "?t=" + Date.now(), { cache: "no-store" })).json();
-}
-
-async function renderStatus() {
-  const el = document.getElementById("status");
-  try {
-    const st = await fetchJSON("status.json");
-    const t = st.updated ? new Date(st.updated) : null, age = t ? (Date.now() - t.getTime()) / 60000 : 1e9;
-    const hh = x => new Date(x).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-    const ls = st.last_slot ? ` · dernière publication : ${st.last_slot.label.replace("Publication de ", "")} (${st.last_slot.standard} deal(s) + ${st.last_slot.business} business)` : "";
-    const base = `${st.offers ? Number(st.offers).toLocaleString("fr-FR") + " offres analysées · " : ""}${st.waiting ?? 0} en attente · prochaine publication ${st.next_slot || "12h / 19h"}${ls}${st.live_active ? " · prix en direct : actif (" + st.live_used + "/" + st.live_budget + " ce mois)" : ""}`;
-    const more = document.getElementById("statusmore"), body = document.getElementById("statusmore-body");
-    const lines = [];
-    if (st.last_slot) lines.push(`<div><b>Dernier créneau (${esc(st.last_slot.label.replace("Publication de ", ""))})</b> : ${esc(st.last_slot.standard)} pépite(s), ${esc(st.last_slot.business)} business, ${esc(st.last_slot.bons_plans ?? 0)} bon(s) plan(s).</div>`);
-    if ((st.best_missed || []).length) lines.push(`<div style="margin-top:6px"><b>Meilleures offres du dernier scan, sous le seuil de 8/10 :</b></div>` + st.best_missed.map(x => `<div>• ${esc(x)}</div>`).join(""));
-    if ((st.rejets || []).length) lines.push(`<div style="margin-top:6px"><b>Offres écartées par la revérification des prix :</b></div>` + st.rejets.map(x => `<div>• ${esc(x)}</div>`).join(""));
-    more.hidden = !lines.length; body.innerHTML = lines.join("");
-    if (!st.ok || age > 90) {
-      el.className = "status-line bad";
-      el.textContent = (!st.ok ? "🔴 Problème au dernier scan : " + (st.errors || []).join(" ; ") + ". " : "🟠 Pas de scan depuis " + Math.round(age) + " min. ") + base;
-    } else {
-      el.className = "status-line ok";
-      el.innerHTML = `<b>🟢 L'appli tourne</b> (scan de ${esc(hh(st.updated))}) · ` + esc(base);
-    }
-  } catch { el.className = "status-line"; el.textContent = "État du scan indisponible"; }
-}
-
-async function load() {
-  try {
-    const j = await fetchJSON("deals.json");
-    deals = j.deals || [];
-    document.getElementById("upd").textContent = j.updated ? "Dernier scan : " + new Date(j.updated).toLocaleString("fr-FR") : "Aucun scan";
-    const seen = +localStorage.getItem("seen") || 0, latest = deals.length ? Date.parse(deals[0].found_at) : 0;
-    if (latest > seen && seen && "Notification" in window && Notification.permission === "granted")
-      new Notification("Flight Deals", { body: `${deals[0].offer.origin} → ${deals[0].dest_city} ${Math.round(deals[0].offer.price_eur)} €` });
-    localStorage.setItem("seen", latest);
-  } catch { document.getElementById("upd").textContent = "Impossible de charger les données"; }
-  try {
-    const p = await fetchJSON("preferences.json", pending.length > 0);     // refus en attente : lecture directe, sans le délai du site
-    (p.refused_issues || []).forEach(n => refused.add(n));
-    refusedKeys = new Set(p.refused_keys || []);
-    const rows = Object.entries(p).filter(([k, v]) => !["refused_issues", "refused_keys"].includes(k) && v !== null && v !== false && v !== 0 && !(Array.isArray(v) && !v.length));
-    document.getElementById("prefs").innerHTML = rows.length ? rows.map(([k, v]) => `<div>${esc(k)} : ${esc(Array.isArray(v) ? v.join(", ") : v)}</div>`).join("") : "Aucun pour l'instant.";
-  } catch {}
-  buildFilters(); render(); renderPending(); renderStatus();
-}
-buildFilters(); load(); setInterval(load, 2 * 60 * 1000);
-document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });   // retour sur l'appli = données fraîches
-window.addEventListener("focus", load);
-
-// ---------- Notifications natives (Web Push) : aucune appli externe, tout passe par ce raccourci ----------
-const VAPID_PUBLIC = "BKH9qc1jDaLuszDQqgLSNQ4FDDbhJitb_ycqO_F_PxhQjp3S_fQfVaVXSFuM80AaT6-oUQ2OtVju0lL06Moq2Tc";
-const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-const standalone = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
-const b64ToBytes = b => { const s = (b + "=".repeat((4 - b.length % 4) % 4)).replace(/-/g, "+").replace(/_/g, "/"), r = atob(s); return Uint8Array.from(r, c => c.charCodeAt(0)); };
-const pmsg = document.getElementById("pushmsg"), pbox = document.getElementById("pushsub"), pcopy = document.getElementById("pushcopy");
-
-function showSub(sub) {
-  pbox.value = JSON.stringify(sub.toJSON()); pbox.hidden = false; pcopy.hidden = false;
-  pmsg.innerHTML = "✔ Notifications <b>activées sur cet appareil</b>.<br><b>Dernière étape (une seule fois)</b> : copie le texte ci-dessous et colle-le dans le secret GitHub <code>PUSH_SUBSCRIPTION</code> (Settings &gt; Secrets and variables &gt; Actions).";
-}
-async function pushState() {
-  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
-    pmsg.textContent = isIOS && !standalone
-      ? "Sur iPhone : ajoute d'abord l'appli à l'écran d'accueil (bouton Partager, puis « Sur l'écran d'accueil »), puis ouvre-la depuis son icône et reviens ici."
-      : "Ce navigateur ne gère pas les notifications. Ouvre l'appli dans Chrome (Android) ou depuis l'icône de l'écran d'accueil (iPhone).";
-    document.getElementById("pushgo").hidden = true; return;
-  }
+/* --- Notifications natives --- */
+const b64 = s => { const p = "=".repeat((4 - s.length % 4) % 4), r = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from([...r].map(c => c.charCodeAt(0))); };
+async function pushInit() {
+  const st = $("#pushState"), b = $("#btnPush");
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) { st.textContent = "Notifications indisponibles ici. Sur iPhone : installe l'appli sur l'écran d'accueil puis ouvre-la depuis l'icône."; b.classList.add("hidden"); return; }
   const reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription();
-  if (sub && Notification.permission === "granted") { showSub(sub); document.getElementById("pushgo").textContent = "Réactiver"; }
-  else if (Notification.permission === "denied") pmsg.textContent = "Les notifications sont bloquées pour ce site : autorise-les dans les réglages du téléphone, puis reviens ici.";
-  else pmsg.textContent = "Notifications désactivées sur cet appareil.";
+  if (sub) { st.textContent = "✅ Notifications activées sur cet appareil."; b.textContent = "Recopier le texte d'abonnement"; $("#btnCopy").classList.remove("hidden"); window._sub = JSON.stringify(sub); $("#pushHelp").classList.remove("hidden"); }
 }
-async function enablePush() {
+$("#btnPush").onclick = async () => {
   try {
-    const perm = await Notification.requestPermission();                       // doit venir d'un tap : c'est le cas ici
-    if (perm !== "granted") { pmsg.textContent = "Autorisation refusée. Autorise les notifications pour ce site dans les réglages du téléphone."; return; }
+    if (await Notification.requestPermission() !== "granted") return toast("Autorisation refusée");
     const reg = await navigator.serviceWorker.ready;
-    const sub = (await reg.pushManager.getSubscription()) ||
-      await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(VAPID_PUBLIC) });
-    showSub(sub);
-  } catch (e) { pmsg.textContent = "Impossible d'activer les notifications : " + e.message; }
+    const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(VAPID_PUBLIC) });
+    window._sub = JSON.stringify(sub); $("#btnCopy").classList.remove("hidden"); $("#pushHelp").classList.remove("hidden"); $("#pushState").textContent = "✅ Activé. Copie le texte ci-dessous dans GitHub."; toast("Notifications activées");
+  } catch (e) { toast("Échec : " + e.message); }
+};
+$("#btnCopy").onclick = async () => { try { await navigator.clipboard.writeText(window._sub || ""); toast("Texte copié"); } catch { toast("Copie impossible"); } };
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").then(pushInit).catch(() => {});
+  navigator.serviceWorker.addEventListener("message", e => { if (e.data && e.data.type === "refresh") load(); });
 }
-document.getElementById("ntf").onclick = () => { const p = document.getElementById("pushpanel"); p.hidden = !p.hidden; if (!p.hidden) pushState(); };
-document.getElementById("pushgo").onclick = enablePush;
-pcopy.onclick = async () => { try { await navigator.clipboard.writeText(pbox.value); pcopy.textContent = "Copié ✔"; } catch { pbox.select(); pcopy.textContent = "Sélectionné : copie-le à la main"; } };
-// Une notification vient d'arriver : relecture immédiate des données (sans attendre le déploiement de la page), puis une 2e fois.
-if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", e => {
-  if (e.data && e.data.type === "refresh") { useApi = true; load(); setTimeout(() => { useApi = false; load(); }, 90 * 1000); }
-});
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+setInterval(load, 120000);
+load();
 </script>
 </body>
 </html>

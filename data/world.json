@@ -1,0 +1,1747 @@
+{
+ "origins": {
+  "NTE": {
+   "city": "Nantes",
+   "lat": 47.153,
+   "lon": -1.611
+  },
+  "CDG": {
+   "city": "Paris CDG",
+   "lat": 49.013,
+   "lon": 2.55
+  },
+  "ORY": {
+   "city": "Paris Orly",
+   "lat": 48.723,
+   "lon": 2.379
+  },
+  "LHR": {
+   "city": "Londres Heathrow",
+   "lat": 51.47,
+   "lon": -0.454
+  },
+  "MAD": {
+   "city": "Madrid",
+   "lat": 40.494,
+   "lon": -3.567
+  },
+  "FCO": {
+   "city": "Rome",
+   "lat": 41.8,
+   "lon": 12.25
+  },
+  "LIS": {
+   "city": "Lisbonne",
+   "lat": 38.774,
+   "lon": -9.134
+  },
+  "DUB": {
+   "city": "Dublin",
+   "lat": 53.421,
+   "lon": -6.27
+  },
+  "AMS": {
+   "city": "Amsterdam",
+   "lat": 52.31,
+   "lon": 4.768
+  },
+  "FRA": {
+   "city": "Francfort",
+   "lat": 50.033,
+   "lon": 8.571
+  }
+ },
+ "origin_keywords": {
+  "paris": "CDG",
+  "nantes": "NTE",
+  "london": "LHR",
+  "londres": "LHR",
+  "madrid": "MAD",
+  "rome": "FCO",
+  "lisbon": "LIS",
+  "lisbonne": "LIS",
+  "dublin": "DUB",
+  "amsterdam": "AMS",
+  "frankfurt": "FRA",
+  "francfort": "FRA"
+ },
+ "destinations": {
+  "TYO": {
+   "city": "Tokyo",
+   "country": "JP",
+   "lat": 35.55,
+   "lon": 139.78,
+   "airports": [
+    "HND",
+    "NRT"
+   ]
+  },
+  "OSA": {
+   "city": "Osaka",
+   "country": "JP",
+   "lat": 34.43,
+   "lon": 135.24,
+   "airports": [
+    "KIX",
+    "ITM"
+   ]
+  },
+  "BKK": {
+   "city": "Bangkok",
+   "country": "TH",
+   "lat": 13.69,
+   "lon": 100.75,
+   "airports": []
+  },
+  "HKT": {
+   "city": "Phuket",
+   "country": "TH",
+   "lat": 8.11,
+   "lon": 98.31,
+   "airports": []
+  },
+  "CNX": {
+   "city": "Chiang Mai",
+   "country": "TH",
+   "lat": 18.77,
+   "lon": 98.96,
+   "airports": []
+  },
+  "SGN": {
+   "city": "Hô-Chi-Minh-Ville",
+   "country": "VN",
+   "lat": 10.82,
+   "lon": 106.65,
+   "airports": []
+  },
+  "HAN": {
+   "city": "Hanoï",
+   "country": "VN",
+   "lat": 21.22,
+   "lon": 105.81,
+   "airports": []
+  },
+  "DPS": {
+   "city": "Bali",
+   "country": "ID",
+   "lat": -8.75,
+   "lon": 115.17,
+   "airports": []
+  },
+  "JKT": {
+   "city": "Jakarta",
+   "country": "ID",
+   "lat": -6.13,
+   "lon": 106.66,
+   "airports": [
+    "CGK"
+   ]
+  },
+  "KUL": {
+   "city": "Kuala Lumpur",
+   "country": "MY",
+   "lat": 2.75,
+   "lon": 101.71,
+   "airports": []
+  },
+  "SIN": {
+   "city": "Singapour",
+   "country": "SG",
+   "lat": 1.36,
+   "lon": 103.99,
+   "airports": []
+  },
+  "MNL": {
+   "city": "Manille",
+   "country": "PH",
+   "lat": 14.51,
+   "lon": 121.02,
+   "airports": []
+  },
+  "CEB": {
+   "city": "Cebu",
+   "country": "PH",
+   "lat": 10.31,
+   "lon": 123.98,
+   "airports": []
+  },
+  "PNH": {
+   "city": "Phnom Penh",
+   "country": "KH",
+   "lat": 11.55,
+   "lon": 104.84,
+   "airports": []
+  },
+  "REP": {
+   "city": "Siem Reap",
+   "country": "KH",
+   "lat": 13.41,
+   "lon": 103.81,
+   "airports": []
+  },
+  "DEL": {
+   "city": "Delhi",
+   "country": "IN",
+   "lat": 28.56,
+   "lon": 77.1,
+   "airports": []
+  },
+  "BOM": {
+   "city": "Mumbai",
+   "country": "IN",
+   "lat": 19.09,
+   "lon": 72.87,
+   "airports": []
+  },
+  "GOI": {
+   "city": "Goa",
+   "country": "IN",
+   "lat": 15.38,
+   "lon": 73.83,
+   "airports": []
+  },
+  "BLR": {
+   "city": "Bangalore",
+   "country": "IN",
+   "lat": 13.2,
+   "lon": 77.71,
+   "airports": []
+  },
+  "KTM": {
+   "city": "Katmandou",
+   "country": "NP",
+   "lat": 27.7,
+   "lon": 85.36,
+   "airports": []
+  },
+  "CMB": {
+   "city": "Colombo",
+   "country": "LK",
+   "lat": 7.18,
+   "lon": 79.88,
+   "airports": []
+  },
+  "SEL": {
+   "city": "Séoul",
+   "country": "KR",
+   "lat": 37.46,
+   "lon": 126.44,
+   "airports": [
+    "ICN",
+    "GMP"
+   ]
+  },
+  "TPE": {
+   "city": "Taipei",
+   "country": "TW",
+   "lat": 25.08,
+   "lon": 121.23,
+   "airports": []
+  },
+  "HKG": {
+   "city": "Hong Kong",
+   "country": "HK",
+   "lat": 22.31,
+   "lon": 113.91,
+   "airports": []
+  },
+  "BJS": {
+   "city": "Pékin",
+   "country": "CN",
+   "lat": 40.08,
+   "lon": 116.58,
+   "airports": [
+    "PEK",
+    "PKX"
+   ]
+  },
+  "SHA": {
+   "city": "Shanghai",
+   "country": "CN",
+   "lat": 31.14,
+   "lon": 121.81,
+   "airports": [
+    "PVG",
+    "SHA"
+   ]
+  },
+  "CAN": {
+   "city": "Canton",
+   "country": "CN",
+   "lat": 23.39,
+   "lon": 113.3,
+   "airports": []
+  },
+  "DXB": {
+   "city": "Dubaï",
+   "country": "AE",
+   "lat": 25.25,
+   "lon": 55.36,
+   "airports": []
+  },
+  "AUH": {
+   "city": "Abou Dabi",
+   "country": "AE",
+   "lat": 24.43,
+   "lon": 54.65,
+   "airports": []
+  },
+  "DOH": {
+   "city": "Doha",
+   "country": "QA",
+   "lat": 25.27,
+   "lon": 51.61,
+   "airports": []
+  },
+  "AMM": {
+   "city": "Amman",
+   "country": "JO",
+   "lat": 31.72,
+   "lon": 35.99,
+   "airports": []
+  },
+  "TLV": {
+   "city": "Tel Aviv",
+   "country": "IL",
+   "lat": 32.01,
+   "lon": 34.89,
+   "airports": []
+  },
+  "TAS": {
+   "city": "Tachkent",
+   "country": "UZ",
+   "lat": 41.26,
+   "lon": 69.28,
+   "airports": []
+  },
+  "MLE": {
+   "city": "Malé",
+   "country": "MV",
+   "lat": 4.19,
+   "lon": 73.53,
+   "airports": []
+  },
+  "RAK": {
+   "city": "Marrakech",
+   "country": "MA",
+   "lat": 31.61,
+   "lon": -8.04,
+   "airports": []
+  },
+  "CMN": {
+   "city": "Casablanca",
+   "country": "MA",
+   "lat": 33.37,
+   "lon": -7.59,
+   "airports": []
+  },
+  "TUN": {
+   "city": "Tunis",
+   "country": "TN",
+   "lat": 36.85,
+   "lon": 10.23,
+   "airports": []
+  },
+  "CAI": {
+   "city": "Le Caire",
+   "country": "EG",
+   "lat": 30.12,
+   "lon": 31.41,
+   "airports": []
+  },
+  "HRG": {
+   "city": "Hurghada",
+   "country": "EG",
+   "lat": 27.18,
+   "lon": 33.8,
+   "airports": []
+  },
+  "DKR": {
+   "city": "Dakar",
+   "country": "SN",
+   "lat": 14.67,
+   "lon": -17.07,
+   "airports": [
+    "DSS"
+   ]
+  },
+  "ACC": {
+   "city": "Accra",
+   "country": "GH",
+   "lat": 5.61,
+   "lon": -0.17,
+   "airports": []
+  },
+  "ADD": {
+   "city": "Addis-Abeba",
+   "country": "ET",
+   "lat": 8.98,
+   "lon": 38.8,
+   "airports": []
+  },
+  "NBO": {
+   "city": "Nairobi",
+   "country": "KE",
+   "lat": -1.32,
+   "lon": 36.93,
+   "airports": []
+  },
+  "ZNZ": {
+   "city": "Zanzibar",
+   "country": "TZ",
+   "lat": -6.22,
+   "lon": 39.22,
+   "airports": []
+  },
+  "JRO": {
+   "city": "Kilimandjaro",
+   "country": "TZ",
+   "lat": -3.43,
+   "lon": 37.07,
+   "airports": []
+  },
+  "CPT": {
+   "city": "Le Cap",
+   "country": "ZA",
+   "lat": -33.97,
+   "lon": 18.6,
+   "airports": []
+  },
+  "JNB": {
+   "city": "Johannesburg",
+   "country": "ZA",
+   "lat": -26.14,
+   "lon": 28.25,
+   "airports": []
+  },
+  "MRU": {
+   "city": "Île Maurice",
+   "country": "MU",
+   "lat": -20.43,
+   "lon": 57.68,
+   "airports": []
+  },
+  "TNR": {
+   "city": "Antananarivo",
+   "country": "MG",
+   "lat": -18.8,
+   "lon": 47.48,
+   "airports": []
+  },
+  "RUN": {
+   "city": "La Réunion",
+   "country": "RE",
+   "lat": -20.89,
+   "lon": 55.51,
+   "airports": []
+  },
+  "SID": {
+   "city": "Cap-Vert (Sal)",
+   "country": "CV",
+   "lat": 16.74,
+   "lon": -22.95,
+   "airports": []
+  },
+  "NYC": {
+   "city": "New York",
+   "country": "US",
+   "lat": 40.64,
+   "lon": -73.78,
+   "airports": [
+    "JFK",
+    "EWR",
+    "LGA"
+   ]
+  },
+  "BOS": {
+   "city": "Boston",
+   "country": "US",
+   "lat": 42.36,
+   "lon": -71.01,
+   "airports": []
+  },
+  "MIA": {
+   "city": "Miami",
+   "country": "US",
+   "lat": 25.79,
+   "lon": -80.29,
+   "airports": []
+  },
+  "LAX": {
+   "city": "Los Angeles",
+   "country": "US",
+   "lat": 33.94,
+   "lon": -118.41,
+   "airports": []
+  },
+  "SFO": {
+   "city": "San Francisco",
+   "country": "US",
+   "lat": 37.62,
+   "lon": -122.38,
+   "airports": []
+  },
+  "YMQ": {
+   "city": "Montréal",
+   "country": "CA",
+   "lat": 45.47,
+   "lon": -73.74,
+   "airports": [
+    "YUL"
+   ]
+  },
+  "YTO": {
+   "city": "Toronto",
+   "country": "CA",
+   "lat": 43.68,
+   "lon": -79.63,
+   "airports": [
+    "YYZ"
+   ]
+  },
+  "YVR": {
+   "city": "Vancouver",
+   "country": "CA",
+   "lat": 49.19,
+   "lon": -123.18,
+   "airports": []
+  },
+  "MEX": {
+   "city": "Mexico",
+   "country": "MX",
+   "lat": 19.44,
+   "lon": -99.07,
+   "airports": []
+  },
+  "CUN": {
+   "city": "Cancún",
+   "country": "MX",
+   "lat": 21.04,
+   "lon": -86.87,
+   "airports": []
+  },
+  "BOG": {
+   "city": "Bogotá",
+   "country": "CO",
+   "lat": 4.7,
+   "lon": -74.15,
+   "airports": []
+  },
+  "MDE": {
+   "city": "Medellín",
+   "country": "CO",
+   "lat": 6.17,
+   "lon": -75.43,
+   "airports": []
+  },
+  "LIM": {
+   "city": "Lima",
+   "country": "PE",
+   "lat": -12.02,
+   "lon": -77.11,
+   "airports": []
+  },
+  "CUZ": {
+   "city": "Cusco",
+   "country": "PE",
+   "lat": -13.54,
+   "lon": -71.94,
+   "airports": []
+  },
+  "SCL": {
+   "city": "Santiago",
+   "country": "CL",
+   "lat": -33.39,
+   "lon": -70.79,
+   "airports": []
+  },
+  "BUE": {
+   "city": "Buenos Aires",
+   "country": "AR",
+   "lat": -34.82,
+   "lon": -58.54,
+   "airports": [
+    "EZE",
+    "AEP"
+   ]
+  },
+  "RIO": {
+   "city": "Rio de Janeiro",
+   "country": "BR",
+   "lat": -22.81,
+   "lon": -43.25,
+   "airports": [
+    "GIG",
+    "SDU"
+   ]
+  },
+  "SAO": {
+   "city": "São Paulo",
+   "country": "BR",
+   "lat": -23.43,
+   "lon": -46.47,
+   "airports": [
+    "GRU",
+    "CGH"
+   ]
+  },
+  "UIO": {
+   "city": "Quito",
+   "country": "EC",
+   "lat": -0.13,
+   "lon": -78.36,
+   "airports": []
+  },
+  "HAV": {
+   "city": "La Havane",
+   "country": "CU",
+   "lat": 22.99,
+   "lon": -82.41,
+   "airports": []
+  },
+  "PUJ": {
+   "city": "Punta Cana",
+   "country": "DO",
+   "lat": 18.57,
+   "lon": -68.36,
+   "airports": []
+  },
+  "SJO": {
+   "city": "San José",
+   "country": "CR",
+   "lat": 9.99,
+   "lon": -84.21,
+   "airports": []
+  },
+  "PTY": {
+   "city": "Panama",
+   "country": "PA",
+   "lat": 9.07,
+   "lon": -79.38,
+   "airports": []
+  },
+  "LPB": {
+   "city": "La Paz",
+   "country": "BO",
+   "lat": -16.51,
+   "lon": -68.19,
+   "airports": []
+  },
+  "FDF": {
+   "city": "Martinique",
+   "country": "MQ",
+   "lat": 14.59,
+   "lon": -61.0,
+   "airports": []
+  },
+  "PTP": {
+   "city": "Guadeloupe",
+   "country": "GP",
+   "lat": 16.27,
+   "lon": -61.53,
+   "airports": []
+  },
+  "SYD": {
+   "city": "Sydney",
+   "country": "AU",
+   "lat": -33.95,
+   "lon": 151.18,
+   "airports": []
+  },
+  "MEL": {
+   "city": "Melbourne",
+   "country": "AU",
+   "lat": -37.67,
+   "lon": 144.84,
+   "airports": []
+  },
+  "AKL": {
+   "city": "Auckland",
+   "country": "NZ",
+   "lat": -37.01,
+   "lon": 174.79,
+   "airports": []
+  },
+  "ALA": {
+   "city": "Almaty",
+   "country": "KZ",
+   "lat": 43.35,
+   "lon": 77.04,
+   "airports": []
+  },
+  "FRU": {
+   "city": "Bichkek",
+   "country": "KG",
+   "lat": 43.06,
+   "lon": 74.48,
+   "airports": []
+  },
+  "SKD": {
+   "city": "Samarcande",
+   "country": "UZ",
+   "lat": 39.7,
+   "lon": 66.98,
+   "airports": []
+  },
+  "MCT": {
+   "city": "Mascate",
+   "country": "OM",
+   "lat": 23.59,
+   "lon": 58.28,
+   "airports": []
+  },
+  "ULN": {
+   "city": "Oulan-Bator",
+   "country": "MN",
+   "lat": 47.84,
+   "lon": 106.77,
+   "airports": []
+  },
+  "LPQ": {
+   "city": "Luang Prabang",
+   "country": "LA",
+   "lat": 19.9,
+   "lon": 102.16,
+   "airports": []
+  },
+  "VTE": {
+   "city": "Vientiane",
+   "country": "LA",
+   "lat": 17.99,
+   "lon": 102.56,
+   "airports": []
+  },
+  "RGN": {
+   "city": "Yangon",
+   "country": "MM",
+   "lat": 16.91,
+   "lon": 96.13,
+   "airports": []
+  },
+  "DAC": {
+   "city": "Dacca",
+   "country": "BD",
+   "lat": 23.84,
+   "lon": 90.4,
+   "airports": []
+  },
+  "BKI": {
+   "city": "Kota Kinabalu",
+   "country": "MY",
+   "lat": 5.94,
+   "lon": 116.05,
+   "airports": []
+  },
+  "DAD": {
+   "city": "Da Nang",
+   "country": "VN",
+   "lat": 16.04,
+   "lon": 108.2,
+   "airports": []
+  },
+  "KGL": {
+   "city": "Kigali",
+   "country": "RW",
+   "lat": -1.97,
+   "lon": 30.14,
+   "airports": []
+  },
+  "WDH": {
+   "city": "Windhoek",
+   "country": "NA",
+   "lat": -22.48,
+   "lon": 17.47,
+   "airports": []
+  },
+  "LUN": {
+   "city": "Lusaka",
+   "country": "ZM",
+   "lat": -15.33,
+   "lon": 28.45,
+   "airports": []
+  },
+  "ABJ": {
+   "city": "Abidjan",
+   "country": "CI",
+   "lat": 5.26,
+   "lon": -3.93,
+   "airports": []
+  },
+  "LFW": {
+   "city": "Lomé",
+   "country": "TG",
+   "lat": 6.17,
+   "lon": 1.25,
+   "airports": []
+  },
+  "COO": {
+   "city": "Cotonou",
+   "country": "BJ",
+   "lat": 6.36,
+   "lon": 2.38,
+   "airports": []
+  },
+  "DLA": {
+   "city": "Douala",
+   "country": "CM",
+   "lat": 4.01,
+   "lon": 9.72,
+   "airports": []
+  },
+  "EBB": {
+   "city": "Entebbe",
+   "country": "UG",
+   "lat": 0.04,
+   "lon": 32.44,
+   "airports": []
+  },
+  "DAR": {
+   "city": "Dar es Salaam",
+   "country": "TZ",
+   "lat": -6.88,
+   "lon": 39.2,
+   "airports": []
+  },
+  "SEZ": {
+   "city": "Seychelles",
+   "country": "SC",
+   "lat": -4.67,
+   "lon": 55.52,
+   "airports": []
+  },
+  "MVD": {
+   "city": "Montevideo",
+   "country": "UY",
+   "lat": -34.84,
+   "lon": -56.03,
+   "airports": []
+  },
+  "ASU": {
+   "city": "Asunción",
+   "country": "PY",
+   "lat": -25.24,
+   "lon": -57.52,
+   "airports": []
+  },
+  "VVI": {
+   "city": "Santa Cruz",
+   "country": "BO",
+   "lat": -17.64,
+   "lon": -63.14,
+   "airports": []
+  },
+  "CTG": {
+   "city": "Carthagène",
+   "country": "CO",
+   "lat": 10.44,
+   "lon": -75.51,
+   "airports": []
+  },
+  "GUA": {
+   "city": "Guatemala",
+   "country": "GT",
+   "lat": 14.58,
+   "lon": -90.53,
+   "airports": []
+  },
+  "BZE": {
+   "city": "Belize",
+   "country": "BZ",
+   "lat": 17.54,
+   "lon": -88.31,
+   "airports": []
+  },
+  "SAL": {
+   "city": "San Salvador",
+   "country": "SV",
+   "lat": 13.44,
+   "lon": -89.06,
+   "airports": []
+  },
+  "KIN": {
+   "city": "Kingston",
+   "country": "JM",
+   "lat": 17.94,
+   "lon": -76.79,
+   "airports": []
+  },
+  "BGI": {
+   "city": "Barbade",
+   "country": "BB",
+   "lat": 13.07,
+   "lon": -59.49,
+   "airports": []
+  },
+  "NAN": {
+   "city": "Fidji (Nadi)",
+   "country": "FJ",
+   "lat": -17.76,
+   "lon": 177.44,
+   "airports": []
+  },
+  "PPT": {
+   "city": "Tahiti",
+   "country": "PF",
+   "lat": -17.56,
+   "lon": -149.61,
+   "airports": []
+  },
+  "NOU": {
+   "city": "Nouméa",
+   "country": "NC",
+   "lat": -22.01,
+   "lon": 166.21,
+   "airports": []
+  },
+  "CHI": {
+   "city": "Chicago",
+   "country": "US",
+   "lat": 41.98,
+   "lon": -87.91,
+   "airports": [
+    "ORD",
+    "MDW"
+   ]
+  },
+  "WAS": {
+   "city": "Washington",
+   "country": "US",
+   "lat": 38.95,
+   "lon": -77.46,
+   "airports": [
+    "IAD",
+    "DCA"
+   ]
+  },
+  "ORL": {
+   "city": "Orlando",
+   "country": "US",
+   "lat": 28.43,
+   "lon": -81.31,
+   "airports": []
+  },
+  "LAS": {
+   "city": "Las Vegas",
+   "country": "US",
+   "lat": 36.08,
+   "lon": -115.15,
+   "airports": []
+  },
+  "SEA": {
+   "city": "Seattle",
+   "country": "US",
+   "lat": 47.45,
+   "lon": -122.31,
+   "airports": []
+  },
+  "ATL": {
+   "city": "Atlanta",
+   "country": "US",
+   "lat": 33.64,
+   "lon": -84.43,
+   "airports": []
+  },
+  "DFW": {
+   "city": "Dallas",
+   "country": "US",
+   "lat": 32.9,
+   "lon": -97.04,
+   "airports": []
+  },
+  "HOU": {
+   "city": "Houston",
+   "country": "US",
+   "lat": 29.99,
+   "lon": -95.34,
+   "airports": []
+  },
+  "DEN": {
+   "city": "Denver",
+   "country": "US",
+   "lat": 39.86,
+   "lon": -104.67,
+   "airports": []
+  },
+  "PHX": {
+   "city": "Phoenix",
+   "country": "US",
+   "lat": 33.43,
+   "lon": -112.01,
+   "airports": []
+  },
+  "HNL": {
+   "city": "Hawaï (Honolulu)",
+   "country": "US",
+   "lat": 21.32,
+   "lon": -157.92,
+   "airports": []
+  },
+  "SJU": {
+   "city": "San Juan (Porto Rico)",
+   "country": "US",
+   "lat": 18.44,
+   "lon": -66.0,
+   "airports": []
+  },
+  "YYC": {
+   "city": "Calgary",
+   "country": "CA",
+   "lat": 51.11,
+   "lon": -114.02,
+   "airports": []
+  },
+  "YQB": {
+   "city": "Québec",
+   "country": "CA",
+   "lat": 46.79,
+   "lon": -71.39,
+   "airports": []
+  },
+  "GDL": {
+   "city": "Guadalajara",
+   "country": "MX",
+   "lat": 20.52,
+   "lon": -103.31,
+   "airports": []
+  },
+  "OAX": {
+   "city": "Oaxaca",
+   "country": "MX",
+   "lat": 17.0,
+   "lon": -96.73,
+   "airports": []
+  },
+  "MID": {
+   "city": "Mérida",
+   "country": "MX",
+   "lat": 20.94,
+   "lon": -89.66,
+   "airports": []
+  },
+  "MDZ": {
+   "city": "Mendoza",
+   "country": "AR",
+   "lat": -32.83,
+   "lon": -68.8,
+   "airports": []
+  },
+  "IGU": {
+   "city": "Iguazú",
+   "country": "AR",
+   "lat": -25.74,
+   "lon": -54.47,
+   "airports": []
+  },
+  "SSA": {
+   "city": "Salvador de Bahia",
+   "country": "BR",
+   "lat": -12.91,
+   "lon": -38.33,
+   "airports": []
+  },
+  "FOR": {
+   "city": "Fortaleza",
+   "country": "BR",
+   "lat": -3.78,
+   "lon": -38.53,
+   "airports": []
+  },
+  "REC": {
+   "city": "Recife",
+   "country": "BR",
+   "lat": -8.13,
+   "lon": -34.92,
+   "airports": []
+  },
+  "GYE": {
+   "city": "Guayaquil",
+   "country": "EC",
+   "lat": -2.16,
+   "lon": -79.88,
+   "airports": []
+  },
+  "NAS": {
+   "city": "Nassau",
+   "country": "BS",
+   "lat": 25.04,
+   "lon": -77.47,
+   "airports": []
+  },
+  "AUA": {
+   "city": "Aruba",
+   "country": "AW",
+   "lat": 12.5,
+   "lon": -70.01,
+   "airports": []
+  },
+  "CUR": {
+   "city": "Curaçao",
+   "country": "CW",
+   "lat": 12.19,
+   "lon": -68.96,
+   "airports": []
+  },
+  "PER": {
+   "city": "Perth",
+   "country": "AU",
+   "lat": -31.94,
+   "lon": 115.97,
+   "airports": []
+  },
+  "BNE": {
+   "city": "Brisbane",
+   "country": "AU",
+   "lat": -27.38,
+   "lon": 153.12,
+   "airports": []
+  },
+  "CNS": {
+   "city": "Cairns",
+   "country": "AU",
+   "lat": -16.89,
+   "lon": 145.76,
+   "airports": []
+  },
+  "CHC": {
+   "city": "Christchurch",
+   "country": "NZ",
+   "lat": -43.49,
+   "lon": 172.53,
+   "airports": []
+  },
+  "ZQN": {
+   "city": "Queenstown",
+   "country": "NZ",
+   "lat": -45.02,
+   "lon": 168.74,
+   "airports": []
+  },
+  "MAA": {
+   "city": "Chennai",
+   "country": "IN",
+   "lat": 12.99,
+   "lon": 80.17,
+   "airports": []
+  },
+  "CCU": {
+   "city": "Calcutta",
+   "country": "IN",
+   "lat": 22.65,
+   "lon": 88.45,
+   "airports": []
+  },
+  "COK": {
+   "city": "Kochi",
+   "country": "IN",
+   "lat": 10.15,
+   "lon": 76.4,
+   "airports": []
+  },
+  "JAI": {
+   "city": "Jaipur",
+   "country": "IN",
+   "lat": 26.82,
+   "lon": 75.81,
+   "airports": []
+  },
+  "CTS": {
+   "city": "Sapporo",
+   "country": "JP",
+   "lat": 42.78,
+   "lon": 141.69,
+   "airports": []
+  },
+  "FUK": {
+   "city": "Fukuoka",
+   "country": "JP",
+   "lat": 33.59,
+   "lon": 130.45,
+   "airports": []
+  },
+  "XIY": {
+   "city": "Xi'an",
+   "country": "CN",
+   "lat": 34.44,
+   "lon": 108.75,
+   "airports": []
+  },
+  "CTU": {
+   "city": "Chengdu",
+   "country": "CN",
+   "lat": 30.58,
+   "lon": 103.95,
+   "airports": []
+  },
+  "PEN": {
+   "city": "Penang",
+   "country": "MY",
+   "lat": 5.3,
+   "lon": 100.28,
+   "airports": []
+  },
+  "JOG": {
+   "city": "Yogyakarta",
+   "country": "ID",
+   "lat": -7.79,
+   "lon": 110.43,
+   "airports": []
+  },
+  "LOP": {
+   "city": "Lombok",
+   "country": "ID",
+   "lat": -8.76,
+   "lon": 116.28,
+   "airports": []
+  }
+ },
+ "dest_keywords": {
+  "tokyo": "TYO",
+  "osaka": "OSA",
+  "bangkok": "BKK",
+  "phuket": "HKT",
+  "chiang mai": "CNX",
+  "hô-chi-minh-ville": "SGN",
+  "hanoï": "HAN",
+  "bali": "DPS",
+  "jakarta": "JKT",
+  "kuala lumpur": "KUL",
+  "singapour": "SIN",
+  "manille": "MNL",
+  "cebu": "CEB",
+  "phnom penh": "PNH",
+  "siem reap": "REP",
+  "delhi": "DEL",
+  "mumbai": "BOM",
+  "goa": "GOI",
+  "bangalore": "BLR",
+  "katmandou": "KTM",
+  "colombo": "CMB",
+  "séoul": "SEL",
+  "taipei": "TPE",
+  "hong kong": "HKG",
+  "pékin": "BJS",
+  "shanghai": "SHA",
+  "canton": "CAN",
+  "dubaï": "DXB",
+  "abou dabi": "AUH",
+  "doha": "DOH",
+  "amman": "AMM",
+  "tel aviv": "TLV",
+  "tachkent": "TAS",
+  "malé": "MLE",
+  "marrakech": "RAK",
+  "casablanca": "CMN",
+  "tunis": "TUN",
+  "le caire": "CAI",
+  "hurghada": "HRG",
+  "dakar": "DKR",
+  "accra": "ACC",
+  "addis-abeba": "ADD",
+  "nairobi": "NBO",
+  "zanzibar": "ZNZ",
+  "kilimandjaro": "JRO",
+  "le cap": "CPT",
+  "johannesburg": "JNB",
+  "île maurice": "MRU",
+  "antananarivo": "TNR",
+  "la réunion": "RUN",
+  "cap-vert (sal)": "SID",
+  "new york": "NYC",
+  "boston": "BOS",
+  "miami": "MIA",
+  "los angeles": "LAX",
+  "san francisco": "SFO",
+  "montréal": "YMQ",
+  "toronto": "YTO",
+  "vancouver": "YVR",
+  "mexico": "MEX",
+  "cancún": "CUN",
+  "bogotá": "BOG",
+  "medellín": "MDE",
+  "lima": "LIM",
+  "cusco": "CUZ",
+  "santiago": "SCL",
+  "buenos aires": "BUE",
+  "rio de janeiro": "RIO",
+  "são paulo": "SAO",
+  "quito": "UIO",
+  "la havane": "HAV",
+  "punta cana": "PUJ",
+  "san josé": "SJO",
+  "panama": "PTY",
+  "la paz": "LPB",
+  "martinique": "FDF",
+  "guadeloupe": "PTP",
+  "sydney": "SYD",
+  "melbourne": "MEL",
+  "auckland": "AKL",
+  "almaty": "ALA",
+  "bichkek": "FRU",
+  "samarcande": "SKD",
+  "mascate": "MCT",
+  "oulan-bator": "ULN",
+  "luang prabang": "LPQ",
+  "vientiane": "VTE",
+  "yangon": "RGN",
+  "dacca": "DAC",
+  "kota kinabalu": "BKI",
+  "da nang": "DAD",
+  "kigali": "KGL",
+  "windhoek": "WDH",
+  "lusaka": "LUN",
+  "abidjan": "ABJ",
+  "lomé": "LFW",
+  "cotonou": "COO",
+  "douala": "DLA",
+  "entebbe": "EBB",
+  "dar es salaam": "DAR",
+  "seychelles": "SEZ",
+  "montevideo": "MVD",
+  "asunción": "ASU",
+  "santa cruz": "VVI",
+  "carthagène": "CTG",
+  "guatemala": "GUA",
+  "belize": "BZE",
+  "san salvador": "SAL",
+  "kingston": "KIN",
+  "barbade": "BGI",
+  "fidji (nadi)": "NAN",
+  "tahiti": "PPT",
+  "nouméa": "NOU",
+  "chicago": "CHI",
+  "washington": "WAS",
+  "orlando": "ORL",
+  "las vegas": "LAS",
+  "seattle": "SEA",
+  "atlanta": "ATL",
+  "dallas": "DFW",
+  "houston": "HOU",
+  "denver": "DEN",
+  "phoenix": "PHX",
+  "hawaï (honolulu)": "HNL",
+  "san juan (porto rico)": "SJU",
+  "calgary": "YYC",
+  "québec": "YQB",
+  "guadalajara": "GDL",
+  "oaxaca": "OAX",
+  "mérida": "MID",
+  "mendoza": "MDZ",
+  "iguazú": "IGU",
+  "salvador de bahia": "SSA",
+  "fortaleza": "FOR",
+  "recife": "REC",
+  "guayaquil": "GYE",
+  "nassau": "NAS",
+  "aruba": "AUA",
+  "curaçao": "CUR",
+  "perth": "PER",
+  "brisbane": "BNE",
+  "cairns": "CNS",
+  "christchurch": "CHC",
+  "queenstown": "ZQN",
+  "chennai": "MAA",
+  "calcutta": "CCU",
+  "kochi": "COK",
+  "jaipur": "JAI",
+  "sapporo": "CTS",
+  "fukuoka": "FUK",
+  "xi'an": "XIY",
+  "chengdu": "CTU",
+  "penang": "PEN",
+  "yogyakarta": "JOG",
+  "lombok": "LOP",
+  "japan": "TYO",
+  "japon": "TYO",
+  "thailand": "BKK",
+  "thaïlande": "BKK",
+  "indonesia": "DPS",
+  "vietnam": "SGN",
+  "singapore": "SIN",
+  "seoul": "SEL",
+  "montreal": "YMQ",
+  "mexico city": "MEX",
+  "sao paulo": "SAO",
+  "dubai": "DXB",
+  "cape town": "CPT",
+  "mauritius": "MRU",
+  "new zealand": "AKL",
+  "marrakesh": "RAK",
+  "cairo": "CAI",
+  "kathmandu": "KTM",
+  "beijing": "BJS",
+  "manila": "MNL",
+  "cancun": "CUN",
+  "bogota": "BOG",
+  "havana": "HAV"
+ },
+ "hubs": {
+  "LIS": {
+   "city": "Lisbonne",
+   "country": "PT",
+   "lat": 38.774,
+   "lon": -9.134,
+   "utc": 0,
+   "airports": [
+    "LIS"
+   ]
+  },
+  "OPO": {
+   "city": "Porto",
+   "country": "PT",
+   "lat": 41.242,
+   "lon": -8.678,
+   "utc": 0,
+   "airports": [
+    "OPO"
+   ]
+  },
+  "MAD": {
+   "city": "Madrid",
+   "country": "ES",
+   "lat": 40.494,
+   "lon": -3.567,
+   "utc": 1,
+   "airports": [
+    "MAD"
+   ]
+  },
+  "BCN": {
+   "city": "Barcelone",
+   "country": "ES",
+   "lat": 41.297,
+   "lon": 2.078,
+   "utc": 1,
+   "airports": [
+    "BCN"
+   ]
+  },
+  "DUB": {
+   "city": "Dublin",
+   "country": "IE",
+   "lat": 53.421,
+   "lon": -6.27,
+   "utc": 0,
+   "airports": [
+    "DUB"
+   ]
+  },
+  "LON": {
+   "city": "Londres",
+   "country": "GB",
+   "lat": 51.47,
+   "lon": -0.454,
+   "utc": 0,
+   "airports": [
+    "LHR",
+    "LGW",
+    "STN",
+    "LTN"
+   ]
+  },
+  "ROM": {
+   "city": "Rome",
+   "country": "IT",
+   "lat": 41.8,
+   "lon": 12.25,
+   "utc": 1,
+   "airports": [
+    "FCO",
+    "CIA"
+   ]
+  },
+  "ATH": {
+   "city": "Athènes",
+   "country": "GR",
+   "lat": 37.936,
+   "lon": 23.945,
+   "utc": 2,
+   "airports": [
+    "ATH"
+   ]
+  },
+  "BUD": {
+   "city": "Budapest",
+   "country": "HU",
+   "lat": 47.44,
+   "lon": 19.26,
+   "utc": 1,
+   "airports": [
+    "BUD"
+   ]
+  },
+  "IST": {
+   "city": "Istanbul",
+   "country": "TR",
+   "lat": 41.275,
+   "lon": 28.752,
+   "utc": 3,
+   "airports": [
+    "IST",
+    "SAW"
+   ]
+  },
+  "DXB": {
+   "city": "Dubaï",
+   "country": "AE",
+   "lat": 25.25,
+   "lon": 55.36,
+   "utc": 4,
+   "airports": [
+    "DXB"
+   ]
+  },
+  "DOH": {
+   "city": "Doha",
+   "country": "QA",
+   "lat": 25.27,
+   "lon": 51.61,
+   "utc": 3,
+   "airports": [
+    "DOH"
+   ]
+  }
+ },
+ "same_city": {
+  "LHR": "LON",
+  "FCO": "ROM"
+ },
+ "mainstream": [
+  "BJS",
+  "BKK",
+  "BOM",
+  "CHI",
+  "CUN",
+  "DEL",
+  "DPS",
+  "DXB",
+  "HKG",
+  "HKT",
+  "HNL",
+  "KUL",
+  "LAS",
+  "LAX",
+  "MEL",
+  "MIA",
+  "NYC",
+  "ORL",
+  "OSA",
+  "PUJ",
+  "SFO",
+  "SHA",
+  "SIN",
+  "SYD",
+  "TYO",
+  "WAS",
+  "YMQ",
+  "YTO"
+ ],
+ "known": [
+  "AKL",
+  "AMM",
+  "ATL",
+  "AUA",
+  "AUH",
+  "BNE",
+  "BOG",
+  "BOS",
+  "BUE",
+  "CCU",
+  "CHC",
+  "CMB",
+  "CNS",
+  "CNX",
+  "CPT",
+  "CTS",
+  "DEN",
+  "DFW",
+  "DOH",
+  "FUK",
+  "GDL",
+  "GOI",
+  "GYE",
+  "HAN",
+  "HAV",
+  "HOU",
+  "IGU",
+  "JAI",
+  "JNB",
+  "KTM",
+  "LIM",
+  "MAA",
+  "MEX",
+  "MLE",
+  "MNL",
+  "MRU",
+  "NAS",
+  "NBO",
+  "PEN",
+  "PER",
+  "PHX",
+  "PNH",
+  "REP",
+  "RIO",
+  "SAO",
+  "SEA",
+  "SEL",
+  "SGN",
+  "SJO",
+  "SJU",
+  "TLV",
+  "TPE",
+  "YQB",
+  "YVR",
+  "YYC",
+  "ZNZ",
+  "ZQN"
+ ],
+ "offbeat": [
+  "ABJ",
+  "ACC",
+  "ADD",
+  "ALA",
+  "ASU",
+  "BGI",
+  "BKI",
+  "BZE",
+  "COK",
+  "COO",
+  "CTG",
+  "CTU",
+  "CUR",
+  "CUZ",
+  "DAC",
+  "DAD",
+  "DAR",
+  "DKR",
+  "DLA",
+  "EBB",
+  "FOR",
+  "FRU",
+  "GUA",
+  "JOG",
+  "JRO",
+  "KGL",
+  "KIN",
+  "LFW",
+  "LOP",
+  "LPB",
+  "LPQ",
+  "LUN",
+  "MCT",
+  "MDE",
+  "MDZ",
+  "MID",
+  "MVD",
+  "NAN",
+  "NOU",
+  "OAX",
+  "PPT",
+  "REC",
+  "RGN",
+  "SAL",
+  "SEZ",
+  "SID",
+  "SKD",
+  "SSA",
+  "TAS",
+  "TNR",
+  "UIO",
+  "ULN",
+  "VTE",
+  "VVI",
+  "WDH",
+  "XIY"
+ ],
+ "regions": {
+  "asie": [
+   "BD",
+   "CN",
+   "HK",
+   "ID",
+   "IN",
+   "JP",
+   "KG",
+   "KH",
+   "KR",
+   "KZ",
+   "LA",
+   "LK",
+   "MM",
+   "MN",
+   "MV",
+   "MY",
+   "NP",
+   "PH",
+   "SG",
+   "TH",
+   "TW",
+   "UZ",
+   "VN"
+  ],
+  "moyen-orient": [
+   "AE",
+   "IL",
+   "JO",
+   "OM",
+   "QA"
+  ],
+  "afrique": [
+   "BJ",
+   "CI",
+   "CM",
+   "CV",
+   "ET",
+   "GH",
+   "KE",
+   "MG",
+   "MU",
+   "NA",
+   "RE",
+   "RW",
+   "SC",
+   "SN",
+   "TG",
+   "TZ",
+   "UG",
+   "ZA",
+   "ZM"
+  ],
+  "amerique-nord": [
+   "CA",
+   "US"
+  ],
+  "amerique-latine": [
+   "AR",
+   "AW",
+   "BB",
+   "BO",
+   "BR",
+   "BS",
+   "BZ",
+   "CL",
+   "CO",
+   "CR",
+   "CU",
+   "CW",
+   "DO",
+   "EC",
+   "GP",
+   "GT",
+   "JM",
+   "MQ",
+   "MX",
+   "PA",
+   "PE",
+   "PY",
+   "SV",
+   "UY"
+  ],
+  "oceanie": [
+   "AU",
+   "FJ",
+   "NC",
+   "NZ",
+   "PF"
+  ]
+ }
+}

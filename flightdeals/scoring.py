@@ -1,102 +1,64 @@
-"""Grille d'évaluation d'un deal : note sur 11 (10 points + 1 point de bonus).
-
-  Prix du vol vs prix habituel de la ligne ........ 0 à 3
-  Budget total du séjour (vols + sur place) ........ 0 à 2
-  Destination hors sentiers battus ................ 0 à 1,5
-  Qualité du vol (escales, avion) ................. 0 à 1,5
-  Durée de séjour adaptée à la distance ........... 0 à 1
-  Économie globale vs séjour habituel ............. 0 à 1
-  Bonus : erreur de prix avérée ................... 0 ou 1
-Un deal n'est retenu que si la note atteint `scoring.min_score` (9,5 par défaut).
-"""
+"""Note sur 11 : 6 critères (10 max) + bonus erreur de prix (+1)."""
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Optional
+from statistics import median
+
+from .util import tier
+from .world import secrecy
 
 
-def clamp(x: float) -> float:
-    return max(0.0, min(1.0, x))
+def _lin(x, zero, full):
+    """0 à `zero`, 1 à `full` (fonctionne dans les deux sens)."""
+    if full == zero:
+        return 0.0
+    return max(0.0, min(1.0, (x - zero) / (full - zero)))
 
 
-def min_stay_for(km: float, cfg: dict) -> int:
-    """Séjour minimum selon la distance : plus c'est loin, plus c'est long."""
-    extra = cfg["stay_days"].get("min_extra_days", 0)
-    for upto, days in cfg["stay_days"]["min_by_distance_km"]:
-        if km <= upto:
-            return min(days + extra, cfg["stay_days"]["max"])
-    return min(cfg["stay_days"]["min_by_distance_km"][-1][1] + extra, cfg["stay_days"]["max"])
+def benchmark(km: float, cfg: dict, business: bool = False) -> float:
+    s = cfg["scoring"]
+    b = s["bench_base"] + s["bench_per_km"] * km
+    return b * s["business_multiplier"] if business else b
 
 
-def total_cap(km: float, cfg: dict) -> float:
-    """Budget total (vols + séjour) autorisé selon la distance : plus c'est loin, plus le plafond est haut."""
-    tiers = cfg["economy"]["total_trip_cap_eur"]
-    for upto, cap in tiers:
-        if km <= upto:
-            return cap
-    return tiers[-1][1]
+def hist_median(history: dict, origin: str, dest: str, min_obs: int = 5):
+    vals = [p for _, p in history.get(f"{origin}-{dest}", [])]
+    return median(vals) if len(vals) >= min_obs else None
 
 
-def default_stay(km: float, cfg: dict) -> int:
-    """Durée supposée quand la source ne donne pas les dates."""
-    return min(min_stay_for(km, cfg) + 3, cfg["stay_days"]["max"])
-
-
-def reference_price(km: float, cabin: str, cfg: dict) -> float:
-    """Prix A/R « habituel » estimé à partir de la distance (sert quand l'historique est trop court)."""
-    b = cfg["scoring"]["benchmark"]
-    eco = b["base"] + b["per_km"] * km
-    return eco * (b["business_multiplier"] if cabin == "business" else 1.0)
-
-
-@dataclass
-class Score:
-    total: float
-    parts: dict = field(default_factory=dict)
-    discount: float = 0.0          # remise vs prix habituel
-    error_fare: bool = False
-
-    def line(self) -> str:
-        p = self.parts
-        txt = (f"prix {p['prix']}/3 · budget {p['budget']}/2 · destination {p['destination']}/1,5 · "
-               f"vol {p['vol']}/1,5 · durée {p['duree']}/1 · économie globale {p['valeur']}/1")
-        return txt + (f" · bonus erreur de prix +{p['bonus']}" if p["bonus"] else "")
-
-
-def score_deal(*, price: float, km: float, cabin: str, total: float, stay: int, stops: int,
-               aircraft_status: str, secrecy: float, separate_tickets: bool, cfg: dict,
-               hist_median: Optional[float] = None, hist_disc: Optional[float] = None,
-               flagged_error: bool = False) -> Score:
-    sc = cfg["scoring"]
-    # Remise : on retient la plus favorable des deux références. Le barème de distance dit « bon marché par rapport
-    # au marché » ; l'historique dit « bon marché par rapport à d'habitude sur cette ligne ». L'historique ne contient que
-    # les prix les plus bas du mois : l'utiliser seul écraserait presque toutes les notes à zéro.
-    ref = reference_price(km, cabin, cfg)
-    disc = 1 - price / ref if ref else 0.0
-    if hist_median:
-        disc = max(disc, 1 - price / hist_median)
-
-    prix = 3 * clamp((disc - sc["price_disc_zero"]) / (sc["price_disc_full"] - sc["price_disc_zero"]))
-    cap = total_cap(km, cfg)
-    budget = 2 * clamp((cap - total) / (cap * (1 - sc["budget_full_share"])))
-    dest = secrecy
-    vol = {0: 0.8, 1: 0.5, 2: 0.2}.get(stops, 0.0)
-    vol += 0.2 if aircraft_status == "unverified" else 0.7
+def score_standard(*, price, km, total, cap, stay_days, stay_min, stay_cost, dest, transfers, aircraft_status,
+                   separate_tickets, flagged_error, med, cfg) -> dict:
+    s = cfg["scoring"]
+    bench = benchmark(km, cfg)
+    disc_ref = 1 - price / bench
+    disc_hist = (1 - price / med) if med else -9
+    disc = max(disc_ref, disc_hist)
+    p_price = 3 * _lin(disc, s["price_zero_discount"], s["price_full_discount"])
+    p_budget = 2 * _lin(total / cap, 1.0, s["budget_full_share"])
+    p_dest = secrecy(dest)
+    q = {0: 0.8, 1: 0.5}.get(transfers, 0.2)
+    q += 0.7 if aircraft_status in ("widebody", "not_required") else 0.2
     if separate_tickets:
-        vol -= 0.2
-    vol = max(0.0, min(1.5, vol))
-    lo = min_stay_for(km, cfg)
-    duree = 1.0 if lo <= stay <= lo + cfg["stay_days"]["ideal_window_days"] else 0.6
-    # Économie globale : coût réel du séjour vs séjour « habituel » vers la même destination (vol habituel + même budget sur place).
-    # Neutre selon les régions : un séjour cher sur place (États-Unis) n'est ni avantagé ni pénalisé par rapport à l'Asie.
-    typical_total = ref + max(total - price, 0)
-    ratio = total / typical_total if typical_total else 1.0
-    valeur = clamp((sc["overall_ratio_zero"] - ratio) / (sc["overall_ratio_zero"] - sc["overall_ratio_full"]))
+        q -= 0.2
+    p_quality = max(0.0, min(1.5, q))
+    p_dur = 1.0 if stay_min <= stay_days <= stay_min + cfg["stay"]["ideal_window_days"] else 0.6
+    ratio = total / (bench + stay_cost) if (bench + stay_cost) else 1
+    p_overall = _lin(ratio, s["overall_ratio_zero"], s["overall_ratio_full"])
+    bonus = 1.0 if (flagged_error or (med and price <= med * s["error_history_ratio"])
+                    or disc_ref >= s["error_bench_discount"]) else 0.0
+    parts = {"Prix": (p_price, 3), "Budget": (p_budget, 2), "Destination": (p_dest, 1.5),
+             "Vol": (p_quality, 1.5), "Durée": (p_dur, 1), "Économie globale": (p_overall, 1)}
+    total_score = sum(v for v, _ in parts.values()) + bonus
+    return {"score": round(min(total_score, s["max"]), 1),
+            "detail": {k: [round(v, 1), m] for k, (v, m) in parts.items()},
+            "bonus": bonus, "discount": round(disc, 3), "bench": round(bench)}
 
-    error = bool(flagged_error or (hist_disc is not None and hist_disc >= cfg["anomaly"]["error_fare_discount"])
-                 or disc >= sc["error_bench_disc"])
-    bonus = 1.0 if error else 0.0
-    parts = {"prix": round(prix, 1), "budget": round(budget, 1), "destination": round(dest, 1),
-             "vol": round(vol, 1), "duree": round(duree, 1), "valeur": round(valeur, 1), "bonus": bonus}
-    total_score = round(prix + budget + dest + vol + duree + valeur + bonus, 1)
-    return Score(total=min(total_score, sc["max_score"]), parts=parts, discount=disc, error_fare=error)
+
+def score_business(*, price, km, flagged_error, cfg) -> dict:
+    s, b = cfg["scoring"], cfg["business"]
+    bench = benchmark(km, cfg, business=True)
+    disc = 1 - price / bench
+    score = s["max"] * max(disc, 0) / b["full_discount"]
+    if flagged_error:
+        score += 1
+    return {"score": round(min(score, s["max"]), 1), "discount": round(disc, 3), "bench": round(bench),
+            "bonus": 1.0 if flagged_error else 0.0, "detail": {}}

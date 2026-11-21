@@ -1,48 +1,39 @@
 name: scan-combos
 on:
   schedule:
-    - cron: "10 */3 * * *"   # toutes les 3 h : beaucoup plus de requêtes que le scan classique
+    - cron: "17 */3 * * *"
   workflow_dispatch: {}
 
 permissions:
   contents: write
-  issues: write
 
 concurrency:
-  group: scan          # même groupe que scan-flights : jamais en parallèle (évite les conflits de commit)
+  group: state-writer
   cancel-in-progress: false
 
 jobs:
   combos:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
-      - name: Dépendances (notifications natives)
-        run: pip install -r requirements.txt
-      - name: Scan montages d'escales
+      - name: Montages d'escales
         env:
           TRAVELPAYOUTS_TOKEN: ${{ secrets.TRAVELPAYOUTS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
-          PUSH_SUBSCRIPTION: ${{ secrets.PUSH_SUBSCRIPTION }}
-          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
-        run: python -m flightdeals.combos
-      - name: Save state
+        run: python -m flightdeals.scan_combos
+      - name: Enregistrer l'état
         if: always()
         run: |
           git config user.name "flight-deals-bot"
           git config user.email "bot@users.noreply.github.com"
           git add -A data docs
           git diff --cached --quiet && exit 0
-          git commit -m "combos: update state"
+          git commit -m "combos: état mis à jour"
           for i in 1 2 3 4; do
             git pull --rebase --autostash -q && git push -q && exit 0
-            echo "push refusé (tentative $i), nouvel essai"; sleep $((i * 4))
+            sleep $((i * 4))
           done
-          echo "::warning::l'état n'a pas pu être enregistré (conflit de push)"; exit 0
+          exit 0

@@ -1,7 +1,7 @@
 name: scan-flights
 on:
   schedule:
-    - cron: "*/15 * * * *"   # toutes les 15 min (GitHub peut retarder de quelques minutes)
+    - cron: "*/15 * * * *"   # GitHub n'en exécute en pratique qu'environ 1 par heure : le code tolère ce retard
   workflow_dispatch: {}
 
 permissions:
@@ -9,7 +9,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: scan
+  group: state-writer
   cancel-in-progress: false
 
 jobs:
@@ -22,27 +22,25 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - name: Dépendances (notifications natives)
-        run: pip install -r requirements.txt
+      - run: pip install -r requirements.txt
       - name: Scan
         env:
           TRAVELPAYOUTS_TOKEN: ${{ secrets.TRAVELPAYOUTS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           PUSH_SUBSCRIPTION: ${{ secrets.PUSH_SUBSCRIPTION }}
-          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
         run: python -m flightdeals.main
-      - name: Save state
+      - name: Enregistrer l'état
         if: always()
         run: |
           git config user.name "flight-deals-bot"
           git config user.email "bot@users.noreply.github.com"
           git add -A data docs
           git diff --cached --quiet && exit 0
-          git commit -m "scan: update state"
+          git commit -m "scan: état mis à jour"
           for i in 1 2 3 4; do
             git pull --rebase --autostash -q && git push -q && exit 0
-            echo "push refusé (tentative $i), nouvel essai"; sleep $((i * 4))
+            echo "push refusé (essai $i)"; sleep $((i * 4))
           done
-          echo "::warning::l'état n'a pas pu être enregistré (conflit de push)"; exit 0
+          echo "::warning::état non enregistré (conflit de push)"; exit 0

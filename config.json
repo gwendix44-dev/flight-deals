@@ -1,198 +1,83 @@
 {
-  "origins": [
-    "NTE",
-    "CDG",
-    "ORY",
-    "LHR",
-    "MAD",
-    "FCO",
-    "LIS",
-    "DUB",
-    "AMS",
-    "FRA"
-  ],
+  "origins": ["NTE", "CDG", "ORY", "LHR", "MAD", "FCO", "LIS", "DUB", "AMS", "FRA"],
+  "home_airports": ["NTE", "CDG", "ORY"],
   "months_ahead": 6,
-  "stay_days": {
-    "max": 21,
-    "min_by_distance_km": [
-      [
-        3500,
-        5
-      ],
-      [
-        7000,
-        7
-      ],
-      [
-        10000,
-        10
-      ],
-      [
-        1000000,
-        14
-      ]
-    ],
+  "min_notice_days": 10,
+  "max_transfers": 2,
+  "min_plausible_eur": 60,
+  "price_tolerance": 0.10,
+  "excluded_countries": ["MA", "DZ", "TN", "LY", "EG"],
+  "stay": {
+    "max_days": 21,
+    "min_by_distance_km": [[3500, 5], [7000, 7], [10000, 10], [1000000, 14]],
     "ideal_window_days": 8
   },
-  "economy": {
-    "total_trip_cap_eur": [
-      [
-        8000,
-        1500
-      ],
-      [
-        12000,
-        1900
-      ],
-      [
-        1000000,
-        2500
-      ]
-    ],
-    "flight_cap_eur": null,
-    "buffer_pct": 10,
+  "budget_by_distance_km": [[8000, 1500], [12000, 1900], [1000000, 2500]],
+  "positioning_eur": {
+    "LHR": 100, "MAD": 120, "FCO": 135, "LIS": 125, "DUB": 115, "AMS": 100, "FRA": 115
+  },
+  "positioning_default_eur": 150,
+  "aircraft": {"long_haul_hours": 5, "cruise_kmh": 800, "strict": false},
+  "costs": {
     "insurance_per_day": 2.2,
     "arrival_flat_eur": 45,
-    "peak_season": {
-      "start": "12-20",
-      "end": "01-05",
-      "lodging_multiplier": 1.25
-    }
+    "buffer_pct": 10,
+    "peak_start": "12-20",
+    "peak_end": "01-05",
+    "peak_lodging_multiplier": 1.25,
+    "default_per_day": 45
+  },
+  "baggage": {"unknown_airline_eur": 60},
+  "scoring": {
+    "publish": 8.0,
+    "instant": 10.0,
+    "good_deal": 7.0,
+    "max": 11,
+    "bench_base": 150,
+    "bench_per_km": 0.08,
+    "business_multiplier": 3.2,
+    "price_zero_discount": 0.20,
+    "price_full_discount": 0.60,
+    "budget_full_share": 0.60,
+    "overall_ratio_full": 0.55,
+    "overall_ratio_zero": 0.90,
+    "error_bench_discount": 0.75,
+    "error_history_ratio": 0.50
   },
   "business": {
-    "enabled": true,
-    "flight_cap_eur": 800,
+    "max_price_eur": 800,
     "min_km": 3600,
-    "min_discount": 0.5,
-    "min_plausible_eur": 250,
-    "note_full_discount": 0.85
-  },
-  "aircraft": {
-    "long_haul_hours": 5,
-    "strict": false
-  },
-  "anomaly": {
-    "error_fare_discount": 0.5,
-    "unusual_discount": 0.3,
-    "min_history": 5
-  },
-  "realert_if_price_drops_pct": 10,
-  "rss_feeds": [
-    "https://www.secretflying.com/feed/",
-    "https://www.fly4free.com/feed/"
-  ],
-  "excluded_countries": [
-    "MA",
-    "DZ",
-    "TN",
-    "LY",
-    "EG"
-  ],
-  "max_transfers": 2,
-  "stopovers": {
-    "enabled": true,
-    "min_saving": 0.2,
-    "hubs": null,
-    "max_candidates_to_verify": 25,
-    "max_outbound_eur": 700
-  },
-  "max_alerts_per_run": {
-    "scan": 2,
-    "combos": 1,
-    "business": 2
-  },
-  "scoring": {
-    "min_score": 8.0,
-    "max_score": 11,
-    "benchmark": {
-      "base": 150,
-      "per_km": 0.08,
-      "business_multiplier": 3.2
-    },
-    "price_disc_zero": 0.2,
-    "price_disc_full": 0.6,
-    "error_bench_disc": 0.75,
-    "overall_ratio_full": 0.55,
-    "overall_ratio_zero": 0.9,
-    "budget_full_share": 0.6,
-    "require_anomaly": false
-  },
-  "max_alerts_per_region": 2,
-  "verification": {
-    "min_notice_days": 10,
-    "price_tolerance": 0.1,
-    "max_checks": 25,
-    "min_plausible_price_eur": 60
-  },
-  "home": {
-    "airports": [
-      "NTE",
-      "CDG",
-      "ORY"
-    ],
-    "default_positioning_eur": 150,
-    "positioning_eur": {
-      "LHR": {
-        "Paris": 90,
-        "Nantes": 110
-      },
-      "MAD": {
-        "Paris": 110,
-        "Nantes": 130
-      },
-      "FCO": {
-        "Paris": 120,
-        "Nantes": 150
-      },
-      "LIS": {
-        "Paris": 120,
-        "Nantes": 130
-      },
-      "DUB": {
-        "Paris": 110,
-        "Nantes": 120
-      },
-      "AMS": {
-        "Paris": 90,
-        "Nantes": 110
-      },
-      "FRA": {
-        "Paris": 100,
-        "Nantes": 130
-      }
-    }
-  },
-  "pepite": {
-    "target_per_year": "3 à 5"
+    "min_discount": 0.50,
+    "full_discount": 0.85,
+    "min_plausible_eur": 250
   },
   "publication": {
-    "slots": [
-      "12:00",
-      "19:00"
-    ],
-    "window_minutes": 180,
-    "min_score": 8.0,
-    "instant_score": 10.0,
-    "per_slot": {
-      "standard": 3,
-      "business": 3
-    },
-    "pool_max_age_hours": 36,
-    "max_checks": 25,
-    "instant_max_per_day": 4,
-    "instant_confirm_minutes": 10,
-    "dest_cooldown_days": 7,
-    "cooldown_price_drop": 0.25,
-    "watch_min": 7.0,
-    "watch_per_slot": 4,
-    "watch_max_age_hours": 36,
-    "watch_dest_cooldown_days": 3,
-    "notify_empty_slots": true
+    "slots": ["12:00", "19:00"],
+    "timezone": "Europe/Paris",
+    "catch_up_hours": 3,
+    "per_slot_standard": 3,
+    "per_slot_business": 3,
+    "max_per_region": 2,
+    "destination_cooldown_days": 7,
+    "cooldown_override_drop": 0.25,
+    "reserve_hours": 36,
+    "good_deals_per_slot": 4,
+    "instant_per_scan": 3,
+    "instant_per_day": 4,
+    "instant_min_gap_minutes": 10
   },
-  "live": {
-    "enabled": false,
-    "monthly_budget": 90,
-    "price_tolerance": 0.1,
-    "spare_candidates": 3
-  }
+  "stopovers": {
+    "enabled": true,
+    "hubs": ["LIS", "OPO", "MAD", "BCN", "DUB", "LON", "ROM", "ATH", "BUD", "IST", "DXB", "DOH"],
+    "short_min_h": 4,
+    "short_max_h": 10,
+    "long_min_h": 40,
+    "night_start": 0,
+    "night_end": 5,
+    "min_saving": 0.20,
+    "max_outbound_eur": 700,
+    "max_candidates": 25
+  },
+  "rss_feeds": ["https://www.secretflying.com/feed/", "https://www.fly4free.com/feed/"],
+  "stale_scan_minutes": 90
 }

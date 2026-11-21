@@ -1,28 +1,14 @@
-"""Liens pour VÉRIFIER le prix en direct et RÉSERVER chez la compagnie (jamais chez un intermédiaire)."""
+"""Liens de vérification : Google Flights (dates préremplies) et site officiel."""
 from __future__ import annotations
 
-from datetime import date
-from typing import Optional
-from urllib.parse import quote
-
-from . import baggage
+import urllib.parse
 
 
-def google_flights(origin: str, dest_name: str, depart: Optional[date], ret: Optional[date]) -> str:
-    """Recherche Google Flights déjà remplie (prix en direct, toutes compagnies, bagages affichés) pour les dates exactes."""
-    q = f"Flights from {origin} to {dest_name}"
-    if depart:
-        q += f" on {depart.isoformat()}"
-        if ret:
-            q += f" through {ret.isoformat()}"
-    return f"https://www.google.com/travel/flights?q={quote(q)}&curr=EUR&hl=fr"
-
-
-def airline_site(code: str) -> str:
-    return baggage.info(code).get("site", "")
-
-
-def build(origin: str, dest_name: str, depart, ret, airline: str, source_link: str = "") -> dict:
-    return {"google_flights": google_flights(origin, dest_name, depart, ret),
-            "airline_site": airline_site(airline), "airline_name": baggage.info(airline).get("name", airline or ""),
-            "source": source_link}
+def google_flights_url(o, airports) -> str:
+    dest = (airports or [o.dest])[0]
+    cabin = "business class" if o.cabin == "business" else ""
+    if o.depart and o.return_date:
+        q = f"Flights from {o.origin} to {dest} on {o.depart.isoformat()} through {o.return_date.isoformat()} {cabin}".strip()
+    else:
+        q = f"Flights from {o.origin} to {dest} {cabin}".strip()
+    return "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=" + urllib.parse.quote(q)

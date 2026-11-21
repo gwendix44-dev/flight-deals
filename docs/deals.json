@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-21T18:02:08.089770+00:00",
+ "updated": "2026-11-21T18:51:55.359880+00:00",
  "deals": [],
  "business": [],
  "good": [
@@ -94,7 +94,7 @@
    "bonus": 0.0,
    "discount": 0.637,
    "bench": 571,
-   "found_at": "2026-11-21T18:02:08.089770+00:00"
+   "found_at": "2026-11-21T18:51:55.359880+00:00"
   },
   {
    "key": "ade00772d586d5f7",
@@ -187,7 +187,286 @@
    "bonus": 0.0,
    "discount": 0.479,
    "bench": 570,
-   "found_at": "2026-11-21T18:02:08.089770+00:00"
+   "found_at": "2026-11-21T18:51:55.359880+00:00"
+  },
+  {
+   "key": "3e0f1e3715300037",
+   "kind": "standard",
+   "origin": "ORY",
+   "origin_city": "Paris Orly",
+   "dest": "MCT",
+   "dest_city": "Mascate",
+   "country": "OM",
+   "region": "moyen-orient",
+   "km": 5585,
+   "price": 352,
+   "flight_price": 352,
+   "transfers": 1,
+   "airline": "Pegasus",
+   "airline_code": "PC",
+   "depart": "2027-03-15",
+   "return": "2027-03-22",
+   "stay_days": 7,
+   "dates_unconfirmed": false,
+   "source": "travelpayouts",
+   "title": "",
+   "flagged_error": false,
+   "baggage": {
+    "status": "likely",
+    "surcharge": 0.0,
+    "airline": "Pegasus",
+    "site": "https://www.flypgs.com",
+    "warning": "Confirme que le bagage cabine est inclus dans le tarif Pegasus avant de payer."
+   },
+   "aircraft": {
+    "status": "unverified",
+    "note": "Avec escale : type d'avion des tronçons à vérifier (gros-porteur obligatoire au-delà de 5 h)."
+   },
+   "positioning": 0,
+   "stay": {
+    "days": 7,
+    "per_day": 82.6,
+    "total": 578,
+    "lines": {
+     "Hébergement": 175,
+     "Repas": 126,
+     "Transports locaux": 70,
+     "Activités": 84,
+     "Déplacements entre villes": 10,
+     "Visa / autorisation": 0,
+     "Assurance": 15,
+     "Transferts + SIM": 45,
+     "Marge": 53
+    },
+    "visa_note": "",
+    "peak_days": 0
+   },
+   "total": 930,
+   "cap": 1500,
+   "stopover": null,
+   "hours": 9.5,
+   "links": {
+    "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20ORY%20to%20MCT%20on%202027-03-15%20through%202027-03-22",
+    "airline": "https://www.flypgs.com",
+    "offer": "https://www.aviasales.com/search/ORY1503MCT22031?t=PC18051114001805166600000740ORYSAWMCT18056889001805726400000805MCTSAWORY_5353c6d312aaf4284b4a60366cbd9f06_32174&search_date=15112026&expected_price_uuid=01a1df6b-635c-8030-e96d-b40b46c3e5ca&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=KmOSHrresTPWRbVDmNhPZw&origin_airports=0&destination_airports=1&expected_price_source=share&expected_price_currency=eur&expected_price=352"
+   },
+   "score": 7.0,
+   "detail": {
+    "Prix": [
+     1.6,
+     3
+    ],
+    "Budget": [
+     1.9,
+     2
+    ],
+    "Destination": [
+     1.5,
+     1.5
+    ],
+    "Vol": [
+     0.7,
+     1.5
+    ],
+    "Durée": [
+     1.0,
+     1
+    ],
+    "Économie globale": [
+     0.3,
+     1
+    ]
+   },
+   "bonus": 0.0,
+   "discount": 0.41,
+   "bench": 597,
+   "found_at": "2026-11-21T18:51:55.359880+00:00"
+  },
+  {
+   "key": "3ad2bd9326071959",
+   "kind": "standard",
+   "origin": "FRA",
+   "origin_city": "Francfort",
+   "dest": "ALA",
+   "dest_city": "Almaty",
+   "country": "KZ",
+   "region": "asie",
+   "km": 5089,
+   "price": 244,
+   "flight_price": 304,
+   "transfers": 1,
+   "airline": "VF",
+   "airline_code": "VF",
+   "depart": "2027-02-04",
+   "return": "2027-02-11",
+   "stay_days": 7,
+   "dates_unconfirmed": false,
+   "source": "travelpayouts",
+   "title": "",
+   "flagged_error": false,
+   "baggage": {
+    "status": "unknown",
+    "surcharge": 60.0,
+    "airline": "VF",
+    "site": "",
+    "warning": "Compagnie inconnue : +60 € de bagages comptés par prudence."
+   },
+   "aircraft": {
+    "status": "unverified",
+    "note": "Avec escale : type d'avion des tronçons à vérifier (gros-porteur obligatoire au-delà de 5 h)."
+   },
+   "positioning": 115,
+   "stay": {
+    "days": 7,
+    "per_day": 55.8,
+    "total": 391,
+    "lines": {
+     "Hébergement": 98,
+     "Repas": 84,
+     "Transports locaux": 42,
+     "Activités": 56,
+     "Déplacements entre villes": 15,
+     "Visa / autorisation": 0,
+     "Assurance": 15,
+     "Transferts + SIM": 45,
+     "Marge": 36
+    },
+    "visa_note": "",
+    "peak_days": 0
+   },
+   "total": 810,
+   "cap": 1500,
+   "stopover": null,
+   "hours": 8.9,
+   "links": {
+    "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20FRA%20to%20ALA%20on%202027-02-04%20through%202027-02-11",
+    "airline": "",
+    "offer": "https://www.aviasales.com/search/FRA0402ALA11021?t=VF18017595001801809900000600FRAESBALA18023325001802359800000695ALAESBFRA_b5c8641e9f429bbede1a88f1d4f041d5_21950&search_date=20112026&expected_price_uuid=01a1faaa-0f58-8030-2fc0-8878a77b40bd&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=8g5Y-AchxswWb5wEwTdgqQ&expected_price_source=share&expected_price_currency=eur&expected_price=244"
+   },
+   "score": 7.2,
+   "detail": {
+    "Prix": [
+     1.9,
+     3
+    ],
+    "Budget": [
+     2.0,
+     2
+    ],
+    "Destination": [
+     1.5,
+     1.5
+    ],
+    "Vol": [
+     0.7,
+     1.5
+    ],
+    "Durée": [
+     1.0,
+     1
+    ],
+    "Économie globale": [
+     0.1,
+     1
+    ]
+   },
+   "bonus": 0.0,
+   "discount": 0.454,
+   "bench": 557,
+   "found_at": "2026-11-21T18:51:55.359880+00:00"
+  },
+  {
+   "key": "cbb29de5e2f046bf",
+   "kind": "standard",
+   "origin": "CDG",
+   "origin_city": "Paris CDG",
+   "dest": "DPS",
+   "dest_city": "Bali",
+   "country": "ID",
+   "region": "asie",
+   "km": 12382,
+   "price": 486,
+   "flight_price": 546,
+   "transfers": 0,
+   "airline": "?",
+   "airline_code": "",
+   "depart": "2027-01-05",
+   "return": "2027-01-21",
+   "stay_days": 16,
+   "dates_unconfirmed": true,
+   "source": "rss:www.fly4free.com",
+   "title": "Bargain fares! 😎  Cheap full-service flights from Paris to Bali, Indonesia 🌴 for €486",
+   "flagged_error": false,
+   "baggage": {
+    "status": "unknown",
+    "surcharge": 60.0,
+    "airline": "?",
+    "site": "",
+    "warning": "Compagnie inconnue : +60 € de bagages comptés par prudence."
+   },
+   "aircraft": {
+    "status": "unverified",
+    "note": "Type d'avion non confirmé pour cette ligne."
+   },
+   "positioning": 0,
+   "stay": {
+    "days": 16,
+    "per_day": 45.8,
+    "total": 732,
+    "lines": {
+     "Hébergement": 162,
+     "Repas": 144,
+     "Transports locaux": 96,
+     "Activités": 96,
+     "Déplacements entre villes": 57,
+     "Visa / autorisation": 30,
+     "Assurance": 35,
+     "Transferts + SIM": 45,
+     "Marge": 67
+    },
+    "visa_note": "visa à l'arrivée",
+    "peak_days": 1
+   },
+   "total": 1278,
+   "cap": 2500,
+   "stopover": null,
+   "hours": 16.0,
+   "links": {
+    "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20CDG%20to%20DPS%20on%202027-01-05%20through%202027-01-21",
+    "airline": "",
+    "offer": "https://www.fly4free.com/flight-deals/europe/flights-from-paris-to-bali-e486/"
+   },
+   "score": 7.0,
+   "detail": {
+    "Prix": [
+     2.4,
+     3
+    ],
+    "Budget": [
+     2.0,
+     2
+    ],
+    "Destination": [
+     0.0,
+     1.5
+    ],
+    "Vol": [
+     1.0,
+     1.5
+    ],
+    "Durée": [
+     1.0,
+     1
+    ],
+    "Économie globale": [
+     0.6,
+     1
+    ]
+   },
+   "bonus": 0.0,
+   "discount": 0.521,
+   "bench": 1141,
+   "found_at": "2026-11-21T18:51:55.359880+00:00"
   }
  ]
 }

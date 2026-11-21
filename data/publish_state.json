@@ -96,7 +96,7 @@
    "bonus": 0.0,
    "discount": 0.637,
    "bench": 571,
-   "found_at": "2026-11-21T22:26:09.266748+00:00"
+   "found_at": "2026-11-21T23:04:21.436307+00:00"
   },
   {
    "key": "ade00772d586d5f7",
@@ -189,7 +189,7 @@
    "bonus": 0.0,
    "discount": 0.479,
    "bench": 570,
-   "found_at": "2026-11-21T22:26:09.266748+00:00"
+   "found_at": "2026-11-21T23:04:21.436307+00:00"
   },
   {
    "key": "3e0f1e3715300037",
@@ -282,7 +282,7 @@
    "bonus": 0.0,
    "discount": 0.41,
    "bench": 597,
-   "found_at": "2026-11-21T22:26:09.266748+00:00"
+   "found_at": "2026-11-21T23:04:21.436307+00:00"
   },
   {
    "key": "3ad2bd9326071959",
@@ -375,7 +375,7 @@
    "bonus": 0.0,
    "discount": 0.454,
    "bench": 557,
-   "found_at": "2026-11-21T22:26:09.266748+00:00"
+   "found_at": "2026-11-21T23:04:21.436307+00:00"
   },
   {
    "key": "cbb29de5e2f046bf",
@@ -392,8 +392,8 @@
    "transfers": 0,
    "airline": "?",
    "airline_code": "",
-   "depart": "2027-01-05",
-   "return": "2027-01-21",
+   "depart": "2027-01-06",
+   "return": "2027-01-22",
    "stay_days": 16,
    "dates_unconfirmed": true,
    "source": "rss:www.fly4free.com",
@@ -413,10 +413,10 @@
    "positioning": 0,
    "stay": {
     "days": 16,
-    "per_day": 45.8,
-    "total": 732,
+    "per_day": 45.6,
+    "total": 730,
     "lines": {
-     "Hébergement": 162,
+     "Hébergement": 160,
      "Repas": 144,
      "Transports locaux": 96,
      "Activités": 96,
@@ -424,17 +424,17 @@
      "Visa / autorisation": 30,
      "Assurance": 35,
      "Transferts + SIM": 45,
-     "Marge": 67
+     "Marge": 66
     },
     "visa_note": "visa à l'arrivée",
-    "peak_days": 1
+    "peak_days": 0
    },
-   "total": 1278,
+   "total": 1276,
    "cap": 2500,
    "stopover": null,
    "hours": 16.0,
    "links": {
-    "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20CDG%20to%20DPS%20on%202027-01-05%20through%202027-01-21",
+    "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20CDG%20to%20DPS%20on%202027-01-06%20through%202027-01-22",
     "airline": "",
     "offer": "https://www.fly4free.com/flight-deals/europe/flights-from-paris-to-bali-e486/"
    },
@@ -468,7 +468,7 @@
    "bonus": 0.0,
    "discount": 0.521,
    "bench": 1141,
-   "found_at": "2026-11-21T22:26:09.266748+00:00"
+   "found_at": "2026-11-21T23:04:21.436307+00:00"
   }
  ],
  "instant_log": [],

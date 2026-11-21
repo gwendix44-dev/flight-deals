@@ -1,14 +1,14 @@
 {
  "ok": true,
- "updated": "2026-11-21T22:26:09.266748+00:00",
- "last_scan": "2026-11-21T22:26:09.266748+00:00",
- "offers": 3197,
+ "updated": "2026-11-21T23:04:21.436307+00:00",
+ "last_scan": "2026-11-21T23:04:21.436307+00:00",
+ "offers": 3200,
  "candidates": 0,
  "verified": 0,
  "waiting": 0,
  "instant": 0,
  "errors": [],
- "next_slot": "demain 12:00",
+ "next_slot": "aujourd'hui 12:00",
  "last_slot": {
   "id": "2026-11-21@19:00",
   "label": "Publication de 19h",
@@ -31,23 +31,23 @@
  "rejections": [
   [
    "séjour trop court pour la distance",
-   848
+   825
   ],
   [
    "budget total dépassé",
-   581
-  ],
-  [
-   "séjour au-delà de 3 semaines",
-   337
+   576
   ],
   [
    "départ dans moins de 10 jours",
+   391
+  ],
+  [
+   "séjour au-delà de 3 semaines",
    329
   ],
   [
    "trop d'escales",
-   242
+   241
   ],
   [
    "pays exclu (Europe / Afrique du Nord / refus)",
@@ -59,7 +59,7 @@
   ],
   [
    "départ au-delà de 6 mois",
-   18
+   11
   ]
  ],
  "prefs": [

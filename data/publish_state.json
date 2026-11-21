@@ -1,6 +1,5 @@
 {
  "published": [
-  "2026-11-11@12:00",
   "2026-11-11@19:00",
   "2026-11-12@12:00",
   "2026-11-12@19:00",
@@ -19,12 +18,13 @@
   "2026-11-19@12:00",
   "2026-11-19@19:00",
   "2026-11-20@12:00",
-  "2026-11-20@19:00"
+  "2026-11-20@19:00",
+  "2026-11-21@12:00"
  ],
  "last_slot": {
-  "id": "2026-11-20@19:00",
-  "label": "Publication de 19h",
-  "at": "2026-11-20T18:36:11+00:00",
+  "id": "2026-11-21@12:00",
+  "label": "Publication de 12h",
+  "at": "2026-11-21T11:10:17+00:00",
   "standard": 0,
   "business": 0,
   "bons_plans": 0,
@@ -32,7 +32,7 @@
   "best_missed": [
    "7.3/11 FRA→Johannesburg 457€ avec bagages (séjour ~1605€) : prix 2.2/3 · budget 0.8/2 · destination 0.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.3/1 · bonus erreur de prix +1.0",
    "6.7/11 MAD→Bangkok 482€ avec bagages (séjour ~1340€) : prix 2.3/3 · budget 1.5/2 · destination 0.0/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.5/1",
-   "5.9/11 FRA→Île Maurice 456€ avec bagages (séjour ~1709€) : prix 2.1/3 · budget 0.5/2 · destination 0.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.3/1"
+   "5.9/11 FRA→Île Maurice 457€ avec bagages (séjour ~1710€) : prix 2.1/3 · budget 0.5/2 · destination 0.5/1,5 · vol 1.5/1,5 · durée 1.0/1 · économie globale 0.3/1"
   ]
  },
  "watch_recent": {

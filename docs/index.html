@@ -114,6 +114,16 @@ textarea{width:100%;min-height:70px;border-radius:14px;border:1px solid var(--li
   <div id="list"></div>
 
   <div id="learned"></div>
+  <div class="panel" id="tokenPanel">
+    <h3>⚡ Refus en un tap</h3>
+    <p id="tokenState"></p>
+    <div id="tokenForm">
+      <p>Une seule fois : sur GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → « Generate new token ». Dépôt : <b>flight-deals</b> uniquement. Permission : <b>Issues = Read and write</b>. Copie le jeton et colle-le ici.</p>
+      <input id="tokenInput" type="password" autocomplete="off" placeholder="github_pat_…" style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--txt);font:inherit">
+      <button class="tool" id="tokenSave">Enregistrer</button>
+    </div>
+    <button class="tool hidden" id="tokenDel">Retirer le jeton de ce téléphone</button>
+  </div>
   <div class="panel">
     <h3>🔔 Notifications</h3>
     <p id="pushState">Reçois une alerte à 12h, 19h et pour chaque offre 10/10, même appli fermée.</p>
@@ -134,7 +144,7 @@ textarea{width:100%;min-height:70px;border-radius:14px;border:1px solid var(--li
   <div id="reasons"></div>
   <textarea id="reasonText" placeholder="Pourquoi ? (ex. trop cher, trop loin, pas envie…)"></textarea>
   <div class="btns"><button class="btn alt" id="sheetCancel" style="background:var(--card);color:var(--txt);border:1px solid var(--line)">Annuler</button><button class="btn" id="sheetSend">Envoyer le refus</button></div>
-  <p style="margin-top:10px">L'offre disparaît tout de suite. GitHub s'ouvre ensuite avec le refus déjà écrit : touche « Create » sans modifier les 3 premières lignes.</p>
+  <p id="sheetNote" style="margin-top:10px"></p>
 </div></div>
 
 <script>
@@ -311,16 +321,37 @@ function openSheet(d) {
   $("#sheet").classList.add("on");
 }
 function ghIssue(title, body) { return `https://github.com/${REPO}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`; }
-function openCommand(cmd) { window.open(ghIssue("Commande : " + cmd, cmd + "\n"), "_blank", "noopener"); }
+const getToken = () => localStorage.getItem("fd_token") || "";
+async function postIssue(title, body) {
+  const r = await fetch(`https://api.github.com/repos/${REPO}/issues`, { method: "POST",
+    headers: { Authorization: "Bearer " + getToken(), Accept: "application/vnd.github+json", "Content-Type": "application/json" },
+    body: JSON.stringify({ title, body }) });
+  if (!r.ok) throw new Error("GitHub " + r.status);
+}
+async function sendOrOpen(title, body) {
+  if (getToken()) { try { await postIssue(title, body); return true; } catch (e) { toast("Envoi direct impossible (" + e.message + ") : page GitHub ouverte"); } }
+  window.open(ghIssue(title, body), "_blank", "noopener"); return false;
+}
+function openCommand(cmd) { sendOrOpen("Commande : " + cmd, cmd + "\n").then(ok => ok && toast("Demande envoyée, prise en compte dans ~1 min")); }
 $("#sheetCancel").onclick = () => $("#sheet").classList.remove("on");
-$("#sheetSend").onclick = () => {
+$("#sheetSend").onclick = async () => {
   const text = $("#reasonText").value.trim();
   if (!text) return toast("Écris ou choisis une raison");
-  state.pending.push(current.key); localStorage.setItem("fd_pending", JSON.stringify(state.pending));
+  const d = current;
+  state.pending.push(d.key); localStorage.setItem("fd_pending", JSON.stringify(state.pending));
   $("#sheet").classList.remove("on"); render();
-  window.open(ghIssue(`Refus : ${current.origin_city} → ${current.dest_city} ${current.price} €`, `deal:${current.key}\nissue:${current.issue || ""}\n---\n${text}`), "_blank", "noopener");
-  toast("Offre masquée. Touche « Create » sur GitHub.");
+  const ok = await sendOrOpen(`Refus : ${d.origin_city} → ${d.dest_city} ${d.price} €`, `deal:${d.key}\nissue:${d.issue || ""}\n---\n${text}`);
+  toast(ok ? "Offre supprimée ✓ (apprise en ~1 min)" : "Offre masquée. Touche « Create » sur GitHub.");
 };
+function tokenUi() {
+  const has = !!getToken();
+  $("#tokenState").textContent = has ? "✅ Jeton enregistré : « Refuser » envoie le refus directement, sans ouvrir GitHub." : "Sans jeton, « Refuser » ouvre une page GitHub à valider. Avec un jeton, tout se fait dans l'appli.";
+  $("#tokenForm").classList.toggle("hidden", has); $("#tokenDel").classList.toggle("hidden", !has);
+  $("#sheetNote").textContent = has ? "L'offre disparaît tout de suite et l'appli apprend ta raison automatiquement." : "L'offre disparaît tout de suite. GitHub s'ouvre ensuite avec le refus déjà écrit : touche « Create » sans modifier les 3 premières lignes.";
+}
+$("#tokenSave").onclick = () => { const v = $("#tokenInput").value.trim(); if (!/^(github_pat_|ghp_)/.test(v)) return toast("Ce n'est pas un jeton GitHub"); localStorage.setItem("fd_token", v); $("#tokenInput").value = ""; tokenUi(); toast("Jeton enregistré"); };
+$("#tokenDel").onclick = () => { localStorage.removeItem("fd_token"); tokenUi(); };
+tokenUi();
 
 /* --- Navigation --- */
 document.querySelectorAll(".tab").forEach(t => t.onclick = () => { state.tab = t.dataset.tab; state.filter = "all"; render(); });

@@ -53,6 +53,10 @@ h1 span{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-backgro
 .price{display:flex;align-items:baseline;gap:8px;margin:12px 0 2px}
 .price b{font-size:38px;font-weight:900;letter-spacing:-.03em}
 .price span{color:var(--mut);font-size:13px}
+.total{display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(94,234,212,.09);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:6px 0 10px}
+.total small{display:block;font-size:11px;letter-spacing:.1em;color:var(--mut);font-weight:700}
+.total b{font-size:24px;font-weight:900;letter-spacing:-.02em}
+.total .split{font-size:12.5px;color:var(--mut);text-align:right}
 .trip{font-size:14px;color:var(--mut);margin-bottom:10px}
 .trip b{color:var(--txt)}
 .meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
@@ -251,8 +255,10 @@ function card(d) {
       el("div", { class: "route" }, `${d.origin_city} → ${d.dest_city}`, el("small", { text: `${d.airline || "Compagnie ?"} · ${REGION[d.region] || ""}` })),
       ring(d.score)),
     el("div", { class: "price" }, el("b", { text: eur(d.flight_price) }), el("span", { text: isBiz ? "A/R business" : "A/R · bagages compris" })),
-    el("div", { class: "trip" }, el("b", { text: `${dfr(d.depart)} → ${dfr(d.return)}` }), ` · ${d.stay_days} jours`,
-      isBiz ? "" : el("span", {}, " · séjour complet ", el("b", { text: "≈ " + eur(d.total) }), ` (plafond ${eur(d.cap)})`)),
+    el("div", { class: "trip" }, el("b", { text: `${dfr(d.depart)} → ${dfr(d.return)}` }), ` · ${d.stay_days} jours`),
+    isBiz ? null : el("div", { class: "total" },
+      el("div", {}, el("small", { text: "COÛT TOTAL DU VOYAGE" }), el("b", { text: "≈ " + eur(d.total) })),
+      el("div", { class: "split" }, `vol ${eur(d.flight_price)} + séjour ${eur(d.stay.total)}` + (d.positioning ? ` + trajet ${eur(d.positioning)}` : ""), el("br"), `plafond ${eur(d.cap)}`)),
     el("div", { class: "meta" }, tags),
     ...warns.filter(Boolean).map(w => el("div", { class: "warn", text: w })),
     d.title ? el("div", { class: "trip", text: "Source : " + d.title }) : null,

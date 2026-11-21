@@ -33,5 +33,5 @@ def slot_message(label: str, standard: list, business: list):
     n = len(standard) + len(business)
     if n == 0:
         return f"{label} : rien d'exceptionnel", "Aucune offre n'atteint 8/10. Détails dans l'appli."
-    parts = [f"{d['origin_city']}→{d['dest_city']} {d['price']} €" for d in (standard + business)[:3]]
+    parts = [f"{d['origin_city']}→{d['dest_city']} {d['price']} €" + ("" if d["kind"] == "business" else f" (voyage ≈ {d['total']} €)") for d in (standard + business)[:3]]
     return f"{label} : {n} offre{'s' if n > 1 else ''}", " · ".join(parts)

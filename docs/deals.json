@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-22T13:24:31.716197+00:00",
+ "updated": "2026-11-22T13:40:27.841925+00:00",
  "deals": [],
  "business": [],
  "good": [
@@ -132,39 +132,43 @@
    "positioning": 115,
    "stay": {
     "days": 7,
-    "per_day": 55.8,
-    "total": 391,
+    "per_day": 78.3,
+    "total": 548,
     "lines": {
-     "Hébergement": 98,
+     "Hébergement (chambre privée, 31 €/nuit)": 216,
      "Repas": 84,
      "Transports locaux": 42,
      "Activités": 56,
-     "Déplacements entre villes": 15,
+     "Mini-trip : train/bus A/R vers une autre ville (1 × 3 j)": 40,
      "Visa / autorisation": 0,
      "Assurance": 15,
      "Transferts + SIM": 45,
-     "Marge": 36
+     "Marge": 50
     },
+    "lodging_type": "chambre privée",
+    "lodging_night": 31,
+    "mini_trips": 1,
     "visa_note": "",
     "peak_days": 0
    },
-   "total": 790,
+   "total": 947,
    "cap": 1500,
    "stopover": null,
    "hours": 10.9,
+   "flight_number": "PC 5036",
    "links": {
     "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20FRA%20to%20ALA%20on%202026-12-06%20through%202026-12-13",
     "airline": "https://www.flypgs.com",
     "offer": "https://www.aviasales.com/search/FRA0612ALA13121?t=PC17965647001796618700000660FRAAYTALA17971920001797244200001110ALACITSAWFRA_f9d351a2eb9a862bfbb8a68fd624ccc2_25338&search_date=22112026&expected_price_uuid=01a202f4-30e5-8030-2671-380da8b148ae&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=CZz_Nh1E6KKDERKR7ZNa8g&expected_price_source=share&expected_price_currency=eur&expected_price=284"
    },
-   "score": 7.3,
+   "score": 7.0,
    "detail": {
     "Prix": [
      2.2,
      3
     ],
     "Budget": [
-     2.0,
+     1.8,
      2
     ],
     "Destination": [
@@ -180,14 +184,14 @@
      1
     ],
     "Économie globale": [
-     0.2,
+     0.1,
      1
     ]
    },
    "bonus": 0.0,
    "discount": 0.49,
    "bench": 557,
-   "found_at": "2026-11-22T13:24:31.716197+00:00"
+   "found_at": "2026-11-22T13:40:27.841925+00:00"
   },
   {
    "key": "3e0f1e3715300037",
@@ -318,39 +322,43 @@
    "positioning": 100,
    "stay": {
     "days": 7,
-    "per_day": 55.8,
-    "total": 391,
+    "per_day": 78.3,
+    "total": 548,
     "lines": {
-     "Hébergement": 98,
+     "Hébergement (chambre privée, 31 €/nuit)": 216,
      "Repas": 84,
      "Transports locaux": 42,
      "Activités": 56,
-     "Déplacements entre villes": 15,
+     "Mini-trip : train/bus A/R vers une autre ville (1 × 3 j)": 40,
      "Visa / autorisation": 0,
      "Assurance": 15,
      "Transferts + SIM": 45,
-     "Marge": 36
+     "Marge": 50
     },
+    "lodging_type": "chambre privée",
+    "lodging_night": 31,
+    "mini_trips": 1,
     "visa_note": "",
     "peak_days": 0
    },
-   "total": 788,
+   "total": 945,
    "cap": 1500,
    "stopover": null,
    "hours": 11.1,
+   "flight_number": "PC 1252",
    "links": {
     "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20AMS%20to%20ALA%20on%202027-02-05%20through%202027-02-12",
     "airline": "https://www.flypgs.com",
     "offer": "https://www.aviasales.com/search/AMS0502ALA12021?t=PC18018288001801888800000760AMSSAWALA18024201001802515500001830ALACITSAWAMS_ea93acb0416cb515ad6f06e5f3d00163_27174&search_date=15112026&expected_price_uuid=01a1e007-349b-8031-6c88-c1c284def407&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=lcKpuB7IT7A0lyrORKOWvA&expected_price_source=share&expected_price_currency=eur&expected_price=297"
    },
-   "score": 7.2,
+   "score": 7.0,
    "detail": {
     "Prix": [
      2.1,
      3
     ],
     "Budget": [
-     2.0,
+     1.8,
      2
     ],
     "Destination": [
@@ -373,7 +381,7 @@
    "bonus": 0.0,
    "discount": 0.479,
    "bench": 570,
-   "found_at": "2026-11-22T13:24:31.716197+00:00"
+   "found_at": "2026-11-22T13:40:27.841925+00:00"
   },
   {
    "key": "3ad2bd9326071959",
@@ -411,39 +419,43 @@
    "positioning": 115,
    "stay": {
     "days": 7,
-    "per_day": 55.8,
-    "total": 391,
+    "per_day": 78.3,
+    "total": 548,
     "lines": {
-     "Hébergement": 98,
+     "Hébergement (chambre privée, 31 €/nuit)": 216,
      "Repas": 84,
      "Transports locaux": 42,
      "Activités": 56,
-     "Déplacements entre villes": 15,
+     "Mini-trip : train/bus A/R vers une autre ville (1 × 3 j)": 40,
      "Visa / autorisation": 0,
      "Assurance": 15,
      "Transferts + SIM": 45,
-     "Marge": 36
+     "Marge": 50
     },
+    "lodging_type": "chambre privée",
+    "lodging_night": 31,
+    "mini_trips": 1,
     "visa_note": "",
     "peak_days": 0
    },
-   "total": 810,
+   "total": 967,
    "cap": 1500,
    "stopover": null,
    "hours": 8.9,
+   "flight_number": "VF 524",
    "links": {
     "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20FRA%20to%20ALA%20on%202027-02-04%20through%202027-02-11",
     "airline": "",
     "offer": "https://www.aviasales.com/search/FRA0402ALA11021?t=VF18017595001801809900000600FRAESBALA18023325001802359800000695ALAESBFRA_b5c8641e9f429bbede1a88f1d4f041d5_21950&search_date=20112026&expected_price_uuid=01a1faaa-0f58-8030-2fc0-8878a77b40bd&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=8g5Y-AchxswWb5wEwTdgqQ&expected_price_source=share&expected_price_currency=eur&expected_price=244"
    },
-   "score": 7.2,
+   "score": 7.0,
    "detail": {
     "Prix": [
      1.9,
      3
     ],
     "Budget": [
-     2.0,
+     1.8,
      2
     ],
     "Destination": [
@@ -466,7 +478,7 @@
    "bonus": 0.0,
    "discount": 0.454,
    "bench": 557,
-   "found_at": "2026-11-22T13:24:31.716197+00:00"
+   "found_at": "2026-11-22T13:40:27.841925+00:00"
   },
   {
    "key": "cbb29de5e2f046bf",

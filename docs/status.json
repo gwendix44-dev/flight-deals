@@ -1,8 +1,8 @@
 {
  "ok": true,
- "updated": "2026-11-22T02:33:14.337016+00:00",
- "last_scan": "2026-11-22T02:33:14.337016+00:00",
- "offers": 3189,
+ "updated": "2026-11-22T03:29:47.889442+00:00",
+ "last_scan": "2026-11-22T03:29:47.889442+00:00",
+ "offers": 3190,
  "candidates": 0,
  "verified": 0,
  "waiting": 0,
@@ -31,19 +31,19 @@
  "rejections": [
   [
    "séjour trop court pour la distance",
-   820
+   818
   ],
   [
    "budget total dépassé",
-   581
+   584
   ],
   [
    "départ dans moins de 10 jours",
-   389
+   391
   ],
   [
    "séjour au-delà de 3 semaines",
-   327
+   325
   ],
   [
    "trop d'escales",

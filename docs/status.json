@@ -1,8 +1,8 @@
 {
  "ok": true,
- "updated": "2026-11-22T04:26:32.636653+00:00",
- "last_scan": "2026-11-22T04:26:32.636653+00:00",
- "offers": 3191,
+ "updated": "2026-11-22T05:24:13.448383+00:00",
+ "last_scan": "2026-11-22T05:24:13.448383+00:00",
+ "offers": 3190,
  "candidates": 0,
  "verified": 0,
  "waiting": 0,
@@ -35,7 +35,7 @@
   ],
   [
    "budget total dépassé",
-   584
+   585
   ],
   [
    "départ dans moins de 10 jours",
@@ -47,7 +47,7 @@
   ],
   [
    "trop d'escales",
-   241
+   240
   ],
   [
    "pays exclu (Europe / Afrique du Nord / refus)",

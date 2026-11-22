@@ -1,23 +1,84 @@
 {
-  "origins": ["NTE", "CDG", "ORY", "LHR", "MAD", "FCO", "LIS", "DUB", "AMS", "FRA"],
-  "home_airports": ["NTE", "CDG", "ORY"],
+  "origins": [
+    "NTE",
+    "CDG",
+    "ORY",
+    "LHR",
+    "MAD",
+    "FCO",
+    "LIS",
+    "DUB",
+    "AMS",
+    "FRA"
+  ],
+  "home_airports": [
+    "NTE",
+    "CDG",
+    "ORY"
+  ],
   "months_ahead": 6,
   "min_notice_days": 10,
   "max_transfers": 2,
   "min_plausible_eur": 60,
-  "price_tolerance": 0.10,
-  "excluded_countries": ["MA", "DZ", "TN", "LY", "EG"],
+  "price_tolerance": 0.1,
+  "excluded_countries": [
+    "MA",
+    "DZ",
+    "TN",
+    "LY",
+    "EG"
+  ],
   "stay": {
     "max_days": 21,
-    "min_by_distance_km": [[3500, 5], [7000, 7], [10000, 10], [1000000, 14]],
+    "min_by_distance_km": [
+      [
+        3500,
+        5
+      ],
+      [
+        7000,
+        7
+      ],
+      [
+        10000,
+        10
+      ],
+      [
+        1000000,
+        14
+      ]
+    ],
     "ideal_window_days": 8
   },
-  "budget_by_distance_km": [[8000, 1500], [12000, 1900], [1000000, 2500]],
+  "budget_by_distance_km": [
+    [
+      8000,
+      1500
+    ],
+    [
+      12000,
+      1900
+    ],
+    [
+      1000000,
+      2500
+    ]
+  ],
   "positioning_eur": {
-    "LHR": 100, "MAD": 120, "FCO": 135, "LIS": 125, "DUB": 115, "AMS": 100, "FRA": 115
+    "LHR": 100,
+    "MAD": 120,
+    "FCO": 135,
+    "LIS": 125,
+    "DUB": 115,
+    "AMS": 100,
+    "FRA": 115
   },
   "positioning_default_eur": 150,
-  "aircraft": {"long_haul_hours": 5, "cruise_kmh": 800, "strict": false},
+  "aircraft": {
+    "long_haul_hours": 5,
+    "cruise_kmh": 800,
+    "strict": false
+  },
   "costs": {
     "insurance_per_day": 2.2,
     "arrival_flat_eur": 45,
@@ -25,9 +86,26 @@
     "peak_start": "12-20",
     "peak_end": "01-05",
     "peak_lodging_multiplier": 1.25,
-    "default_per_day": 45
+    "default_per_day": 45,
+    "private_room": {
+      "enabled": true,
+      "factor_cheap": 2.2,
+      "cheap_dorm_max": 20,
+      "factor_mid": 2.0,
+      "mid_dorm_max": 35,
+      "factor_high": 1.8,
+      "max_per_night": 70
+    },
+    "mini_trip": {
+      "min_stay_days": 6,
+      "days_each": 3,
+      "second_trip_from_days": 14,
+      "min_cost_eur": 40
+    }
   },
-  "baggage": {"unknown_airline_eur": 60},
+  "baggage": {
+    "unknown_airline_eur": 60
+  },
   "scoring": {
     "publish": 8.0,
     "instant": 10.0,
@@ -36,23 +114,26 @@
     "bench_base": 150,
     "bench_per_km": 0.08,
     "business_multiplier": 3.2,
-    "price_zero_discount": 0.20,
-    "price_full_discount": 0.60,
-    "budget_full_share": 0.60,
+    "price_zero_discount": 0.2,
+    "price_full_discount": 0.6,
+    "budget_full_share": 0.6,
     "overall_ratio_full": 0.55,
-    "overall_ratio_zero": 0.90,
+    "overall_ratio_zero": 0.9,
     "error_bench_discount": 0.75,
-    "error_history_ratio": 0.50
+    "error_history_ratio": 0.5
   },
   "business": {
     "max_price_eur": 800,
     "min_km": 3600,
-    "min_discount": 0.50,
+    "min_discount": 0.5,
     "full_discount": 0.85,
     "min_plausible_eur": 250
   },
   "publication": {
-    "slots": ["12:00", "19:00"],
+    "slots": [
+      "12:00",
+      "19:00"
+    ],
     "timezone": "Europe/Paris",
     "catch_up_hours": 3,
     "per_slot_standard": 3,
@@ -68,16 +149,32 @@
   },
   "stopovers": {
     "enabled": true,
-    "hubs": ["LIS", "OPO", "MAD", "BCN", "DUB", "LON", "ROM", "ATH", "BUD", "IST", "DXB", "DOH"],
+    "hubs": [
+      "LIS",
+      "OPO",
+      "MAD",
+      "BCN",
+      "DUB",
+      "LON",
+      "ROM",
+      "ATH",
+      "BUD",
+      "IST",
+      "DXB",
+      "DOH"
+    ],
     "short_min_h": 4,
     "short_max_h": 10,
     "long_min_h": 40,
     "night_start": 0,
     "night_end": 5,
-    "min_saving": 0.20,
+    "min_saving": 0.2,
     "max_outbound_eur": 700,
     "max_candidates": 25
   },
-  "rss_feeds": ["https://www.secretflying.com/feed/", "https://www.fly4free.com/feed/"],
+  "rss_feeds": [
+    "https://www.secretflying.com/feed/",
+    "https://www.fly4free.com/feed/"
+  ],
   "stale_scan_minutes": 90
 }

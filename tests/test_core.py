@@ -7,7 +7,7 @@ from flightdeals.util import tier, tier_index
 from helpers import CFG, RAW, TODAY
 
 
-def ev(dest="KGL", price=420, origin="CDG", out=40, stay=14, airline="KL", transfers=0, cabin="economy", cfg=CFG, flagged=False, hist=None):
+def ev(dest="KGL", price=420, origin="CDG", out=40, stay=7, airline="KL", transfers=0, cabin="economy", cfg=CFG, flagged=False, hist=None):
     o = Offer(origin, dest, price, TODAY + timedelta(out), TODAY + timedelta(out + stay), transfers, airline, cabin, flagged_error=flagged)
     return E.evaluate(o, cfg, {"refused_keys": []}, hist or {}, TODAY)
 
@@ -55,7 +55,7 @@ class Rules(unittest.TestCase):
             self.assertEqual(d["flight_price"], 300)
 
     def test_business_cap_and_min_distance(self):
-        self.assertEqual(ev("BOG", price=900, cabin="business")[1], "business : au-dessus du plafond")
+        self.assertEqual(ev("BOG", price=900, cabin="business", stay=14)[1], "business : au-dessus du plafond")
         self.assertEqual(ev("TLV", price=400, cabin="business", stay=7)[1], "business : distance trop courte")
         self.assertIsNotNone(ev("DXB", price=700, cabin="business", stay=7)[0])
 
@@ -67,7 +67,7 @@ class Rules(unittest.TestCase):
 
 class Scoring(unittest.TestCase):
     def test_max_is_11(self):
-        d, _ = ev("SAL", price=100, flagged=True, airline="TP")
+        d, _ = ev("SAL", price=100, flagged=True, airline="TP", stay=14)
         self.assertLessEqual(d["score"], 11)
 
     def test_error_bonus(self):
@@ -121,7 +121,7 @@ class Costs(unittest.TestCase):
         d = date(2027, 3, 1)
         th = costs.stay_cost("TH", d, d + timedelta(14), CFG)
         us = costs.stay_cost("US", d, d + timedelta(14), CFG)
-        self.assertLess(th["per_day"], 45)
+        self.assertLess(th["per_day"], 70)
         self.assertGreater(us["total"], 1500)
 
     def test_peak_season_costs_more(self):
@@ -190,3 +190,25 @@ class Prefs(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StayModel(unittest.TestCase):
+    def test_private_room_by_default_hostel_only_if_very_expensive(self):
+        d = date(2027, 3, 1)
+        kz = costs.stay_cost("KZ", d, d + timedelta(7), CFG)
+        self.assertEqual(kz["lodging_type"], "chambre privée")
+        self.assertGreater(kz["lodging_night"], 14)  # plus que le prix d'un dortoir
+        us = costs.stay_cost("US", d, d + timedelta(7), CFG)
+        self.assertTrue(us["lodging_type"].startswith("auberge"))
+
+    def test_mini_trip_included_from_six_days(self):
+        d = date(2027, 3, 1)
+        self.assertEqual(costs.stay_cost("KZ", d, d + timedelta(5), CFG)["mini_trips"], 0)
+        week = costs.stay_cost("KZ", d, d + timedelta(7), CFG)
+        self.assertEqual(week["mini_trips"], 1)
+        self.assertTrue(any("Mini-trip" in k and v >= 40 for k, v in week["lines"].items()))
+        self.assertEqual(costs.stay_cost("KZ", d, d + timedelta(14), CFG)["mini_trips"], 2)
+
+    def test_almaty_week_is_realistic(self):
+        d = date(2027, 3, 1)
+        self.assertGreater(costs.stay_cost("KZ", d, d + timedelta(7), CFG)["total"], 450)

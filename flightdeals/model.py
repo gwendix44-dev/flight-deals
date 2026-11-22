@@ -21,6 +21,7 @@ class Offer:
     title: str = ""
     flagged_error: bool = False
     dest_airport: str = ""
+    flight_number: str = ""
     stopover: dict | None = None  # montage à billets séparés
 
     @property

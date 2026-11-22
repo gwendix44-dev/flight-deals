@@ -63,6 +63,7 @@ def fetch_roundtrips(origins, months, token, errors: list, fetch=None) -> list[O
                     return_date=parse_date(it.get("return_at")),
                     transfers=max(int(it.get("transfers") or 0), int(it.get("return_transfers") or 0)),
                     airline=it.get("airline", ""), dest_airport=it.get("destination_airport", ""),
+                    flight_number=str(it.get("flight_number") or ""),
                     link="https://www.aviasales.com" + link if link.startswith("/") else link))
     return out
 

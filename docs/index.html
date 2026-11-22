@@ -271,6 +271,7 @@ function card(d) {
       el("div", { class: "split" }, `vol ${eur(d.flight_price)} + séjour ${eur(d.stay.total)}` + (d.positioning ? ` + trajet ${eur(d.positioning)}` : ""), el("br"), `plafond ${eur(d.cap)}`)),
     el("div", { class: "meta" }, tags),
     ...warns.filter(Boolean).map(w => el("div", { class: "warn", text: w })),
+    d.flight_number ? el("div", { class: "trip", text: "1er vol aller : " + d.flight_number }) : null,
     d.title ? el("div", { class: "trip", text: "Source : " + d.title }) : null,
     el("details", {}, el("summary", { text: "Pourquoi cette note ?" }), bars.length ? bars : el("div", { class: "rows", text: `Remise estimée ${Math.round((d.discount || 0) * 100)} % vs le prix habituel du business.` })),
     isBiz ? null : el("details", {}, el("summary", { text: "Détail du séjour" }), el("div", { class: "rows" }, stayRows,
@@ -278,7 +279,8 @@ function card(d) {
       d.stay.visa_note ? el("div", { text: "Visa : " + d.stay.visa_note }) : null)),
     el("div", { class: "btns" },
       fly ? el("a", { class: "btn", href: fly, target: "_blank", rel: "noopener noreferrer", text: "1 · Vérifier en direct" }) : null,
-      (air || off) ? el("a", { class: "btn alt", href: air || off, target: "_blank", rel: "noopener noreferrer", text: "2 · Site de " + (d.airline || "la compagnie") }) : null,
+      (off || air) ? el("a", { class: "btn alt", href: off || air, target: "_blank", rel: "noopener noreferrer", text: off ? "2 · Ce vol, au prix de l'offre" : "2 · Site de " + (d.airline || "la compagnie") }) : null,
+      (off && air) ? el("a", { class: "btn alt", style: "grid-column:1/-1;padding:9px;font-weight:600;font-size:13px", href: air, target: "_blank", rel: "noopener noreferrer", text: "Accueil du site de " + (d.airline || "la compagnie") }) : null,
       refuse));
 }
 

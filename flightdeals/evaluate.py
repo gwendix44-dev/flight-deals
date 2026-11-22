@@ -95,7 +95,7 @@ def evaluate(o: Offer, cfg: dict, prefs: dict, history: dict, today: date):
         "dates_unconfirmed": not dated, "source": o.source, "title": o.title, "flagged_error": o.flagged_error,
         "baggage": bag, "aircraft": {"status": status, "note": anote}, "positioning": round(pos),
         "stay": st, "total": round(total), "cap": cap, "stopover": o.stopover,
-        "hours": round(hours, 1),
+        "hours": round(hours, 1), "flight_number": (o.airline + " " + o.flight_number).strip() if o.flight_number else "",
         "links": {"verify": google_flights_url(o, airports), "airline": bag["site"], "offer": o.link},
     }
     if business:

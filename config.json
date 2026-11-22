@@ -82,7 +82,7 @@
   "costs": {
     "insurance_per_day": 2.2,
     "arrival_flat_eur": 45,
-    "buffer_pct": 10,
+    "buffer_pct": 20,
     "peak_start": "12-20",
     "peak_end": "01-05",
     "peak_lodging_multiplier": 1.25,

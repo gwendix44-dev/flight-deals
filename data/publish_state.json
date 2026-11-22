@@ -575,6 +575,103 @@
    "discount": 0.521,
    "bench": 1141,
    "found_at": "2026-11-22T13:24:31.716197+00:00"
+  },
+  {
+   "key": "fcc8918f4a9e96b2",
+   "kind": "standard",
+   "origin": "FRA",
+   "origin_city": "Francfort",
+   "dest": "ALA",
+   "dest_city": "Almaty",
+   "country": "KZ",
+   "region": "asie",
+   "km": 5089,
+   "price": 248,
+   "flight_price": 248,
+   "transfers": 1,
+   "airline": "Pegasus",
+   "airline_code": "PC",
+   "depart": "2027-03-17",
+   "return": "2027-03-25",
+   "stay_days": 8,
+   "dates_unconfirmed": false,
+   "source": "travelpayouts",
+   "title": "",
+   "flagged_error": false,
+   "baggage": {
+    "status": "likely",
+    "surcharge": 0.0,
+    "airline": "Pegasus",
+    "site": "https://www.flypgs.com",
+    "warning": "Confirme que le bagage cabine est inclus dans le tarif Pegasus avant de payer."
+   },
+   "aircraft": {
+    "status": "unverified",
+    "note": "Avec escale : type d'avion des tronçons à vérifier (gros-porteur obligatoire au-delà de 5 h)."
+   },
+   "positioning": 115,
+   "stay": {
+    "days": 8,
+    "per_day": 83.5,
+    "total": 668,
+    "lines": {
+     "Hébergement (chambre privée, 31 €/nuit)": 246,
+     "Repas": 96,
+     "Transports locaux": 48,
+     "Activités": 64,
+     "Mini-trip : train/bus A/R vers une autre ville (1 × 3 j)": 40,
+     "Visa / autorisation": 0,
+     "Assurance": 18,
+     "Transferts + SIM": 45,
+     "Marge": 111
+    },
+    "lodging_type": "chambre privée",
+    "lodging_night": 31,
+    "mini_trips": 1,
+    "visa_note": "",
+    "peak_days": 0
+   },
+   "total": 1031,
+   "cap": 1500,
+   "stopover": null,
+   "hours": 8.9,
+   "flight_number": "PC 994",
+   "links": {
+    "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20FRA%20to%20ALA%20on%202027-03-17%20through%202027-03-25",
+    "airline": "https://www.flypgs.com",
+    "offer": "https://www.aviasales.com/search/FRA1703ALA25031?t=VF18052833001805344800000785FRASAWALA18059613001805988600000695ALAESBFRA_7cd9d013229512202faf3608f1336137_22173&search_date=22112026&expected_price_uuid=01a2043f-263e-8031-2d90-87b3821e595c&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=LtCTixSGsz49sUkVYyVptg&expected_price_source=share&expected_price_currency=eur&expected_price=248"
+   },
+   "score": 7.6,
+   "detail": {
+    "Prix": [
+     2.7,
+     3
+    ],
+    "Budget": [
+     1.6,
+     2
+    ],
+    "Destination": [
+     1.5,
+     1.5
+    ],
+    "Vol": [
+     0.7,
+     1.5
+    ],
+    "Durée": [
+     1.0,
+     1
+    ],
+    "Économie globale": [
+     0.2,
+     1
+    ]
+   },
+   "bonus": 0.0,
+   "discount": 0.555,
+   "bench": 557,
+   "found_at": "2026-11-22T17:24:34.791985+00:00"
   }
  ],
  "instant_log": [],

@@ -1,101 +1,8 @@
 {
- "updated": "2026-11-24T01:15:39.788120+00:00",
+ "updated": "2026-11-24T02:29:57.894107+00:00",
  "deals": [],
  "business": [],
  "good": [
-  {
-   "key": "b043fb665c865c33",
-   "kind": "standard",
-   "origin": "ORY",
-   "origin_city": "Paris Orly",
-   "dest": "AUH",
-   "dest_city": "Abou Dabi",
-   "country": "AE",
-   "region": "moyen-orient",
-   "km": 5258,
-   "price": 207,
-   "flight_price": 207,
-   "transfers": 1,
-   "airline": "Pegasus",
-   "airline_code": "PC",
-   "depart": "2027-02-09",
-   "return": "2027-02-16",
-   "stay_days": 7,
-   "dates_unconfirmed": false,
-   "source": "travelpayouts",
-   "title": "",
-   "flagged_error": false,
-   "baggage": {
-    "status": "likely",
-    "surcharge": 0.0,
-    "airline": "Pegasus",
-    "site": "https://www.flypgs.com",
-    "warning": "Confirme que le bagage cabine est inclus dans le tarif Pegasus avant de payer."
-   },
-   "aircraft": {
-    "status": "unverified",
-    "note": "Avec escale : type d'avion des tronçons à vérifier (gros-porteur obligatoire au-delà de 5 h)."
-   },
-   "positioning": 0,
-   "stay": {
-    "days": 7,
-    "per_day": 105.2,
-    "total": 736,
-    "lines": {
-     "Hébergement": 245,
-     "Repas": 154,
-     "Transports locaux": 70,
-     "Activités": 140,
-     "Déplacements entre villes": 0,
-     "Visa / autorisation": 0,
-     "Assurance": 15,
-     "Transferts + SIM": 45,
-     "Marge": 67
-    },
-    "visa_note": "",
-    "peak_days": 0
-   },
-   "total": 943,
-   "cap": 1500,
-   "stopover": null,
-   "hours": 9.1,
-   "links": {
-    "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20ORY%20to%20AUH%20on%202027-02-09%20through%202027-02-16",
-    "airline": "https://www.flypgs.com",
-    "offer": "https://www.aviasales.com/search/ORY0902AUH16021?t=PC18021738001802227800000720ORYSAWAUH18027501001802774700000590AUHSAWORY_d0f164ad44f17a00d4027a0c4afa5368_18592&search_date=18112026&expected_price_uuid=01a1edd5-4275-8030-e585-13d5b30e82bb&static_fare_key=TY%7CP1%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=uL5FaCal9T3Vxg1qjlu-Rg&origin_airports=0&destination_airports=1&expected_price_source=share&expected_price_currency=eur&expected_price=207"
-   },
-   "score": 7.6,
-   "detail": {
-    "Prix": [
-     3.0,
-     3
-    ],
-    "Budget": [
-     1.9,
-     2
-    ],
-    "Destination": [
-     0.5,
-     1.5
-    ],
-    "Vol": [
-     0.7,
-     1.5
-    ],
-    "Durée": [
-     1.0,
-     1
-    ],
-    "Économie globale": [
-     0.5,
-     1
-    ]
-   },
-   "bonus": 0.0,
-   "discount": 0.637,
-   "bench": 571,
-   "found_at": "2026-11-22T13:24:31.716197+00:00"
-  },
   {
    "key": "fcc8918f4a9e96b2",
    "kind": "standard",
@@ -191,7 +98,7 @@
    "bonus": 0.0,
    "discount": 0.555,
    "bench": 557,
-   "found_at": "2026-11-24T01:15:39.788120+00:00"
+   "found_at": "2026-11-24T02:29:57.894107+00:00"
   }
  ]
 }

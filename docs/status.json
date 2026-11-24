@@ -1,8 +1,8 @@
 {
  "ok": true,
- "updated": "2026-11-24T18:32:43.370903+00:00",
- "last_scan": "2026-11-24T18:32:43.370903+00:00",
- "offers": 3170,
+ "updated": "2026-11-24T19:41:44.554322+00:00",
+ "last_scan": "2026-11-24T19:41:44.554322+00:00",
+ "offers": 3157,
  "candidates": 0,
  "verified": 0,
  "waiting": 0,
@@ -31,27 +31,27 @@
  "rejections": [
   [
    "budget total dépassé",
-   913
+   907
   ],
   [
    "séjour trop court pour la distance",
-   775
+   778
   ],
   [
    "départ dans moins de 10 jours",
-   430
+   426
   ],
   [
    "séjour au-delà de 3 semaines",
-   325
+   320
   ],
   [
    "pays exclu (Europe / Afrique du Nord / refus)",
-   218
+   219
   ],
   [
    "trop d'escales",
-   207
+   204
   ],
   [
    "destination refusée",
@@ -65,6 +65,5 @@
  "prefs": [
   "Destinations exclues : SID."
  ],
- "source": "scan",
- "last_combos": "2026-11-24T19:07:30.549359+00:00"
+ "source": "scan"
 }

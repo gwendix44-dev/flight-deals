@@ -1,8 +1,8 @@
 {
  "ok": true,
- "updated": "2026-11-25T03:39:19.027145+00:00",
- "last_scan": "2026-11-25T03:39:19.027145+00:00",
- "offers": 3145,
+ "updated": "2026-11-25T04:44:12.170741+00:00",
+ "last_scan": "2026-11-25T04:44:12.170741+00:00",
+ "offers": 3147,
  "candidates": 0,
  "verified": 0,
  "waiting": 0,
@@ -31,11 +31,11 @@
  "rejections": [
   [
    "budget total dépassé",
-   879
+   883
   ],
   [
    "séjour trop court pour la distance",
-   784
+   783
   ],
   [
    "départ dans moins de 10 jours",
@@ -51,7 +51,7 @@
   ],
   [
    "trop d'escales",
-   208
+   206
   ],
   [
    "destination refusée",
@@ -65,6 +65,5 @@
  "prefs": [
   "Destinations exclues : SID."
  ],
- "source": "scan",
- "last_combos": "2026-11-25T04:15:07.797126+00:00"
+ "source": "scan"
 }

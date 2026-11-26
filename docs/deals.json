@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T12:25:08.169190+00:00",
+ "updated": "2026-11-26T13:46:53.111954+00:00",
  "deals": [],
  "business": [],
  "good": [
@@ -98,7 +98,7 @@
    "bonus": 0.0,
    "discount": 0.555,
    "bench": 557,
-   "found_at": "2026-11-26T12:25:08.169190+00:00"
+   "found_at": "2026-11-26T13:46:53.111954+00:00"
   },
   {
    "key": "fd52d576be8d17f6",
@@ -110,8 +110,8 @@
    "country": "BO",
    "region": "amerique-latine",
    "km": 8918,
-   "price": 452,
-   "flight_price": 452,
+   "price": 442,
+   "flight_price": 442,
    "transfers": 1,
    "airline": "Avianca",
    "airline_code": "AV",
@@ -155,24 +155,24 @@
     "visa_note": "",
     "peak_days": 0
    },
-   "total": 1199,
+   "total": 1189,
    "cap": 1900,
    "stopover": null,
    "hours": 13.6,
-   "flight_number": "AV 027",
+   "flight_number": "AV 27",
    "links": {
     "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20MAD%20to%20VVI%20on%202027-02-08%20through%202027-02-19",
     "airline": "https://www.avianca.com",
-    "offer": "https://www.aviasales.com/search/MAD0802SRZ19021?t=AV18020742001802140800001410MADBOGVVI18030087001803111000001405VVIBOGMAD_d8b654ad54552d9e04dc582ce0a844f6_40730&search_date=26112026&expected_price_uuid=01a21791-4dd9-8030-2602-a1eb2fc42dd1&static_fare_key=TY%7CP1%7CH1%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=DfWod6nwp7G1lTtWu8bQ4Q&expected_price_source=share&expected_price_currency=eur&expected_price=452"
+    "offer": "https://www.aviasales.com/search/MAD0802SRZ19021?t=AV18020742001802140800001410MADBOGVVI18030087001803111000001405VVIBOGMAD_d8b654ad54552d9e04dc582ce0a844f6_39967&search_date=26112026&expected_price_uuid=01a217f8-4ac6-8030-2a88-bbe21814685f&static_fare_key=TY%7CP1%7CH1%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=DfWod6nwp7G1lTtWu8bQ4Q&expected_price_source=share&expected_price_currency=eur&expected_price=442"
    },
-   "score": 7.4,
+   "score": 7.5,
    "detail": {
     "Prix": [
-     2.1,
+     2.2,
      3
     ],
     "Budget": [
-     1.8,
+     1.9,
      2
     ],
     "Destination": [
@@ -193,9 +193,9 @@
     ]
    },
    "bonus": 0.0,
-   "discount": 0.477,
+   "discount": 0.488,
    "bench": 863,
-   "found_at": "2026-11-26T12:25:08.169190+00:00"
+   "found_at": "2026-11-26T13:46:53.111954+00:00"
   }
  ]
 }

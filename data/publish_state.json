@@ -1,6 +1,5 @@
 {
  "slots_done": {
-  "2026-11-21@19:00": "2026-11-21T18:02:08.089770+00:00",
   "2026-11-22@12:00": "2026-11-22T11:31:53.791080+00:00",
   "2026-11-22@19:00": "2026-11-22T18:01:15.744983+00:00",
   "2026-11-23@12:00": "2026-11-23T11:41:10.381561+00:00",
@@ -11,7 +10,8 @@
   "2026-11-25@19:00": "2026-11-25T18:26:04.462279+00:00",
   "2026-11-26@12:00": "2026-11-26T11:21:00.302991+00:00",
   "2026-11-26@19:00": "2026-11-26T18:31:37.780965+00:00",
-  "2026-11-27@12:00": "2026-11-27T11:16:38.020799+00:00"
+  "2026-11-27@12:00": "2026-11-27T11:16:38.020799+00:00",
+  "2026-11-27@19:00": "2026-11-27T18:27:36.609253+00:00"
  },
  "reserve": [],
  "published": [],
@@ -111,7 +111,7 @@
    "bonus": 0.0,
    "discount": 0.555,
    "bench": 557,
-   "found_at": "2026-11-27T17:35:58.862103+00:00"
+   "found_at": "2026-11-27T18:27:36.609253+00:00"
   },
   {
    "key": "fd52d576be8d17f6",
@@ -176,7 +176,7 @@
    "links": {
     "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20MAD%20to%20VVI%20on%202027-02-08%20through%202027-02-19",
     "airline": "https://www.avianca.com",
-    "offer": "https://www.aviasales.com/search/MAD0802SRZ19021?t=AV18020742001802140800001410MADBOGVVI18030087001803111000001405VVIBOGMAD_d8b654ad54552d9e04dc582ce0a844f6_40665&search_date=27112026&expected_price_uuid=01a21cdb-3aca-8030-a2bb-d43d4a6f789a&static_fare_key=TY%7CP1%7CH1%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=DfWod6nwp7G1lTtWu8bQ4Q&expected_price_source=share&expected_price_currency=eur&expected_price=451"
+    "offer": "https://www.aviasales.com/search/MAD0802SRZ19021?t=AV18020742001802140800001410MADBOGVVI18030087001803111000001405VVIBOGMAD_d8b654ad54552d9e04dc582ce0a844f6_40665&search_date=27112026&expected_price_uuid=01a21cdb-3aca-8030-a2bb-d43d4a6f789a&static_fare_key=TY%7CP1%7CH1%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=DfWod6nwp7G1lTtWu8bQ4Q&expected_price_source=share&expected_price_currency=eur&expected_price=452"
    },
    "score": 7.4,
    "detail": {
@@ -208,119 +208,22 @@
    "bonus": 0.0,
    "discount": 0.477,
    "bench": 863,
-   "found_at": "2026-11-27T17:35:58.862103+00:00"
-  },
-  {
-   "key": "2e73446410254880",
-   "kind": "standard",
-   "origin": "MAD",
-   "origin_city": "Madrid",
-   "dest": "VVI",
-   "dest_city": "Santa Cruz",
-   "country": "BO",
-   "region": "amerique-latine",
-   "km": 8918,
-   "price": 452,
-   "flight_price": 452,
-   "transfers": 1,
-   "airline": "Avianca",
-   "airline_code": "AV",
-   "depart": "2027-04-12",
-   "return": "2027-04-25",
-   "stay_days": 13,
-   "dates_unconfirmed": false,
-   "source": "travelpayouts",
-   "title": "",
-   "flagged_error": false,
-   "baggage": {
-    "status": "included",
-    "surcharge": 0.0,
-    "airline": "Avianca",
-    "site": "https://www.avianca.com",
-    "warning": ""
-   },
-   "aircraft": {
-    "status": "unverified",
-    "note": "Avec escale : type d'avion des tronçons à vérifier (gros-porteur obligatoire au-delà de 5 h)."
-   },
-   "positioning": 120,
-   "stay": {
-    "days": 13,
-    "per_day": 55.6,
-    "total": 723,
-    "lines": {
-     "Hébergement (chambre privée, 18 €/nuit)": 229,
-     "Repas": 104,
-     "Transports locaux": 78,
-     "Activités": 78,
-     "Mini-trip : train/bus A/R vers une autre ville (1 × 3 j)": 40,
-     "Visa / autorisation": 0,
-     "Assurance": 29,
-     "Transferts + SIM": 45,
-     "Marge": 120
-    },
-    "lodging_type": "chambre privée",
-    "lodging_night": 18,
-    "mini_trips": 1,
-    "visa_note": "",
-    "peak_days": 0
-   },
-   "total": 1295,
-   "cap": 1900,
-   "stopover": null,
-   "hours": 13.6,
-   "flight_number": "AV 183",
-   "links": {
-    "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20MAD%20to%20VVI%20on%202027-04-12%20through%202027-04-25",
-    "airline": "https://www.avianca.com",
-    "offer": "https://www.aviasales.com/search/MAD1204SRZ25041?t=AV18075279001807583400001285MADBOGVVI18086241001808698800000885VVIBOGMAD_39e4272ebae6e2fabd98845e9e381293_40690&search_date=27112026&expected_price_uuid=01a21b20-9ebc-8031-2a06-5b153f50798a&static_fare_key=TY%7CP1%7CH1%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=1m3DjS_Ylr3_vzID9kihvQ&expected_price_source=share&expected_price_currency=eur&expected_price=452"
-   },
-   "score": 7.1,
-   "detail": {
-    "Prix": [
-     2.1,
-     3
-    ],
-    "Budget": [
-     1.6,
-     2
-    ],
-    "Destination": [
-     1.5,
-     1.5
-    ],
-    "Vol": [
-     0.7,
-     1.5
-    ],
-    "Durée": [
-     1.0,
-     1
-    ],
-    "Économie globale": [
-     0.2,
-     1
-    ]
-   },
-   "bonus": 0.0,
-   "discount": 0.477,
-   "bench": 863,
-   "found_at": "2026-11-27T17:35:58.862103+00:00"
+   "found_at": "2026-11-27T18:27:36.609253+00:00"
   }
  ],
  "instant_log": [],
  "last_slot": {
-  "id": "2026-11-27@12:00",
-  "label": "Publication de 12h",
-  "at": "2026-11-27T11:16:38.020799+00:00",
+  "id": "2026-11-27@19:00",
+  "label": "Publication de 19h",
+  "at": "2026-11-27T18:27:36.609253+00:00",
   "standard": 0,
   "business": 0,
   "bons_plans": 2,
   "waiting_after": 0,
   "best_missed": [
    "7.6/11 FRA→ALA 248€ avec bagages (séjour ~668€) : Prix 2.7/3 · Budget 1.6/2 · Destination 1.5/1.5 · Vol 0.7/1.5 · Durée 1.0/1 · Économie globale 0.2/1",
-   "7.5/11 MAD→VVI 443€ avec bagages (séjour ~627€) : Prix 2.2/3 · Budget 1.9/2 · Destination 1.5/1.5 · Vol 0.7/1.5 · Durée 1.0/1 · Économie globale 0.3/1",
-   "7.1/11 MAD→VVI 451€ avec bagages (séjour ~723€) : Prix 2.1/3 · Budget 1.6/2 · Destination 1.5/1.5 · Vol 0.7/1.5 · Durée 1.0/1 · Économie globale 0.2/1"
+   "7.4/11 MAD→VVI 452€ avec bagages (séjour ~627€) : Prix 2.1/3 · Budget 1.8/2 · Destination 1.5/1.5 · Vol 0.7/1.5 · Durée 1.0/1 · Économie globale 0.3/1",
+   "7.1/11 MAD→VVI 452€ avec bagages (séjour ~723€) : Prix 2.1/3 · Budget 1.6/2 · Destination 1.5/1.5 · Vol 0.7/1.5 · Durée 1.0/1 · Économie globale 0.2/1"
   ]
  }
 }

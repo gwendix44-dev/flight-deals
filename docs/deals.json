@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T12:21:24.734311+00:00",
+ "updated": "2026-11-27T13:44:38.636835+00:00",
  "deals": [],
  "business": [],
  "good": [
@@ -98,7 +98,7 @@
    "bonus": 0.0,
    "discount": 0.555,
    "bench": 557,
-   "found_at": "2026-11-27T12:21:24.734311+00:00"
+   "found_at": "2026-11-27T13:44:38.636835+00:00"
   },
   {
    "key": "fd52d576be8d17f6",
@@ -195,7 +195,7 @@
    "bonus": 0.0,
    "discount": 0.478,
    "bench": 863,
-   "found_at": "2026-11-27T12:21:24.734311+00:00"
+   "found_at": "2026-11-27T13:44:38.636835+00:00"
   },
   {
    "key": "2e73446410254880",
@@ -207,8 +207,8 @@
    "country": "BO",
    "region": "amerique-latine",
    "km": 8918,
-   "price": 452,
-   "flight_price": 452,
+   "price": 451,
+   "flight_price": 451,
    "transfers": 1,
    "airline": "Avianca",
    "airline_code": "AV",
@@ -252,7 +252,7 @@
     "visa_note": "",
     "peak_days": 0
    },
-   "total": 1295,
+   "total": 1294,
    "cap": 1900,
    "stopover": null,
    "hours": 13.6,
@@ -260,7 +260,7 @@
    "links": {
     "verify": "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=Flights%20from%20MAD%20to%20VVI%20on%202027-04-12%20through%202027-04-25",
     "airline": "https://www.avianca.com",
-    "offer": "https://www.aviasales.com/search/MAD1204SRZ25041?t=AV18075279001807583400001285MADBOGVVI18086241001808698800000885VVIBOGMAD_39e4272ebae6e2fabd98845e9e381293_40690&search_date=27112026&expected_price_uuid=01a21b20-9ebc-8031-2a06-5b153f50798a&static_fare_key=TY%7CP1%7CH1%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=1m3DjS_Ylr3_vzID9kihvQ&expected_price_source=share&expected_price_currency=eur&expected_price=452"
+    "offer": "https://www.aviasales.com/search/MAD1204SRZ25041?t=AV18075279001807583400001285MADBOGVVI18086241001808698800000885VVIBOGMAD_39e4272ebae6e2fabd98845e9e381293_40690&search_date=27112026&expected_price_uuid=01a21b20-9ebc-8031-2a06-5b153f50798a&static_fare_key=TY%7CP1%7CH1%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=1m3DjS_Ylr3_vzID9kihvQ&expected_price_source=share&expected_price_currency=eur&expected_price=451"
    },
    "score": 7.1,
    "detail": {
@@ -290,9 +290,9 @@
     ]
    },
    "bonus": 0.0,
-   "discount": 0.477,
+   "discount": 0.478,
    "bench": 863,
-   "found_at": "2026-11-27T12:21:24.734311+00:00"
+   "found_at": "2026-11-27T13:44:38.636835+00:00"
   }
  ]
 }
